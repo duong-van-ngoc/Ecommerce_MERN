@@ -11,6 +11,11 @@ export default (err, req, res, next) => {
         err = new HandleError(message, 400);
     }
 
+    // lỗi trùng  email
+    if(err.code === 11000) {
+        const message = `${Object.keys(err.keyValue)} đã tồn tại, vui lòng đăng nhập`;
+        err = new HandleError(message, 400);
+    }
     res.status(err.statusCode).json({
         success: false,
         message: err.message
