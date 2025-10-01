@@ -11,6 +11,10 @@ import APIFunctionality from '../utils/apiFunctionality.js';
 
 // tao san pham 
 export const createProducts = handleAsyncError(async (req, res, next) => { // req de lay du lieu tu client gui len, res de tra du lieu ve client
+    
+    req.body.user = req.user.id;
+    console.log(req.user);
+    
     const product = await Product.create(req.body); // tạo sản phẩm mới từ dữ liệu trong req.body // req.body là dữ liệu gửi từ client
     res.status(201).json({ 
         success: true, 

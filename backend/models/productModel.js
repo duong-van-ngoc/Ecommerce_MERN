@@ -72,6 +72,11 @@ const productSchema = new mongoose.Schema({ // tạo schema cho sản phẩm
             }
         }
     ],
+    user: {
+        type: mongoose.Schema.ObjectId,
+        ref: "User",
+        required:true
+    },
     createdAt: { // ngày tạo sản phẩm
         type: Date,
         default: Date.now

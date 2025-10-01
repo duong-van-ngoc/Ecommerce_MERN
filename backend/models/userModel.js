@@ -71,5 +71,15 @@ userSchema.methods.verifyPassword = async function(userEnterPassword) {
 
 }
 
+//
+
+userSchema.methods.generatePasswordResetToken = function() {
+    const resetToken = SubtleCrypto.randomBytes(20).toString('hex');
+    this.resetPassword = crypto.createHash("sha256").update(resetToken).digest("hex");
+    this.resetPasswordExpire = Date.now() + 30 * 60 * 1000 // 30 phut
+    return resetToken
+    
+}
+
 export default mongoose.model("User", userSchema)
 
