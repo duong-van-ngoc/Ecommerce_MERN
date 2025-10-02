@@ -2,7 +2,7 @@ import mongoose  from "mongoose";
 import validator from "validator";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
-
+import crypto from "crypto";
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -43,16 +43,17 @@ const userSchema = new mongoose.Schema({
 
 // Password  hashing
 
-userSchema.pre("save", async function(){ 
-    this.password = await bcryptjs.hash(this.password, 10);
-    // 1st cập nhật hồ sơ ( name, email, image)
+userSchema.pre("save", async function(next){ 
+    
+    // 1st cập nhật hồ sơ ( name, email, image) password đã hash thì sẽ dc hashed  lại 
 
     // 2nd cập nhật password ( nếu không thay đổi password thì không cần hash lại)
     if(!this.isModified("password")) {
         return next();
 
     }
-
+    this.password = await bcryptjs.hash(this.password, 10);
+    next()
 }) 
 
 // tạo token để xác thực người dùng 
@@ -71,14 +72,19 @@ userSchema.methods.verifyPassword = async function(userEnterPassword) {
 
 }
 
-//
+// tạo token  để đặt lại mk 
 
 userSchema.methods.generatePasswordResetToken = function() {
-    const resetToken = SubtleCrypto.randomBytes(20).toString('hex');
-    this.resetPassword = crypto.createHash("sha256").update(resetToken).digest("hex");
-    this.resetPasswordExpire = Date.now() + 30 * 60 * 1000 // 30 phut
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    // hash token để lưu DB
+    this.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+    this.resetPasswordExpire = Date.now() + 30 * 60 * 1000 // hết hạn sau 30 phut
     return resetToken
-    
+
 }
 
 export default mongoose.model("User", userSchema)
