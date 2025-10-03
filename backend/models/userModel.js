@@ -69,7 +69,6 @@ userSchema.methods.getJWTToken = function(){
 userSchema.methods.verifyPassword = async function(userEnterPassword) {
     return await bcryptjs.compare(userEnterPassword,
         this.password);
-
 }
 
 // tạo token  để đặt lại mk 

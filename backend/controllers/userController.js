@@ -3,6 +3,10 @@ import User from "../models/userModel.js"
 import HandleError from "../utils/handleError.js"
 import { sendToken } from "../utils/jwtToken.js"
 import { sendEmail } from "../utils/sendEmail.js"
+import crypto from "crypto";
+
+
+
 // Đăng ký 
 export const registerUser = handleAsyncError(async (req, res, next) => {
     const {name, email, password} = req.body;
@@ -35,7 +39,7 @@ export const loginUser = handleAsyncError(async(req, res, next) => {
     }
     const isPasswordValid = await user.verifyPassword(password)
     if(!isPasswordValid){
-        return next(new HandleError("Email hoặc mật khẩu không hợp lệ",401))
+        return next(new HandleError("Thông tin tài khoản mật khẩu không chính xác",401))
     }
     sendToken(user, 200, res)
 })
@@ -54,7 +58,7 @@ export const logout = handleAsyncError(async (req, res, next) => {
 
 })
 
-// đặt lại password
+//  quên mật khẩu 
 
 export const requestPasswordReset = handleAsyncError(async(req, res, next) => {
     const { email } = req.body
@@ -63,7 +67,6 @@ export const requestPasswordReset = handleAsyncError(async(req, res, next) => {
     if(!user) {
         return next(new HandleError("Người dùng không tồn tại", 400))
     }
-
     let resetToken;
     try{
         resetToken =user.generatePasswordResetToken()
@@ -71,18 +74,14 @@ export const requestPasswordReset = handleAsyncError(async(req, res, next) => {
         await user.save({
             validateBeforeSave: false
         })
-        
     }catch (error){
-        
         return next(new HandleError("không thể lưu mã thông báo đặt lại, vui lòng thử lại sau"), 500)
     }
-
     const resetPasswordURL = `http://localhost/api/v1/reset/${resetToken}`
     console.log(resetPasswordURL);
     const message = `Sử dụng liên kết sau để đặt lại mật khẩu của ban ${resetPasswordURL}.
     \n\n Liên kết sẽ hết hạn sau 30 phút. 
     \n\n Nếu bạn không yêu cầu dặt lại mật khẩu , vui lòng bỏ qua tin nhắn này. `
-
     try{
      // Gửi Email
      await sendEmail({
@@ -94,15 +93,94 @@ export const requestPasswordReset = handleAsyncError(async(req, res, next) => {
         success: true,
         message:`Email gửi tới ${user.email} thành công`
      })
-
     }catch(error) {
         user.resetPasswordToken = undefined
         user.resetPasswordExpire = undefined
-
         await user.save({validateBeforeSave: false})
         return next(new HandleError("không thể lưu mã thông báo đặt lại, vui lòng thử lại sau"), 500)
-
     }
+})
+
+// đặt lại mật khẩu 
+export const resetPassword = handleAsyncError(async(req, res,next) => {
+    // hash  lại token từ URL
+    console.log(req.params.token);
+    
+    const resetPasswordToken= crypto
+        .createHash("sha256")
+        .update(req.params.token)
+        .digest("hex");
+
+    const user = await  User.findOne({
+        resetPasswordToken,
+        resetPasswordExpire: {$gt:Date.now()}
+    })
+    if(!user) {
+        return next(new HandleError("Mã token không hợp lệ hoặc đã hết hạn ", 400))
+    }
+    const {password, confirmPassword} = req.body
+    if(password != confirmPassword) {
+        return next(new HandleError("Mật khẩu không khớp", 400))
+    }
+    user.password = password
+    user.resetPasswordToken = undefined
+    user.resetPasswordExpire = undefined
+
+    await user.save()
+    sendToken(user, 200,res)
+    
+})
+
+//  hồ sơ người dùng 
+export const getUserDetails = handleAsyncError(async(req, res, next) => { 
+    const user = await User.findById(req.user.id)
+    console.log(req.user.id);
+    res.status(200).json({
+        success: true,
+        user
+    })
+
 
 })
 
+// cập nhật mật khẩu 
+export const updatePassword = handleAsyncError(async(req, res, next) => {
+    const { oldPassword, newPassword, confirmPassword} = req.body
+
+    const user = await User.findById(req.user.id).select('+password')
+    const checkPasswordMatch = await user.verifyPassword(oldPassword) 
+
+    if(!checkPasswordMatch) {
+        return next(new HandleError("Mật khẩu cũ không chính xác", 400))
+
+    }
+
+    if(newPassword !== confirmPassword) { 
+        return next(new HandleError("Mật khẩu không khớp", 400))
+    }
+    user.password = newPassword
+
+    await user.save()
+    sendToken(user, 200, res)
+
+})
+ // Cập nhật hồ sơ người dùng
+
+ export const updateProfile = handleAsyncError(async(req, res, next) => {
+    const {name, email} = req.body
+    const updateUserDetails={
+        name,
+        email
+    }
+    const user = await User.findByIdAndUpdate(req.user.id, 
+    updateUserDetails, {
+        new: true,
+        runValidators: true 
+    })
+    res.status(200).json({
+        success: true,
+        message: "Cập nhật hồ sơ thành công",
+        user
+
+    })
+})
