@@ -95,3 +95,22 @@ export const getSingleProduct = handleAsyncError( async (req, res, next) => {
         product
     })
 })
+
+
+
+
+
+
+
+
+
+
+// Admin - lấy tất cả sản phẩm 
+
+export const getAdminProducts = handleAsyncError(async(req, res, next) => {
+    const products = await Product.find()
+    res.status(200).json({
+        succes: true,
+        products
+    })
+})

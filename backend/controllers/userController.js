@@ -4,6 +4,7 @@ import HandleError from "../utils/handleError.js"
 import { sendToken } from "../utils/jwtToken.js"
 import { sendEmail } from "../utils/sendEmail.js"
 import crypto from "crypto";
+import mongoose from "mongoose";
 
 
 
@@ -125,12 +126,10 @@ export const resetPassword = handleAsyncError(async(req, res,next) => {
     user.password = password
     user.resetPasswordToken = undefined
     user.resetPasswordExpire = undefined
-
     await user.save()
     sendToken(user, 200,res)
-    
+  
 })
-
 //  hồ sơ người dùng 
 export const getUserDetails = handleAsyncError(async(req, res, next) => { 
     const user = await User.findById(req.user.id)
@@ -165,7 +164,6 @@ export const updatePassword = handleAsyncError(async(req, res, next) => {
 
 })
  // Cập nhật hồ sơ người dùng
-
  export const updateProfile = handleAsyncError(async(req, res, next) => {
     const {name, email} = req.body
     const updateUserDetails={
@@ -183,4 +181,63 @@ export const updatePassword = handleAsyncError(async(req, res, next) => {
         user
 
     })
+})
+// Admin - lấy thông tin user
+export const getUsersList = handleAsyncError(async(req, res, next) => { 
+    const users = await User.find();
+    res.status(200).json({
+        success: true,
+        users
+    })
+})
+
+// Admin - lấy thông tin của người dùng đơn lẻ 
+
+export const getSingleUser = handleAsyncError(async(req, res, next) => {
+    const user = await User.findById(req.params.id)
+    if(!user) {
+        return next(new HandleError(`Người dùng không tồn tại với id: 
+            ${req.params.id}`, 400))
+    }    
+    res.status(200).json({
+        success: true,
+        user
+    })
+})
+
+// Admin - thay đổi vai trò user
+export const updateUserRole = handleAsyncError(async(req,  res, next) => {
+    const {role } = req.body
+
+    const newUserData = {
+        role
+    }
+    const user = await User.findByIdAndUpdate(req.params.id, newUserData, {
+        new:true,
+        runValidators: true
+
+    })
+
+    if(!user) {
+        return next(new HandleError("Người dùng không tồn tại", 400))
+    }
+    res.status(200).json({
+        success: true,
+        user
+    })
+})
+
+// Admin  xóa hồ sơ 
+export const deleteProfile = handleAsyncError(async(req, res, next) => {
+    const user = await User.findById(req.params.id)
+
+    if(!user) {
+        return next(new HandleError("Người dùng không tồn tại", 400))
+    }
+    await User.findByIdAndDelete(req.params.id)
+    res.status(200).json({
+        success:true,
+        message: "Xóa người dùng thành công"
+    })
+
 })

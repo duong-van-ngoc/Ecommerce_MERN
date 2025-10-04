@@ -1,6 +1,6 @@
 import express from 'express';
-import { registerUser, loginUser, logout, requestPasswordReset, resetPassword, getUserDetails, updatePassword, updateProfile} from '../controllers/userController.js';
-import { verifyUserAuth } from '../middleware/userAuth.js';
+import { registerUser, loginUser, logout, requestPasswordReset, resetPassword, getUserDetails, updatePassword, updateProfile, getUsersList, getSingleUser, updateUserRole, deleteProfile} from '../controllers/userController.js';
+import { roleBasedAccess, verifyUserAuth } from '../middleware/userAuth.js';
 
 const router = express.Router();
 
@@ -12,6 +12,13 @@ router.route("/reset/:token").post(resetPassword)
 router.route("/profile").post(verifyUserAuth, getUserDetails)
 router.route("/password/update").post(verifyUserAuth, updatePassword)
 router.route("/profile/update").post(verifyUserAuth, updateProfile)
+router.route("/admin/users").get(verifyUserAuth, roleBasedAccess('admin'), getUsersList)
+router.route("/admin/users/:id")
+.get(verifyUserAuth, roleBasedAccess('admin'), getSingleUser)
+.put(verifyUserAuth, roleBasedAccess('admin'), updateUserRole)
+.delete(verifyUserAuth, roleBasedAccess('admin'), deleteProfile)
+
+
 
 
 

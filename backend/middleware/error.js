@@ -7,8 +7,8 @@ export default (err, req, res, next) => {
     
     // CastError  bắt lỗi từ mongoose khi id không đúng
     if(err.name === "CastError") {
-        const message = `Tài nguyên không tìm thấy: ${err.path}`;
-        err = new HandleError(message, 400);
+        const message = `Không tìm thấy: ${err.path}`;
+        err = new HandleError(message, 404);
     }
 
     // lỗi trùng  email
