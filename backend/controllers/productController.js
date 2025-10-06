@@ -96,7 +96,43 @@ export const getSingleProduct = handleAsyncError( async (req, res, next) => {
     })
 })
 
+// tạo và cập nhật đánh giá san phẩm 
 
+export const createReviewProduct = handleAsyncError(async(req, res,next) => {
+    const {rating, comment, productId} = req.body;
+    const review = {
+        user: req.user._id,
+        name: req.user.name,
+        rating: Number(rating),
+        comment 
+    }
+
+    const product = await Product.findById(productId) 
+    console.log(product);
+    
+    const reviewExist = product.reviews.find(review => review.user.toString() === req.user._id.toString())
+
+    if(reviewExist) {
+        product.reviews.forEach(review => {
+            if(review.user.toString() === req.user._id.toString()) {
+                review.rating = rating,
+                review.comment = comment
+            }
+        })
+    }else{
+        product.reviews.push(review)
+    }
+
+    await product.save({ validateBeforeSave: false })
+
+    res.status(200).json({
+        succes: true,
+        message: reviewExist ? "Cập nhật đánh giá thành công!" : "Thêm đánh giá thành công",
+        product
+    })
+        
+
+})
 
 
 
