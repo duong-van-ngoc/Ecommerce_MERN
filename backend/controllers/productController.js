@@ -3,6 +3,7 @@ import Product from '../models/productModel.js';
 import HandleError from '../utils/handleError.js';
 import handleAsyncError from '../middleware/handleAsyncError.js';
 import APIFunctionality from '../utils/apiFunctionality.js';
+import { response } from 'express';
 
 
 
@@ -97,7 +98,6 @@ export const getSingleProduct = handleAsyncError( async (req, res, next) => {
 })
 
 // tạo và cập nhật đánh giá san phẩm 
-
 export const createReviewProduct = handleAsyncError(async(req, res,next) => {
     const {rating, comment, productId} = req.body;
     const review = {
@@ -106,12 +106,10 @@ export const createReviewProduct = handleAsyncError(async(req, res,next) => {
         rating: Number(rating),
         comment 
     }
-
     const product = await Product.findById(productId) 
-    console.log(product);
-    
-    const reviewExist = product.reviews.find(review => review.user.toString() === req.user._id.toString())
+    // console.log(product);
 
+    const reviewExist = product.reviews.find(review => review.user.toString() === req.user._id.toString())
     if(reviewExist) {
         product.reviews.forEach(review => {
             if(review.user.toString() === req.user._id.toString()) {
@@ -121,10 +119,16 @@ export const createReviewProduct = handleAsyncError(async(req, res,next) => {
         })
     }else{
         product.reviews.push(review)
+        product.numOfReviews = product.reviews.length
     }
 
-    await product.save({ validateBeforeSave: false })
+    let sum = 0;
+    product.reviews.forEach(review => {
+        sum += review.rating
+    })
+    product.ratings = sum/product.reviews.length
 
+    await product.save({ validateBeforeSave: false })
     res.status(200).json({
         succes: true,
         message: reviewExist ? "Cập nhật đánh giá thành công!" : "Thêm đánh giá thành công",
@@ -134,15 +138,50 @@ export const createReviewProduct = handleAsyncError(async(req, res,next) => {
 
 })
 
+// lấy đánh giá sản phẩm 
+export const getReviewProduct = handleAsyncError(async (req, res, next)  => {
+    const product = await Product.findById(req.query.id)
+    if(!product) {
+        return next(new HandleError("Sản phẩn không tồn tại", 400))
+    }
+    res.status(200).json({
+        succes: true,
+        review: product.reviews
+    })
+})
+
+//  xóa đánh giá sản phẩm 
+
+export const deleteReviewProduct  = handleAsyncError(async(req, res, next) => {
+    const product = await Product.findById(req.query.productId)
+    if(!product) {
+        return next(new HandleError("Không tìm thấy id sản phẩm", 400))
+    }
+    const  reviews = product.reviews.filter(review => review._id.toString() !== req.query.id.toString() )
+    let sum = 0 
+    reviews.forEach(review => {
+        sum+= review.rating
+    })
+    const ratings = reviews.length>0?sum/reviews.length:0;
+    const numOfReviews = reviews.length
+    await Product.findByIdAndUpdate(req.query.productId , {
+        reviews, 
+        ratings,
+        numOfReviews
+    },{
+        new: true,
+        runValidators: true
+    })
 
 
-
-
-
-
+    
+    res.status(200).json({
+        success: true,
+        message: "Xóa thành công đánh giá sản phẩm"
+    })
+})
 
 // Admin - lấy tất cả sản phẩm 
-
 export const getAdminProducts = handleAsyncError(async(req, res, next) => {
     const products = await Product.find()
     res.status(200).json({
