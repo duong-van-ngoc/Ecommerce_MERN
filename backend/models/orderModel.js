@@ -54,7 +54,11 @@ const orderSchema = new mongoose.Schema({
             }
         }
     ],
-
+    orderStatus:{
+        type : String,
+        required: true,
+        default:"Đang xử lý"
+    },
     user: {
             type : mongoose.Schema.ObjectId,
             ref:"User",

@@ -1,6 +1,6 @@
 import express from "express";
 import { roleBasedAccess, verifyUserAuth } from "../middleware/userAuth.js";
-import { allMyOrder, createNewOrder, getSingleOrder } from "../controllers/orderController.js";
+import { allMyOrder, createNewOrder, deleteOrder, getAllOrder, getSingleOrder ,updateOrderStauts} from "../controllers/orderController.js";
 
 
 const router = express.Router()
@@ -8,7 +8,12 @@ const router = express.Router()
 
 
 router.route("/order/new").post(verifyUserAuth, createNewOrder)
-router.route("/admin/order/:id").post(verifyUserAuth,roleBasedAccess('admin'), getSingleOrder)
+router.route("/admin/order/:id")
+.put(verifyUserAuth,roleBasedAccess('admin'), updateOrderStauts)
+.post(verifyUserAuth,roleBasedAccess('admin'), getSingleOrder)
+.delete(verifyUserAuth,roleBasedAccess('admin'), deleteOrder)
+
+router.route("/admin/orders/").get(verifyUserAuth,roleBasedAccess('admin'), getAllOrder)
 router.route("/orders/user").get(verifyUserAuth, allMyOrder)
 
 

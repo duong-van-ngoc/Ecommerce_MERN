@@ -60,3 +60,71 @@ export const allMyOrder = handleAsyncError(async(req, res, next) => {
     })
 })
 
+//   lấy tất cả các đơn đặt hàng 
+
+export const getAllOrder = handleAsyncError(async(req, res, next) => {
+    const orders = await Order.find();
+
+    let totalAmount = 0
+    orders.forEach(order => {
+        totalAmount += order.totalPrice
+    })
+
+    res.status(200).json({
+        success: true,
+        orders,
+        totalAmount
+    })
+})
+
+// cập nhật trạng thái đơn hàng
+export const updateOrderStauts = handleAsyncError(async(req, res, next) => {
+    const order = await Order.findById(req.params.id) 
+    if(!order) {
+        return next(new HandleError("Không tìm thấy đơn hàng", 404))
+    }
+    if(order.orderStatus === 'Delivered') {
+        return next(new HandleError("Đơn hàng đã được vận chuyển", 404))
+    }
+    await Promise.all(order.orderItems.map(item => updateQuantity(item.product,
+        item.quantity)
+    ))
+    order.orderStatus = req.body.status 
+
+    if(order.orderStatus === 'Delivered') {
+        order.deliveredAt = Date.now();
+    }
+    await order.save({validateBeforeSave: false})
+    res.status(200).json({
+        success: true,
+        order
+    })
+})  
+async function updateQuantity(id, quantity) {
+    const product = await Product.findById(id);
+    if(!product) {
+        throw new HandleError("Không tìm thấy sản phẩm", 404);
+    }
+    product.stock -= quantity
+    await product.save({validateBeforeSave: false})
+}
+
+export const deleteOrder = handleAsyncError(async(req, res, next) => {
+    const order = await Order.findById(req.params.id) 
+
+    if(!order) {
+        return next(new HandleError("Không tìm thấy đơn hàng", 404))
+    }
+    if(order.orderStatus !== 'Delivered') {
+        return next(new HandleError("Đơn hàng đang được xử lý không thể xóa đơn hàng", 404))
+    }
+
+    await Order.deleteOne({
+        _id: req.params.id
+    })
+
+    res.status(200).json({
+        success: true,
+        message: "Xóa đơn hàng thành công"
+    })
+})
