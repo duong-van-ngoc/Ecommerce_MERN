@@ -2,6 +2,8 @@ import React from 'react'
 import Footer from '../components/Footer'
 import Navbar from '../components/Navbar'
 import ImageSlide from '../components/ImageSlider'
+import Product from '../components/Product'
+
 
 import '../pageStyles/Home.css'
 const products =  [
@@ -64,7 +66,11 @@ function Home() {
     <ImageSlide />
     <div className="home-container">
       <h2 className="home-heading">Xu huong hien tai</h2>
-
+      <div className="home-product-container">
+       {products.map((product, index) => (
+         <Product product = {product } key= {index}/>
+       ))}
+      </div>
     </div>
     <Footer/>
     </>

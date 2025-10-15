@@ -76,6 +76,11 @@
   color: var(--bg-primary);
 }
 
+.product-price {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: var(--bg-primary);
+}
 .product-description {
   font-size: 0.9rem;
   color: var(--bg-secondary);
