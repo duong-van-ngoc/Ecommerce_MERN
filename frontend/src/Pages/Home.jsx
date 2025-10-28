@@ -6,6 +6,7 @@ import Product from '../components/Product'
 
 
 import '../pageStyles/Home.css'
+import PageTitle from '../components/PageTitle'
 const products =  [
         {
             "_id": "68d8f764e87a4639bfb3a7d9",
@@ -62,6 +63,7 @@ const products =  [
 function Home() {
   return (
     <>
+    <PageTitle title = "Home - E Commerce App"/>
     <Navbar />
     <ImageSlide />
     <div className="home-container">
