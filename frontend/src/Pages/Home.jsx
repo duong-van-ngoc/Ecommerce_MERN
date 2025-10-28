@@ -12,7 +12,7 @@ const products =  [
             "name": "Apple",
             "description": "This is Apple",
             "price": 2040,
-            "ratings": 5,
+            "ratings": 4.5,
             "images": [
                 {
                     "public_id": "test123",
