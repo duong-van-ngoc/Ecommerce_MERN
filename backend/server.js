@@ -17,7 +17,7 @@ process.on('uncaughtException', (err) => {
 })
 
 
-const port = process.env.PORT || 5000; // nếu không có biến môi trường PORT thì sử dụng cổng 5000
+const port = process.env.PORT || 3000; // nếu không có biến môi trường PORT thì sử dụng cổng 5000
 
 const server = app.listen(port,() => {
     console.log(`server hoạt động trên máy chủ: ${port}`);
