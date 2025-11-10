@@ -24,9 +24,9 @@ export const createProducts = handleAsyncError(async (req, res, next) => { // re
 })
  
 
-// Lấy tất cả sản phẩm
+// Lấy tất cả sản phẩm ( hiển thị lên home page)
 export const getAllProducts = handleAsyncError(async (req, res, next) => {
-    const resultPerPage = 2
+    const resultPerPage = 4
 
     const apiFeatures = new APIFunctionality(Product.find(), req.query)
     .search().filter()
