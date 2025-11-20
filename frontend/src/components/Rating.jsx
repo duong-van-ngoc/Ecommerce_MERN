@@ -38,11 +38,11 @@ function Rating({value,onRatingChange, disabled }) {
         const isFilled = i <= (hoveredRating || selectedRating)
         stars.push(
             <span className={`star ${isFilled? 'filled' : 'empty'}`}
-            onMouseEnter={() => handleMouseEnter}
-            onMouseLeave={() => handleMouseLeave}
-            onClick={() => handleClick}
+            onMouseEnter={() => handleMouseEnter(i)}
+            onMouseLeave={() => handleMouseLeave()}
+            onClick={() => handleClick(i)}
             style = {{pointerEvents : disabled?'none':'auto'}}
-            
+            key={i}
             >★</span>
         )
     }
