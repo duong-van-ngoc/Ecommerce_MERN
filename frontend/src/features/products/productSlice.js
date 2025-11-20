@@ -2,10 +2,11 @@ import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import axios from 'axios';
 
 
-export const getProduct = createAsyncThunk('product/getProduct',async(_,
+export const getProduct = createAsyncThunk('product/getProduct',async(keyword,
     {rejectWithValue}) => {
     try {
-        const link = '/api/v1/products';
+        // const link = '/api/v1/products';
+        const link = keyword?`/api/v1/products?keyword=${encodeURIComponent(keyword)}`: '/api/v1/products'
         const {data} = await axios.get(link);
         console.log('response', data);
         return data;
@@ -16,17 +17,24 @@ export const getProduct = createAsyncThunk('product/getProduct',async(_,
 })
 
 // chi tiet san pham 
+export const getProductDetails = createAsyncThunk(
+  'product/getProductDetails',
+  async (id, { rejectWithValue }) => {
+    try {
+      // Gọi API đúng cấu trúc (Vite sẽ tự proxy sang localhost:8000)
+      const { data } = await axios.get(`/api/v1/products/${id}`);
 
-export const getProductDetails = createAsyncThunk('product/getProductDetails',async(id,
-    {rejectWithValue}) => {
-        try{
-            const link = `/api/v1/produc/${id}`;
-            const {data} = await axios.get(link);
-            return data;
-        }catch(error) {
-            return rejectWithValue(error.response?.data || 'An error occured')
-        }
-})
+      //Trả về dữ liệu backend (chứa product)
+      return data;
+    } catch (error) {
+      //Trả lỗi theo chuẩn để tránh undefined
+      return rejectWithValue({
+        message: error.response?.data?.message || 'Đã xảy ra lỗi khi tải sản phẩm!',
+        status: error.response?.status || 500,
+      });
+    }
+  }
+);
 
 
 const productSlice = createSlice({
@@ -39,7 +47,7 @@ const productSlice = createSlice({
         product:null
     },
     reducers:{
-        removeErros:(state) => {
+        removeErrors:(state) => {
             state.error = null
         }
     },
@@ -69,10 +77,10 @@ const productSlice = createSlice({
         })
         .addCase(getProductDetails.fulfilled, (state, action) => {
             console.log('product details', action.payload);
-            state.loading = false
+            state.loading = false;
             state.error = null;
-            state.products = action.payload.product;
-        }) 
+            state.product = action.payload.product;
+        })
         .addCase(getProductDetails.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload || 'Đã xảy ra lỗi';

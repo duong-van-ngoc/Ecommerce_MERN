@@ -27,7 +27,7 @@ function ImageSlider() {
         {/*  hiển thịc các hình ảnh */}
         <div className="slider-images" style={{ transform: `translateX(-${currentIndex * 100}%)` }}>
             { images.map((image, index) => 
-              (<div className="slider-item">
+              (<div className="slider-item" key={index}>
                 <img src={image}  alt={`Slide &${index + 1}`}/>
               </div> ))
             }

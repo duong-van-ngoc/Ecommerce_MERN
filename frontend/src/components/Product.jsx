@@ -14,26 +14,26 @@ function Product({product}) {
 
   return (
     <Link to = {`/product/${product._id}`} className="product_id">
-         <div className="product-card">
-        <img src={product.images[0].url}  alt={product.name} className='product-image-card'/>
-        <div className="product-details">
-            <h3 className="product-title">{product.name} </h3>
-            <p className="product-price"><strong>Price</strong> {product.price}/-</p>
-            <div className="rating_container">
-                <Rating 
-                    value = {product.ratings}
-                    onRatingChange = {handleRatingChange}
-                    disabled ={true}
-                />
-            </div>
+        <div className="product-card">
+            <img src={product.images[0].url}  alt={product.name} className='product-image-card'/>
+            <div className="product-details">
+                <h3 className="product-title">{product.name} </h3>
+                <p className="home-price"><strong>Price</strong> {product.price}/-</p>
+                <div className="rating_container">
+                    <Rating 
+                        value = {product.ratings}
+                        onRatingChange = {handleRatingChange}
+                        disabled ={true}
+                    />
+                </div>
 
-            <div className="productCardSpan">
-                {product.numOfReviews} {product.numOfReviews === 1?"Review": "Reviews"}
-            </div>
+                <div className="productCardSpan">
+                    {product.numOfReviews} {product.numOfReviews === 1?"Review": "Reviews"}
+                </div>
 
-            <button className="add-to-cart">Views Details</button>
+                <button className="add-to-cart">Views Details</button>
+            </div>
         </div>
-    </div>
     </Link>
 )
 }

@@ -51,13 +51,7 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
-}
-
-.products-product-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  justify-content: center;
+  min-width: 0;
 }
 
 
@@ -68,7 +62,13 @@
   text-align: center;
   color: var(--text-primary);
 }
-
+.products-product-container {
+  display: flex;
+  flex-direction: row;  /* Sắp xếp theo hàng ngang */
+  flex-wrap: wrap;      /* Tự động xuống hàng nếu không đủ chỗ */
+  gap: 16px;            /* Khoảng cách giữa các sản phẩm (bạn có thể thay đổi số 16px) */
+  justify-content: center; /* (Tùy chọn) Căn giữa các sản phẩm */
+}
 
 @media (max-width: 768px) {
   .products-layout {
