@@ -8,10 +8,11 @@ import { getProduct, removeErrors } from '../features/products/productSlice'
 import { toast } from 'react-toastify'
 import Product from '../components/Product'
 import { useLocation } from 'react-router-dom'
+import NoProducts from '../components/NoProduct'
 
 
 function Products() {
-  const {loading, error, products} = useSelector(state => state.product)
+  const {loading, error, products, resultPerPage, productCount} = useSelector(state => state.product)
   const dispatch = useDispatch()
   const location= useLocation()
   const searchParams = new URLSearchParams(location.search)
@@ -40,11 +41,16 @@ function Products() {
            {/* hien thi cac danh muc  */}
         </div>
           <div className="products-section">
-              <div className="products-product-container">
+              {/* hiển thị tất cả sản phẩm  */}
+             {products.length > 0 ? (
+               <div className="products-product-container">
                 {products.map((product) => (
                   <Product key = {product._id} product = {product} />
                 ))}
               </div>
+             ) : (
+              <NoProducts key = {keyword} />
+             )}
           </div>
       </div>
       
