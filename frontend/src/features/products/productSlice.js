@@ -2,19 +2,24 @@ import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import axios from 'axios';
 
 
-export const getProduct = createAsyncThunk('product/getProduct',async(keyword,
-    {rejectWithValue}) => {
+export const getProduct = createAsyncThunk(
+  'product/getProduct',
+  async ({ keyword, page = 1 }, { rejectWithValue }) => {
     try {
-        // const link = '/api/v1/products';
-        const link = keyword?`/api/v1/products?keyword=${encodeURIComponent(keyword)}`: '/api/v1/products'
-        const {data} = await axios.get(link);
-        console.log('response', data);
-        return data;
+      const link = keyword
+        ? `/api/v1/products?keyword=${encodeURIComponent(keyword)}&page=${page}`
+        : `/api/v1/products?page=${page}`;
 
-    }catch (error) {
-        return rejectWithValue(error.response?.data || "An error occured")
+      const { data } = await axios.get(link);
+      
+      console.log('response', data);
+      return data;
+
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "An error occurred");
     }
-})
+  }
+);
 
 // chi tiet san pham 
 export const getProductDetails = createAsyncThunk(
@@ -44,7 +49,9 @@ const productSlice = createSlice({
         productCount:0,
         loading:false,
         error:null,
-        product:null
+        product:null,
+        resultPerPage:4,
+        totalPages:0
     },
     reducers:{
         removeErrors:(state) => {
@@ -64,10 +71,13 @@ const productSlice = createSlice({
             state.error = null;
             state.products = action.payload.products;
             state.productCount = action.payload.productCount;
+            state.resultPerPage = action.payload.resultPerPage;
+            state.totalPages = action.payload.totalPages;
         })    
         .addCase(getProduct.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload || 'Đã xảy ra lỗi';
+            state.products=[]
         })
 
         // lay thong tin chi tiet  san pham
