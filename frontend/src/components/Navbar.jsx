@@ -10,8 +10,8 @@ function Navbar() {
     const [isSearchOpen, setIsSearchOpen] = useState(false); 
     const [searchQuery, setSearchQuery] = useState(""); 
 
-    const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
     const toggleSearch = () => setIsSearchOpen(!isSearchOpen);
+    const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
     
     // Nên lấy biến này từ Context hoặc Redux thực tế, tạm thời để true để test
     const isAuthentication = true; 
@@ -21,7 +21,7 @@ function Navbar() {
     const handleSearchSubmit = (e) => {
         e.preventDefault(); // Chặn reload trang
         if (searchQuery.trim()) {
-            // 2. Sửa lỗi khoảng trắng trong URL: keyword=${...}
+           
             navigate(`/products?keyword=${encodeURIComponent(searchQuery.trim())}`);
             // Tùy chọn: Đóng thanh search sau khi tìm xong
             setIsSearchOpen(false); 
