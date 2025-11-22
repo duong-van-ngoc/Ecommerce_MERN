@@ -5,8 +5,8 @@ function Pagination({
   currentPage,
   onPageChange,
   activeClass='active',
-  nextPageText = "Next",
-  prevPageText = "Prev",
+  nextPageText = ">",
+  prevPageText = "<",
   firstPageText = '1st',
   lastPageText = "Last"
 
@@ -30,12 +30,16 @@ function Pagination({
 
   return (
     <div className='pagiantion'>
-      {/* prev and first button  */}
+      {/*Phần nút Quay lại (Prev/First)  */}
       {
         currentPage > 1 && (
           <>
-            <button className="pagination-btn"onClick={() => onPageChange(1)} >  {firstPageText}</button>
-            <button className="pagination-btn"onClick={() => onPageChange(currentPage - 1)} >  {prevPageText}</button>
+            <button className="pagination-btn"onClick={() => onPageChange(1)} > 
+               {firstPageText}
+            </button>
+            <button className="pagination-btn"onClick={() => onPageChange(currentPage - 1)} >  
+               {prevPageText}
+            </button>
           </>
         )
       }
@@ -45,19 +49,24 @@ function Pagination({
         getPageNumbers().map((number) => (
           <button className={`pagination-btn ${currentPage === number? activeClass:''}`}
                   key={number}
-                  onClick={() => onPageChange(number)}>
+                  onClick={() => onPageChange(number)}
+          >
             {number}
           </button>
         ))
       }
 
 
-       {/* next and last button  */}
+       {/* nút Tiếp theo (Next/Last)  */}
       {
         currentPage < totalPages && (
           <>
-            <button className="pagination-btn"onClick={() => onPageChange(1)} >  {nextPageText}</button>
-            <button className="pagination-btn"onClick={() => onPageChange(totalPages)} >  {lastPageText}</button>
+            <button className="pagination-btn"onClick={() => onPageChange(currentPage + 1)} >
+               {nextPageText}
+            </button>
+            <button className="pagination-btn"onClick={() => onPageChange(totalPages)} >
+              {lastPageText}
+            </button>
           </>
         )
       }
