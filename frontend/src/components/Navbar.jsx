@@ -14,7 +14,7 @@ function Navbar() {
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
     
     // Nên lấy biến này từ Context hoặc Redux thực tế, tạm thời để true để test
-    const isAuthentication = true; 
+    const isAuthentication = false; 
     
     const navigate = useNavigate();
 
