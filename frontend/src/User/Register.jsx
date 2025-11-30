@@ -125,7 +125,7 @@ function Register() {
                          className='avatar' />
                     
                 </div>
-                <button className="authBtn">Đăng Kí</button>
+                <button className="authBtn">{loading? 'Tiếp tục đăng Kí' : 'Đăng Kí'}</button>
                     <p className="form-links">
                         Bạn đã có tài khoản? <Link to="/login"> Đăng nhập</Link>
                     </p>

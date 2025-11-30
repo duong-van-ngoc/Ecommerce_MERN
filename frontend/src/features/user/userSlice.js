@@ -38,7 +38,28 @@ import axios from  'axios'
     }
  })
 
- 
+//  Logout
+ export const logout = createAsyncThunk('user/logout', async(_, {rejectWithValue}) => {
+    try {
+    
+            const {data} = await axios.post('/api/v1/logout',{withCredenntails:true})
+  
+            return data;
+    }catch(error) {
+        console.log("Lỗi API:", error.response);
+        return rejectWithValue(error.response?.data || ' Đăng xuất thành công')
+    }
+ })
+//  profile 
+ export const loaderUser = createAsyncThunk('user/loadUser', async(_, {rejectWithValue}) => {
+    try {
+            const {data} = await axios.get('/api/v1/profile')
+            console.log('Load user data', data);    
+            return data;
+        }catch(error) {
+            return rejectWithValue(error.response?.data || ' Không thể tải dữ liệu người dùng'  )
+    }
+    })
 
 const userSlice  = createSlice({
     name:'user',
@@ -101,6 +122,47 @@ const userSlice  = createSlice({
             state.user = null
             state.isAuthenticated = false
         })
+
+        // Loading user 
+            .addCase(loaderUser.pending,(state) => {
+            state.loading = true
+            state.error = null
+            
+        })
+        .addCase(loaderUser.fulfilled, (state, action) => {
+            state.loading = false
+            state.error = null
+            state.user = action.payload?.user || null
+            state.isAuthenticated = Boolean(action.payload?.user)
+            
+        })
+        .addCase(loaderUser.rejected, (state, action) => {
+            state.loading = false 
+            state.error = action.payload?.message || ' Không thể tải dữ liệu người dùng'
+            state.user = null
+            state.isAuthenticated = false
+        })
+
+
+        // logout 
+        .addCase(logout.pending,(state) => {
+            state.loading = true
+            state.error = null
+            
+        })
+        .addCase(logout.fulfilled, (state, action) => {
+            state.loading = false
+            state.error = null
+            state.user =  null
+            state.isAuthenticated = false
+            
+        })
+        .addCase(logout.rejected, (state, action) => {
+            state.loading = false 
+            state.error = action.payload?.message || ' Không thể tải dữ liệu người dùng'
+ 
+        })
+
     }
 })
 
