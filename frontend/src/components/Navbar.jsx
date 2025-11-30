@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import '../componentStyles/Navbar.css';
 import { Close, Menu, PersonAdd, Search, ShoppingCart } from '@mui/icons-material';
 import '../pageStyles/Search.css';
+import { useSelector } from 'react-redux';
 
 function Navbar() {
     // 1. Sửa lỗi chính tả tên biến
@@ -14,7 +15,7 @@ function Navbar() {
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
     
     // Nên lấy biến này từ Context hoặc Redux thực tế, tạm thời để true để test
-    const isAuthentication = false; 
+    const {isAuthenticated} = useSelector(state => state.user)
     
     const navigate = useNavigate();
 
@@ -86,7 +87,7 @@ function Navbar() {
                         </div>
 
                         {/* Đăng kí / Đăng nhập */}
-                        {!isAuthentication && (
+                        {!isAuthenticated && (
                             <Link to="/register" className='register-link' onClick={closeMenu}>
                                 <PersonAdd className='icon' />
                             </Link>
