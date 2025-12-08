@@ -10,6 +10,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { loaderUser } from './features/user/userSlice'
 import UserDashboard from './User/UserDashboard'
 import Profile from './User/Profile'
+import ProtectedRoute from './components/ProtectedRoute'
+import UpdateProfile from './User/UpdateProfile'
 
 function App() {
 
@@ -34,9 +36,12 @@ function App() {
         <Route path ="/products/:keyword" element={<Products />} />
         <Route path ="/register" element={<Register />} />
         <Route path ="/login" element={<Login />} />
-        <Route path ="/profile" element={<Profile />} />
-
-
+        <Route path ="/profile" 
+               element={<ProtectedRoute element={<Profile /> }/> } 
+        />
+        <Route path ="/profile/update" 
+               element={<ProtectedRoute element={<UpdateProfile /> }/> } 
+        />
 
 
       </Routes>

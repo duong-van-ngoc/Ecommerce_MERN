@@ -47,7 +47,7 @@ import axios from  'axios'
             return data;
     }catch(error) {
         console.log("Lỗi API:", error.response);
-        return rejectWithValue(error.response?.data || ' Đăng xuất thành công')
+        return rejectWithValue(error.response?.data || ' Đăng xuất that bai')
     }
  })
 //  profile 
@@ -61,6 +61,21 @@ import axios from  'axios'
     }
     })
 
+// update profile 
+ export const updateProfile = createAsyncThunk('user/updateProfile', async(userData, {rejectWithValue}) => {
+    try {
+            const config={
+                headers: {
+                    'Content-Type': 'multipart/form-data'    
+                }
+            }
+            const {data} = await axios.put('/api/v1/profile/update',userData, config)
+            console.log('Load user data', data);    
+            return data;
+        }catch(error) {
+            return rejectWithValue(error.response?.data || {mesage:'Cập nhật hồ sơ thất bại'}  )
+        }
+    })
 const userSlice  = createSlice({
     name:'user',
     initialState:{
@@ -68,7 +83,8 @@ const userSlice  = createSlice({
         loading:false,
         error:null,
         success:false,
-        isAuthenticated:false
+        isAuthenticated:false,
+        message:null
     },
     reducers:{
         removeErrors:(state) => {
@@ -101,7 +117,7 @@ const userSlice  = createSlice({
         })
 
         // login cases
-  
+        builder
         .addCase(login.pending,(state) => {
             state.loading = true
             state.error = null
@@ -124,7 +140,7 @@ const userSlice  = createSlice({
         })
 
         // Loading user 
-            .addCase(loaderUser.pending,(state) => {
+        .addCase(loaderUser.pending,(state) => {
             state.loading = true
             state.error = null
             
@@ -160,6 +176,26 @@ const userSlice  = createSlice({
         .addCase(logout.rejected, (state, action) => {
             state.loading = false 
             state.error = action.payload?.message || ' Không thể tải dữ liệu người dùng'
+ 
+        })
+        
+        // update profile 
+        .addCase(updateProfile.pending,(state) => {
+            state.loading = true
+            state.error = null
+            
+        })
+        .addCase(updateProfile.fulfilled, (state, action) => {
+            state.loading = false
+            state.error = null
+            state.user =  action.payload?.user || null
+            state.success = action.payload?.success || null 
+            state.message = action.payload?.mesage
+            
+        })
+        .addCase(updateProfile.rejected, (state, action) => {
+            state.loading = false 
+            state.error = action.payload?.message || ' Cập nhật hồ sơ  người dùng thất bại'
  
         })
 
