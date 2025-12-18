@@ -76,6 +76,21 @@ import axios from  'axios'
             return rejectWithValue(error.response?.data || {mesage:'Cập nhật hồ sơ thất bại'}  )
         }
     })
+
+ export const updatePassword = createAsyncThunk('user/updatePassword', async(formData, {rejectWithValue}) => {
+    try {
+            const config={
+                headers: {
+                    'Content-Type': 'application/json'    
+                }
+            }
+            const {data} = await axios.put('/api/v1/password/update',formData, config)
+            console.log('Load user data', data);    
+            return data;
+        }catch(error) {
+            return rejectWithValue(error.response?.data || 'Cập nhật mật khẩu thất bại' )
+        }
+    })
 const userSlice  = createSlice({
     name:'user',
     initialState:{
@@ -197,6 +212,23 @@ const userSlice  = createSlice({
             state.loading = false 
             state.error = action.payload?.message || ' Cập nhật hồ sơ  người dùng thất bại'
  
+        })
+
+        //  update Password 
+        .addCase(updatePassword.pending,(state) => {
+            state.loading = true
+            state.error = null
+            
+        })
+        .addCase(updatePassword.fulfilled, (state, action) => {
+            state.loading = false
+            state.error = null
+            state.success = action.payload?.success || null 
+            
+        })
+        .addCase(updatePassword.rejected, (state, action) => {
+            state.loading = false 
+            state.error = action.payload?.message || ' Cập nhật mật khẩu thất bại'
         })
 
     }

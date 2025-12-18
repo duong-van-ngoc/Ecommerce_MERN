@@ -12,6 +12,7 @@ import UserDashboard from './User/UserDashboard'
 import Profile from './User/Profile'
 import ProtectedRoute from './components/ProtectedRoute'
 import UpdateProfile from './User/UpdateProfile'
+import UpdatePassword from './User/UpdatePassword'
 
 function App() {
 
@@ -42,7 +43,9 @@ function App() {
         <Route path ="/profile/update" 
                element={<ProtectedRoute element={<UpdateProfile /> }/> } 
         />
-
+        <Route path ="/password/update" 
+               element={<ProtectedRoute element={<UpdatePassword /> }/> } 
+        />
 
       </Routes>
 
