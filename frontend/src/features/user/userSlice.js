@@ -77,6 +77,7 @@ import axios from  'axios'
         }
     })
 
+    // updatePassword 
  export const updatePassword = createAsyncThunk('user/updatePassword', async(formData, {rejectWithValue}) => {
     try {
             const config={
@@ -91,6 +92,40 @@ import axios from  'axios'
             return rejectWithValue(error.response?.data || 'Cập nhật mật khẩu thất bại' )
         }
     })
+
+    // forgot password 
+export const forgotPassword = createAsyncThunk('user/forgotPassword', async(email, {rejectWithValue}) => {
+    try {
+            const config={
+                headers: {
+                    'Content-Type': 'application/json'    
+                }
+            }
+            const {data} = await axios.post('/api/v1/password/forgot',email, config)
+            console.log('Load user data', data);    
+            return data;
+        }catch(error) {
+            return rejectWithValue(error.response?.data || {message:'Cập nhật mật khẩu thất bại' })
+        }
+})
+    // reset password 
+export const resetPassword = createAsyncThunk('user/resetPassword',
+async({token, userData}, {rejectWithValue}) => {
+    try {
+            const config={
+                headers: {
+                    'Content-Type': 'application/json'    
+                }
+            }
+            // const {data} = await axios.post(`/api/v1/reset/${token}`,userData, config) 
+            const { data } = await axios.post(`/api/v1/reset/${token}`, userData, config)
+            console.log('Load user data', data);    
+            return data;
+        }catch(error) {
+            return rejectWithValue(error.response?.data || {message:'Cập nhật mật khẩu thất bại' })
+        }
+})
+
 const userSlice  = createSlice({
     name:'user',
     initialState:{
@@ -181,7 +216,7 @@ const userSlice  = createSlice({
             state.error = null
             
         })
-        .addCase(logout.fulfilled, (state, action) => {
+        .addCase(logout.fulfilled, (state) => {
             state.loading = false
             state.error = null
             state.user =  null
@@ -230,7 +265,42 @@ const userSlice  = createSlice({
             state.loading = false 
             state.error = action.payload?.message || ' Cập nhật mật khẩu thất bại'
         })
+        //  forgot Password 
+        .addCase(forgotPassword.pending,(state) => {
+            state.loading = true
+            state.error = null
+            
+        })
+        .addCase(forgotPassword.fulfilled, (state, action) => {
+            state.loading = false
+            state.error = null
+            state.success = action.payload?.success 
+            state.message = action.payload?.message 
+            
+        })
+        .addCase(forgotPassword.rejected, (state, action) => {
+            state.loading = false 
+            state.error = action.payload?.message || 'Gửi email thất bại'
+        })
 
+          //  reset Password 
+        .addCase(resetPassword.pending,(state) => {
+            state.loading = true
+            state.error = null
+            
+        })
+        .addCase(resetPassword.fulfilled, (state, action) => {
+            state.loading = false
+            state.error = null
+            state.success = action.payload?.success 
+            state.user = null,
+            state.isAuthenticated = false
+            
+        })
+        .addCase(resetPassword.rejected, (state, action) => {
+            state.loading = false 
+            state.error = action.payload?.message || 'Gửi email thất bại'
+        })
     }
 })
 

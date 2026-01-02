@@ -46,7 +46,7 @@ function UpdatePassword() {
             dispatch(removeSuccess())
             navigate("/profile")
         }
-    },[dispatch, success])
+    },[dispatch, success,navigate])
 
 
   return (
@@ -54,7 +54,7 @@ function UpdatePassword() {
         {loading ? (<Loader />):(
                 <>
     <Navbar />
-    <PageTitle title = "Đặt lại mật khẩu"  />
+    <PageTitle title = "Cập nhật mật khẩu"  />
             <div className="container update-container">
             <div className="form-content">
                 <form  className="form" encType='multipart/form-data'
