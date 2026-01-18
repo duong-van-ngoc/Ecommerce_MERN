@@ -9,11 +9,15 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom';
 import { getProductDetails, removeErrors } from '../features/products/productSlice'
 import  { toast } from 'react-toastify'
+import { addItemsToCart } from '../features/cart/cartSlice';
 
 
 function ProductDetails() {
 
           const [userRating, setUserRating] = useState(0)
+          const [quantity, setQuantity] = useState(1)
+
+          //  xu ly danh gia
           const handleRatingChange = (newRating) => {
             setUserRating(newRating)
             console.log(`Rating changed to : ${newRating}`);
@@ -22,6 +26,7 @@ function ProductDetails() {
 
           const{loading, error, product} =  useSelector((state) => state.product)
           const dispatch = useDispatch();
+           
           const {id} = useParams();
           
           useEffect(() => {
@@ -34,12 +39,15 @@ function ProductDetails() {
             }
           },[dispatch,id])
           
+          // xu ly loi
            useEffect(() => {
                 if(error) {
                   toast.error(error.message, {position: 'top-center' , autoClose:3000});
                   dispatch(removeErrors())
                 }
               }, [dispatch, error])
+
+              // neu dang tai
               if (loading) {
                 return(
                   <>
@@ -50,6 +58,7 @@ function ProductDetails() {
                 )
               }
 
+              // neu khong co san pham
               if(error || !product) {
                 return (
                   <>
@@ -61,7 +70,29 @@ function ProductDetails() {
                 )
               }
 
-
+              // tăng  so luong
+              const increaseQuantity = () => {
+                if(quantity >= product.stock) {
+                  toast.error(`Số lượng không thể vượt quá ${product.stock}`, {position: 'top-center' , autoClose:3000});
+                  dispatch(removeErrors())
+                  return;
+                }
+                setQuantity (prev => prev +1)
+              }
+              // giam so luong
+              const decreaseQuantity = () => {
+              if(quantity <= 1) {
+                toast.error(`Số lượng không thể nhỏ hơn 1`, {position: 'top-center' , autoClose:3000});
+                dispatch(removeErrors())
+                return;
+              }
+              setQuantity (prev => prev -1)
+            }
+            // them vao gio hang 
+            const addToCart = () => {
+              dispatch(addItemsToCart({id, quantity}))
+              
+            }
   return (
   <>
     <PageTitle title = {`${product.name} - Chi tiết`} />
@@ -82,7 +113,7 @@ function ProductDetails() {
               <p className="product-price">Giá: {product.price}/-</p>
               <div className="product-rating">
                   <Rating 
-                    value={product.ratinng}
+                    value={product.rating}
                     disabled= {true}
                   />
                   <span className="productCardSpan">
@@ -96,19 +127,40 @@ function ProductDetails() {
                   {product.stock > 0 ? `in stock (${product.stock} available)` : `out of stock `}
                 </span>
               </div>
+                      {/* them vao gio hang */}
+              {product.stock > 0 && (
+                <>
+                  <div className="quantity-controls">
+                    <span className="quantity-label">Quantity:</span>
 
-              {product.stock > 0 &&( <>
-                <div className="quantity-controls">
-                  <span className="quantity-label">Quantity: </span>
-                  <button className="quantity-button">-</button>
-                  <input type="text" value={1} 
-                          className='quantity-value' readOnly/>
-                  <button className="quantity-button"> + </button>
-                </div>
+                    <button
+                      className="quantity-button"
+                      onClick={decreaseQuantity}
+                    >
+                      -
+                    </button>
 
-                <button className="add-to-cart-btn">Thêm vào giỏ hàng</button>
-              
-              </>)}
+                    <input
+                      type="text"
+                      value={quantity}
+                      className="quantity-value"
+                      readOnly
+                    />
+
+                    <button
+                      className="quantity-button"
+                      onClick={increaseQuantity}
+                      disabled={quantity >= product.stock}
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <button className="add-to-cart-btn" onClick={addToCart}>
+                    Thêm vào giỏ hàng
+                  </button>
+                </>
+              )}
 
               <form action="" className="review-form">
                  <h3> Write a Review</h3>
