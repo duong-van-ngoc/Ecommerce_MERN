@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom';
 import { getProductDetails, removeErrors } from '../features/products/productSlice'
 import  { toast } from 'react-toastify'
-import { addItemsToCart } from '../features/cart/cartSlice';
+import { addItemsToCart, removeMessage } from '../features/cart/cartSlice';
 
 
 function ProductDetails() {
@@ -23,8 +23,14 @@ function ProductDetails() {
             console.log(`Rating changed to : ${newRating}`);
             
           }
-
+          // chi tiet san pham
           const{loading, error, product} =  useSelector((state) => state.product)
+          // gio hang
+          const {loading: cartLoading , error: cartError, success, message, cartItems} = useSelector((state) => state.cart)
+          console.log(' them sanr pham vao gio hang', cartItems);
+          
+
+
           const dispatch = useDispatch();
            
           const {id} = useParams();
@@ -41,11 +47,25 @@ function ProductDetails() {
           
           // xu ly loi
            useEffect(() => {
-                if(error) {
-                  toast.error(error.message, {position: 'top-center' , autoClose:3000});
-                  dispatch(removeErrors())
-                }
-              }, [dispatch, error])
+              if (error) {
+                toast.error(error, { position: 'top-center', autoClose: 3000 });
+                dispatch(removeErrors());
+              }
+
+              if (cartError) {
+                toast.error(cartError, { position: 'top-center', autoClose: 3000 });
+              }
+            }, [dispatch, error, cartError]);
+
+          // hien thi thong bao khi them vao gio hang thanh cong
+            useEffect(() => {
+              if (success) {
+                toast.success(message, { position: 'top-center', autoClose: 3000 });
+                dispatch(removeMessage());
+              }
+
+              
+            }, [dispatch, success, message]);
 
               // neu dang tai
               if (loading) {
@@ -156,8 +176,10 @@ function ProductDetails() {
                     </button>
                   </div>
 
-                  <button className="add-to-cart-btn" onClick={addToCart}>
-                    Thêm vào giỏ hàng
+                  <button className="add-to-cart-btn" 
+                          onClick={addToCart}
+                          disabled={cartLoading} >
+                   {cartLoading ? "Đang thêm..." : "Thêm vào giỏ hàng"} 
                   </button>
                 </>
               )}

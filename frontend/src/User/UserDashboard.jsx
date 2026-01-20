@@ -66,7 +66,7 @@ function UserDashboard({user}) {
             />
 
             <span className="profile-name">{user.name || 'user' }</span>
-
+            
             {menuVisible && (
                             <div className="menu-options">
                { options.map((item) => (
