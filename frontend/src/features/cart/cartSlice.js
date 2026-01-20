@@ -28,7 +28,7 @@ export const addItemsToCart = createAsyncThunk('cart/addItemsToCart', async({id,
 const cartSlice = createSlice ({
     name: 'cart',
     initialState: {
-        cartItems:[],
+        cartItems: JSON.parse(localStorage.getItem('cartItems'))  || [],
         loading:false,
         error: null,
         success: false,
@@ -48,10 +48,31 @@ const cartSlice = createSlice ({
             state.loading = true;
             state.error = null;
         })
+        
         builder.addCase(addItemsToCart.fulfilled, (state, action) => {
             const item = action.payload;
-            console.log('item cart slice', item);
+
+            // kiem tra san pham da co trong gio hang chua
+            const exitstingItem = state.cartItems.find((i) => i.product === item.product);
+            if(exitstingItem) {
+                
+                exitstingItem.quantity += item.quantity;
+                state.message = `Đã cập nhật số lượng ${item.name} trong giỏ hàng thành công`;
+
+            } else {
+                state.cartItems.push(item);
+                state.message = `Đã thêm ${item.name} vào giỏ hàng thành công`;
+            }
+
+            state.loading = false;
+            state.error = null;
+            state.success = true;
+
+            // luu gio hang vao localStorage
+            localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
+
         })
+        
         builder.addCase(addItemsToCart.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload?.message || 'Đã xảy ra lỗi khi thêm vào giỏ hàng';
