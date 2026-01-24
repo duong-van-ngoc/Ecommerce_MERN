@@ -5,8 +5,8 @@ import { Close, Menu, PersonAdd, Search, ShoppingCart } from '@mui/icons-materia
 import '../pageStyles/Search.css';
 import { useSelector } from 'react-redux';
 
+
 function Navbar() {
-    // 1. Sửa lỗi chính tả tên biến
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false); 
     const [searchQuery, setSearchQuery] = useState(""); 
@@ -17,6 +17,7 @@ function Navbar() {
     // Nên lấy biến này từ Context hoặc Redux thực tế, tạm thời để true để test
     const {isAuthenticated} = useSelector(state => state.user)
     
+    const {cartItems} = useSelector(state => state.cart)
     const navigate = useNavigate();
 
     const handleSearchSubmit = (e) => {
@@ -82,7 +83,7 @@ function Navbar() {
                         <div className="cart-container">
                             <Link to="/cart" onClick={closeMenu}>
                                 <ShoppingCart className="icon" />
-                                <span className="cart-badge">6</span>
+                                <span className="cart-badge">{cartItems.length}</span>
                             </Link>
                         </div>
 

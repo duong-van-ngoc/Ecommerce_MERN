@@ -64,6 +64,7 @@
   
   .navbar-icons {
     display: flex;
+    margin-right: 200px;
     align-items: center;
     gap: 1.5rem;
     width: 250px;
@@ -159,7 +160,7 @@
   
     .navbar-hamburger {
       display: block;
-      margin-left: 1rem;
+      margin-right: 0.5rem;
     }
   
     .navbar-links.active li {
