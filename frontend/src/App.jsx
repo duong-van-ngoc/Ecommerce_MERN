@@ -15,6 +15,7 @@ import UpdateProfile from './User/UpdateProfile'
 import UpdatePassword from './User/UpdatePassword'
 import ForgotPassword from './User/ForgotPassword'
 import ResetPassword from './User/ResetPassword'
+import Cart from './Cart/Cart'
 
 function App() {
 
@@ -27,8 +28,7 @@ function App() {
       dispatch(loaderUser());
     }
 
-  },[dispatch])
-  console.log(isAuthenticated,user);
+  },[dispatch, isAuthenticated]);
   
   return (
     <Router>
@@ -51,8 +51,10 @@ function App() {
         <Route path ="/password/forgot" element={<ForgotPassword />} />
         {/* <Route path ="/reset/:token" element={<ResetPassword />} /> */}
         <Route path="/password/reset/:token" element={<ResetPassword />} />
+        <Route path="/cart" element={<Cart />} />
 
-        
+
+          
 
       </Routes>
 

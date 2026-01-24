@@ -92,7 +92,7 @@ function ProductDetails() {
 
               // tăng  so luong
               const increaseQuantity = () => {
-                if(quantity >= product.stock) {
+                if(product.stock <= quantity) {
                   toast.error(`Số lượng không thể vượt quá ${product.stock}`, {position: 'top-center' , autoClose:3000});
                   dispatch(removeErrors())
                   return;

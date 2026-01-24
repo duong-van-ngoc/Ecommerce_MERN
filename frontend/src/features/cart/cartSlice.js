@@ -27,19 +27,30 @@ export const addItemsToCart = createAsyncThunk('cart/addItemsToCart', async({id,
 // them vao gio hang 
 const cartSlice = createSlice ({
     name: 'cart',
+    // định nghĩa trạng thái ban đầu của giỏ hàng 
     initialState: {
-        cartItems: JSON.parse(localStorage.getItem('cartItems'))  || [],
+        cartItems: JSON.parse(localStorage.getItem('cartItems'))  || [], 
         loading:false,
         error: null,
         success: false,
-        message: null
+        message: null,
+        removingId:null
     },
     reducers: {
-        removeError:(state) => {
+        removeErrors:(state) => {
             state.error = null
         },
         removeMessage:(state) => {
             state.message = null
+            state.success = false
+        },
+        removeItemFromCart:(state, action) => {
+            state.removingId = action.payload; 
+            
+            state.cartItems = state.cartItems.filter(item => item.product !== action.payload); // lọc bỏ sản phẩm có id trùng với payload
+            localStorage.setItem('cartItems', JSON.stringify(state.cartItems)); // cập nhật lại localStorage
+            state.removingId = null; 
+
         }
      },
      extraReducers : (builder) => {
@@ -47,6 +58,8 @@ const cartSlice = createSlice ({
         builder.addCase(addItemsToCart.pending, (state) => {
             state.loading = true;
             state.error = null;
+            state.success = false;
+            state.message = null;
         })
         
         builder.addCase(addItemsToCart.fulfilled, (state, action) => {
@@ -56,7 +69,7 @@ const cartSlice = createSlice ({
             const exitstingItem = state.cartItems.find((i) => i.product === item.product);
             if(exitstingItem) {
                 
-                exitstingItem.quantity += item.quantity;
+                exitstingItem.quantity = item.quantity;
                 state.message = `Đã cập nhật số lượng ${item.name} trong giỏ hàng thành công`;
 
             } else {
@@ -81,5 +94,5 @@ const cartSlice = createSlice ({
 
 })
 
-export const {removeError, removeMessage} = cartSlice.actions
+export const {removeErrors, removeMessage, removeItemFromCart} = cartSlice.actions
 export default cartSlice.reducer
