@@ -1,4 +1,4 @@
-.shipping-form-container {
+/* .shipping-form-container {
     max-width: 1000px;
     margin: 40px auto;
     padding: 0 20px;
@@ -10,8 +10,12 @@
     font-weight: 600;
     margin-bottom: 40px;
     text-align: center;
+    position: relative;
+    padding-bottom: 12px;
+
+
    }
-   
+
    .shipping-form {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -96,3 +100,145 @@
     background: var(--primary-dark);
     border-radius: 4px;
    }
+
+
+     */
+
+      .shipping-form-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .shipping-form-header {
+          
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-align: center;
+            position: relative;
+            padding-bottom: 16px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .shipping-form-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .shipping-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            background: white;
+            padding: 48px;
+            border-radius: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .shipping-form {
+                grid-template-columns: 1fr;
+                padding: 32px 24px;
+            }
+        }
+
+        .shipping-section {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .shipping-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .shipping-form-group label {
+            color: var(--primary-dark);
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .shipping-form-group input,
+        .shipping-form-group select {
+            padding: 14px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            background: #fafafa;
+            color: var(--bg-secondary);
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .shipping-form-group input:focus,
+        .shipping-form-group select:focus {
+            outline: none;
+            border-color: var(--primary-main);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .shipping-form-group input::placeholder {
+            color: var(--bg-secondary);
+            opacity: 0.4;
+        }
+        
+        .shipping-form-group select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%234f46e5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 18px;
+            padding-right: 44px;
+        }
+
+        .shipping-submit-btn {
+            grid-column: 1 / -1;
+            padding: 16px;
+    background: var(--primary-main);
+
+            color: var(--text-light);
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            text-transform: uppercase;
+        }
+
+
+
+           .shipping-submit-btn:hover {
+              background: var(--primary-dark);
+            }
+   
+
+        select::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        select::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        select::-webkit-scrollbar-thumb {
+            background: var(--primary-main);
+            border-radius: 4px;
+        }
+
+        select::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
