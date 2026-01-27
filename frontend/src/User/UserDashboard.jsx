@@ -1,13 +1,13 @@
 import React , {useState} from 'react'
 import '../UserStyles/UserDashboard.css'
 import { useNavigate } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import {  logout, removeErrors } from '../features/user/userSlice'
 import { toast } from 'react-toastify'
 
 function UserDashboard({user}) {
 
-
+        const {cartItems} = useSelector(state => state.cart)
         const dispatch = useDispatch();
         const navigate = useNavigate();
 
@@ -19,6 +19,7 @@ function UserDashboard({user}) {
         const options = [
             {name : 'Orders', funcName: orders},
             {name: 'Account', funcName: profile},
+            {name: `Cart(${cartItems.length})`, funcName: myCart,isCart:true},
             {name: 'Logout', funcName: logoutUser},
         ]
         if(user.role === 'admin') {
@@ -32,6 +33,9 @@ function UserDashboard({user}) {
         function profile() {
             navigate("/profile")
 
+        }
+        function myCart() {
+            navigate("/cart")
         }
         function logoutUser() {
             dispatch(logout())
@@ -68,16 +72,22 @@ function UserDashboard({user}) {
             <span className="profile-name">{user.name || 'user' }</span>
             
             {menuVisible && (
-                            <div className="menu-options">
-               { options.map((item) => (
-                 <button
-                        className="menu-option-btn" 
-                        onClick={item.funcName}
+                // phần menu tùy chọn
+            <div className="menu-options">
+                {options.map((item) => {
+                    const isCartNotEmpty = item.isCart && (cartItems?.length ?? 0) > 0;
+
+                    return (
+                    <button
                         key={item.name}
-                 >
-                    {item.name}
-                 </button>
-               ))}
+                        onClick={item.funcName}
+                        className={`menu-option-btn ${isCartNotEmpty ? " cart-not-empty" : ""}`}
+                        type="button"
+                    >
+                        {item.name}
+                    </button>
+                    );
+                })}
             </div>
             )}
         </div>

@@ -24,6 +24,7 @@ export const addItemsToCart = createAsyncThunk('cart/addItemsToCart', async({id,
 })
 
 
+
 // them vao gio hang 
 const cartSlice = createSlice ({
     name: 'cart',
@@ -34,7 +35,10 @@ const cartSlice = createSlice ({
         error: null,
         success: false,
         message: null,
-        removingId:null
+        removingId:null,
+        shippingInfo:  JSON.parse(localStorage.getItem('shippingInfo'))  || {}, 
+
+
     },
     reducers: {
         removeErrors:(state) => {
@@ -51,7 +55,14 @@ const cartSlice = createSlice ({
             localStorage.setItem('cartItems', JSON.stringify(state.cartItems)); // cập nhật lại localStorage
             state.removingId = null; 
 
-        }
+        },
+        saveShippingInfo:(state, action) => {
+            state.shippingInfo = action.payload
+            localStorage.setItem('shippingInfo', JSON.stringify(state.shippingInfo));
+
+
+        },
+
      },
      extraReducers : (builder) => {
         // them san pham vao gio hang
@@ -90,9 +101,11 @@ const cartSlice = createSlice ({
             state.loading = false;
             state.error = action.payload?.message || 'Đã xảy ra lỗi khi thêm vào giỏ hàng';
         })
+
+    
     }
 
 })
 
-export const {removeErrors, removeMessage, removeItemFromCart} = cartSlice.actions
+export const {removeErrors, removeMessage, removeItemFromCart,saveShippingInfo, } = cartSlice.actions
 export default cartSlice.reducer

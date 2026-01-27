@@ -1,11 +1,11 @@
 import React from 'react'
 import '../CartStyles/Cart.css'
-import PageTitle from '../components/PageTitle'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
+import PageTitle from '../Components/PageTitle'
+import Navbar from '../Components/Navbar'
+import Footer from '../Components/Footer'
 import CartItem from './CartItem'
 import { useSelector } from 'react-redux'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 function Cart() {
     // Lấy dữ liệu giỏ hàng từ Redux store
@@ -15,8 +15,12 @@ function Cart() {
     const tax = subtotal * 0.1;
     const shipping = subtotal >= 5000 ? 0 : 30000;
     const total = subtotal + tax + shipping;
-
-
+    // hàm xử lý khi nhấn nút thanh toán
+    const navigate  = useNavigate()
+    const checkoutHandler = () => {
+      // kiem tra neu chua dang nhap thi chuyen den trang dang nhap
+      navigate(`/login?redirect=/shipping`)
+    }
 
   return (
     <>
@@ -70,7 +74,7 @@ function Cart() {
         </div>
 
         {/* // nút thanh toán */}
-        <button className="checkout-btn">Thanh Toán</button>
+        <button className="checkout-btn" onClick={checkoutHandler}>Thanh Toán</button>
       </div>
       
     </div>
