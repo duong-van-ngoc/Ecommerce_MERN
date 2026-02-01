@@ -55,7 +55,7 @@ function CartItem({item}) {
         toast.success(message, {position: 'top-center', autoClose: 3000,  toastId: "cart-success"});
         dispatch(removeMessage());
       }
-    }, [dispatch, success]);
+    }, [dispatch, success, message]);
 
 
     // xóa sản phẩm khỏi giỏ hàng

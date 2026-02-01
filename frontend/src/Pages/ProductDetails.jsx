@@ -27,7 +27,6 @@ function ProductDetails() {
           const{loading, error, product} =  useSelector((state) => state.product)
           // gio hang
           const {loading: cartLoading , error: cartError, success, message, cartItems} = useSelector((state) => state.cart)
-          console.log(' them sanr pham vao gio hang', cartItems);
           
 
 
@@ -143,7 +142,7 @@ function ProductDetails() {
                   </span>
               </div>
               <div className="stock-status">
-                <span className={product.stock > 0 ? `in-stock` : `out-of-stock`}>
+                <span className={product.stock > 0 ? `Còn hàng` : `Hết hàng`}>
                   {product.stock > 0 ? `in stock (${product.stock} available)` : `out of stock `}
                 </span>
               </div>
@@ -151,7 +150,7 @@ function ProductDetails() {
               {product.stock > 0 && (
                 <>
                   <div className="quantity-controls">
-                    <span className="quantity-label">Quantity:</span>
+                    <span className="quantity-label">Số lượng:</span>
 
                     <button
                       className="quantity-button"
@@ -185,7 +184,7 @@ function ProductDetails() {
               )}
 
               <form action="" className="review-form">
-                 <h3> Write a Review</h3>
+                 <h3> Viết đánh giá</h3>
                   <Rating
                   value={0}
                   disabled={false}

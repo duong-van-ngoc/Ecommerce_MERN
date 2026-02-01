@@ -42,7 +42,7 @@ import axios from  'axios'
  export const logout = createAsyncThunk('user/logout', async(_, {rejectWithValue}) => {
     try {
     
-            const {data} = await axios.post('/api/v1/logout',{withCredenntails:true})
+            const {data} = await axios.post('/api/v1/logout',{withCredentials:true})
   
             return data;
     }catch(error) {
@@ -129,11 +129,11 @@ async({token, userData}, {rejectWithValue}) => {
 const userSlice  = createSlice({
     name:'user',
     initialState:{
-        user:null,
+        user:localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null, // lấy user từ localStorage nếu có
         loading:false,
         error:null,
         success:false,
-        isAuthenticated:false,
+        isAuthenticated:localStorage.getItem('isAuthenticated') ==='true',
         message:null
     },
     reducers:{
@@ -158,6 +158,10 @@ const userSlice  = createSlice({
             state.success = action.payload.success
             state.user = action.payload?.user || null
             state.isAuthenticated = Boolean(action.payload?.user)
+
+            // lưu user vào localStorage
+            localStorage.setItem('user', JSON.stringify(state.user))
+            localStorage.setItem('isAuthenticated', JSON.stringify(state.isAuthenticated))
         })
         .addCase(register.rejected, (state, action) => {
             state.loading = false 
@@ -181,6 +185,9 @@ const userSlice  = createSlice({
             state.isAuthenticated = Boolean(action.payload?.user)
             console.log(state.user);
             
+            // lưu user vào localStorage
+            localStorage.setItem('user', JSON.stringify(state.user))
+            localStorage.setItem('isAuthenticated', JSON.stringify(state.isAuthenticated))
         })
         .addCase(login.rejected, (state, action) => {
             state.loading = false 
@@ -189,7 +196,7 @@ const userSlice  = createSlice({
             state.isAuthenticated = false
         })
 
-        // Loading user 
+        // Loading user  
         .addCase(loaderUser.pending,(state) => {
             state.loading = true
             state.error = null
@@ -201,12 +208,23 @@ const userSlice  = createSlice({
             state.user = action.payload?.user || null
             state.isAuthenticated = Boolean(action.payload?.user)
             
+            // lưu user vào localStorage
+            localStorage.setItem('user', JSON.stringify(state.user))
+            localStorage.setItem('isAuthenticated', JSON.stringify(state.isAuthenticated))
         })
         .addCase(loaderUser.rejected, (state, action) => {
             state.loading = false 
             state.error = action.payload?.message || ' Không thể tải dữ liệu người dùng'
             state.user = null
             state.isAuthenticated = false
+
+            // xóa user khỏi localStorage nếu lỗi 401 
+            if(action.payload?.statusCode === 401) {
+                state.user = null,
+                state.isAuthenticated = false,
+                localStorage.removeItem('user')
+                localStorage.removeItem('isAuthenticated')
+            }
         })
 
 
@@ -222,6 +240,12 @@ const userSlice  = createSlice({
             state.user =  null
             state.isAuthenticated = false
             
+
+            // xóa user khỏi localStorage
+            localStorage.removeItem('user')
+            localStorage.removeItem('isAuthenticated')
+            // nếu có token:
+            localStorage.removeItem('token')
         })
         .addCase(logout.rejected, (state, action) => {
             state.loading = false 

@@ -18,7 +18,7 @@ function Product({product}) {
             <img src={product.images[0].url}  alt={product.name} className='product-image-card'/>
             <div className="product-details">
                 <h3 className="product-title">{product.name} </h3>
-                <p className="home-price"><strong>Price</strong> {product.price}/-</p>
+                <p className="home-price"><strong>Giá</strong> {product.price}/-</p>
                 <div className="rating_container">
                     <Rating 
                         value = {product.ratings}
@@ -28,10 +28,10 @@ function Product({product}) {
                 </div>
 
                 <div className="productCardSpan">
-                    {product.numOfReviews} {product.numOfReviews === 1?"Review": "Reviews"}
+                    {product.numOfReviews} {product.numOfReviews === 1?"Đánh giá": "Đánh giá"}
                 </div>
 
-                <button className="add-to-cart">Views Details</button>
+                <button className="add-to-cart">Xem Chi tiết Sản Phẩm</button>
             </div>
         </div>
     </Link>

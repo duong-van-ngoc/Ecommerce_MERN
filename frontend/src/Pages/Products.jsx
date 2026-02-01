@@ -24,7 +24,6 @@ function Products() {
   const keyword = searchParams.get("keyword")
   const category = searchParams.get("category")
 
-  console.log(keyword);
   
   
   const pageFromURL = parseInt(searchParams.get("page"), 10) || 1
@@ -36,7 +35,7 @@ function Products() {
 
   useEffect(() => {
     dispatch(getProduct({keyword, page:currentPage, category}));
-  },[dispatch,currentPage, category])
+  },[dispatch,currentPage, category, keyword])
 
   useEffect(() => {
       if(error) {

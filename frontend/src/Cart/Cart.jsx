@@ -1,8 +1,8 @@
 import React from 'react'
 import '../CartStyles/Cart.css'
-import PageTitle from '../Components/PageTitle'
-import Navbar from '../Components/Navbar'
-import Footer from '../Components/Footer'
+import PageTitle from '../components/PageTitle'
+import Navbar from '../components/Navbar'
+import Footer from '../components/Footer'
 import CartItem from './CartItem'
 import { useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
@@ -11,10 +11,10 @@ function Cart() {
     // Lấy dữ liệu giỏ hàng từ Redux store
     const {cartItems } = useSelector((state) => state.cart)
     // tính tổng tiền của sản phẩm
-        const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const tax = subtotal * 0.1;
-    const shipping = subtotal >= 5000 ? 0 : 30000;
-    const total = subtotal + tax + shipping;
+    const shippingCharges = subtotal >= 5000 ? 0 : 30000;
+    const total = subtotal + tax + shippingCharges;
     // hàm xử lý khi nhấn nút thanh toán
     const navigate  = useNavigate()
     const checkoutHandler = () => {
@@ -66,7 +66,7 @@ function Cart() {
         </div>
         <div className="summary-item">
           <p className="summary-label">Shipping: </p>
-          <p className="summary-value">{shipping === 0 ? "Miễn phí" : shipping.toLocaleString() + " đ"}</p>
+          <p className="summary-value">{shippingCharges === 0 ? "Miễn phí" : shippingCharges.toLocaleString() + " đ"}</p>
         </div>
         <div className="summary-total">
           <p className="total-label">Total: </p>
