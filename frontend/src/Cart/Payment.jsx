@@ -64,41 +64,41 @@ function Payment() {
 
     setLoading(true);
     try {
-  const payload = {
-    shippingInfo: shippingInfoPayload,
-    orderItems: cartItems.map((item) => ({
-      name: item.name,
-      price: String(item.price),
-      quantity: item.quantity,
-      image: getItemImage(item),
-      product: item.product || item._id,
-    })),
-    itemPrice: totals.itemPrice,
-    taxPrice: totals.taxPrice,
-    shippingPrice: totals.shippingPrice,
-    totalPrice: totals.totalPrice,
-  };
+      const payload = {
+        shippingInfo: shippingInfoPayload,
+        orderItems: cartItems.map((item) => ({
+          name: item.name,
+          price: String(item.price),
+          quantity: item.quantity,
+          image: getItemImage(item),
+          product: item.product || item._id,
+        })),
+        itemPrice: totals.itemPrice,
+        taxPrice: totals.taxPrice,
+        shippingPrice: totals.shippingPrice,
+        totalPrice: totals.totalPrice,
+      };
 
-  const { data } = await axios.post("/api/v1/order/new", payload, {
-    withCredentials: true,
-  });
+      const { data } = await axios.post("/api/v1/order/new", payload, {
+        withCredentials: true,
+      });
 
-  // ✅ lấy orderId từ response (2 kiểu đều hỗ trợ)
-  const orderId = data?.orderId || data?.order?._id;
+      // ✅ lấy orderId từ response (2 kiểu đều hỗ trợ)
+      const orderId = data?.orderId || data?.order?._id;
 
-  // dọn dữ liệu
-  sessionStorage.removeItem("orderInfo");
-  localStorage.removeItem("cartItems");
+      // dọn dữ liệu
+      sessionStorage.removeItem("orderInfo");
+      localStorage.removeItem("cartItems");
 
-  // ✅ điều hướng sang trang success để hiện mã đơn
-  if (!orderId) {
-    console.log("Create order response (missing orderId):", data);
-    navigate("/orders/me");
-    return;
-  }
+      // ✅ điều hướng sang trang success để hiện mã đơn
+      if (!orderId) {
+        console.log("Create order response (missing orderId):", data);
+        navigate("/orders/user");
+        return;
+      }
 
-  navigate(`/order/success?orderId=${orderId}`);
-} catch (err) {
+      navigate(`/order/success?orderId=${orderId}`);
+    } catch (err) {
       const msg =
         err?.response?.data?.message ||
         err?.response?.data?.error ||

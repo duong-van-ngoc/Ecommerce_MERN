@@ -1,13 +1,20 @@
-import app from './app.js';
 import dotenv from 'dotenv';
+dotenv.config({ path: "./backend/config/config.env" });  // sử dụng file config.env để load các biến môi trường
+
+import app from './app.js';
 import connectMongoDatabase from './config/db.js';
+import {v2 as cloudinary} from 'cloudinary';
 
 
-
-dotenv.config({path: "backend/config/config.env"}); // sử dụng file config.env để load các biến môi trường
 
 connectMongoDatabase(); // kết nối database
 
+// cấu hình cloudinary
+cloudinary.config({
+    cloud_name:process.env.CLOUNDINARY_NAME,
+    api_key:process.env.API_KEY,
+    api_secret:process.env.API_SECRET
+})
 // xử lý các lỗi ngoai le 
 
 process.on('uncaughtException', (err) => {
@@ -26,9 +33,9 @@ const server = app.listen(port,() => {
 
 
 // xử lý các lỗi không mong muốn để tránh làm sập máy chủ
- process.on("unhandleRejection", (err) => {
-    console.log(`Lỗi: ${er.message}`);
-    connsole.log(`Máy chủ đang tắt vì lỗi không mong muốn`);
+ process.on("unhandledRejection", (err) => {
+    console.log(`Lỗi: ${err.message}`);
+    console.log(`Máy chủ đang tắt vì lỗi không mong muốn`);
 
     server.close(() => {
         process.exit(1);

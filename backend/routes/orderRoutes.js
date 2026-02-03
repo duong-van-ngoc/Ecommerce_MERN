@@ -10,7 +10,7 @@ const router = express.Router()
 router.route("/order/new").post(verifyUserAuth, createNewOrder)
 router.route("/admin/order/:id")
 .put(verifyUserAuth,roleBasedAccess('admin'), updateOrderStauts)
-.post(verifyUserAuth,roleBasedAccess('admin'), getSingleOrder)
+.get(verifyUserAuth,roleBasedAccess('admin'), getSingleOrder)
 .delete(verifyUserAuth,roleBasedAccess('admin'), deleteOrder)
 
 router.route("/admin/orders/").get(verifyUserAuth,roleBasedAccess('admin'), getAllOrder)
