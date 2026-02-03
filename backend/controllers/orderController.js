@@ -7,27 +7,36 @@ import APIFunctionality from '../utils/apiFunctionality.js';
 
 
 // tao đơn hàng mới 
+export const createNewOrder = handleAsyncError(async (req, res, next) => {
+  const { shippingInfo, orderItems, itemPrice, taxPrice, shippingPrice, totalPrice } = req.body;
 
-export const createNewOrder = handleAsyncError(async(req, res, next) => {
-    const { shippingInfo, orderItems, payment, itemPrice, taxPrice, shippingPrice, totalPrice } = req.body
+  const order = await Order.create({
+    shippingInfo,
+    orderItems,
 
-    const order = await Order.create({
-        shippingInfo, 
-        orderItems, 
-        payment, 
-        itemPrice, 
-        taxPrice, 
-        shippingPrice, 
-        totalPrice,
-        paidAt: Date.now(),
-        user: req.user._id
-    })
+    paymentInfo: {
+      method: "COD",
+      status: "PENDING",
+    },
 
-    res.status(200).json({
-        success: true,
-        order
-    })
-})
+    itemPrice,
+    taxPrice,
+    shippingPrice,
+    totalPrice,
+
+    paidAt: null,
+    user: req.user._id,
+
+    orderStatus: "Chờ xử lý",
+    isPaid: false,
+  });
+
+  res.status(200).json({
+    success: true,
+    orderId: order._id,
+    order,
+  });
+});
 
 // xem chi tiết nội dung của một đơn hàng 
 
@@ -78,28 +87,47 @@ export const getAllOrder = handleAsyncError(async(req, res, next) => {
 })
 
 // cập nhật trạng thái đơn hàng
-export const updateOrderStauts = handleAsyncError(async(req, res, next) => {
-    const order = await Order.findById(req.params.id) 
-    if(!order) {
-        return next(new HandleError("Không tìm thấy đơn hàng", 404))
-    }
-    if(order.orderStatus === 'Delivered') {
-        return next(new HandleError("Đơn hàng đã được vận chuyển", 404))
-    }
-    await Promise.all(order.orderItems.map(item => updateQuantity(item.product,
-        item.quantity)
-    ))
-    order.orderStatus = req.body.status 
+export const updateOrderStauts = handleAsyncError(async (req, res, next) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) return next(new HandleError("Không tìm thấy đơn hàng", 404));
 
-    if(order.orderStatus === 'Delivered') {
-        order.deliveredAt = Date.now();
+  const newStatus = req.body.status;
+
+  const allowed = ["Chờ xử lý", "Đang giao", "Đã giao", "Đã hủy"];
+  if (!allowed.includes(newStatus)) {
+    return next(new HandleError("Trạng thái không hợp lệ", 400));
+  }
+
+  if (order.orderStatus === "Đã giao") {
+    return next(new HandleError("Đơn hàng đã giao, không thể cập nhật nữa", 400));
+  }
+
+  if (newStatus === "Đang giao" && order.orderStatus !== "Đang giao") {
+    await Promise.all(
+      order.orderItems.map((item) => updateQuantity(item.product, item.quantity))
+    );
+  }
+
+  order.orderStatus = newStatus;
+
+  if (newStatus === "Đã giao") {
+    order.deliveredAt = Date.now();
+
+    if (order.paymentInfo?.method === "COD" && !order.isPaid) {
+      order.isPaid = true;
+      order.paidAt = Date.now();
+      order.paymentInfo.status = "PAID";
     }
-    await order.save({validateBeforeSave: false})
-    res.status(200).json({
-        success: true,
-        order
-    })
-})  
+  }
+
+  await order.save({ validateBeforeSave: false });
+
+  res.status(200).json({ success: true, order });
+});
+
+
+
+
 async function updateQuantity(id, quantity) {
     const product = await Product.findById(id);
     if(!product) {

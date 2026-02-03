@@ -5,19 +5,25 @@ import { sendToken } from "../utils/jwtToken.js"
 import { sendEmail } from "../utils/sendEmail.js"
 import crypto from "crypto";
 import mongoose from "mongoose";
+import { v2 as cloudinary } from "cloudinary";
 
 
 
 // Đăng ký 
 export const registerUser = handleAsyncError(async (req, res, next) => {
-    const {name, email, password} = req.body;
+    const {name, email, password, avatar} = req.body;
+    const myCloud = await cloudinary.uploader.upload(avatar, {
+        folder: 'avatars',
+        width:150,
+        crop: "scale"
+    })
     const user = await User.create({
         name,
         email,
         password,
         avatar: {
-            public_id: "id tam thoi ",
-            url: "url tam thoi "
+            public_id: myCloud.public_id,
+            url: myCloud.secure_url
         }
     })
 
@@ -59,7 +65,7 @@ export const logout = handleAsyncError(async (req, res, next) => {
 
 })
 
-//  quên mật khẩu 
+//  quen mật khẩu 
 
 export const requestPasswordReset = handleAsyncError(async(req, res, next) => {
     const { email } = req.body
@@ -78,7 +84,12 @@ export const requestPasswordReset = handleAsyncError(async(req, res, next) => {
     }catch (error){
         return next(new HandleError("không thể lưu mã thông báo đặt lại, vui lòng thử lại sau"), 500)
     }
-    const resetPasswordURL = `http://localhost/api/v1/reset/${resetToken}`
+    // const resetPasswordURL =`${req.protocol}://${req.get('host')}/reset/${resetToken}`;
+    // const resetPasswordURL = `${req.protocol}://${req.get('host')}/reset/${resetToken}`;
+    // const resetPasswordURL = `${process.env.FRONTEND_URL}/reset/${resetToken}`;
+    const resetPasswordURL =
+  `${process.env.FRONTEND_URL}/password/reset/${resetToken}`;
+
     console.log(resetPasswordURL);
     const message = `Sử dụng liên kết sau để đặt lại mật khẩu của ban ${resetPasswordURL}.
     \n\n Liên kết sẽ hết hạn sau 30 phút. 
@@ -127,7 +138,11 @@ export const resetPassword = handleAsyncError(async(req, res,next) => {
     user.resetPasswordToken = undefined
     user.resetPasswordExpire = undefined
     await user.save()
-    sendToken(user, 200,res)
+    // sendToken(user, 200,res)
+    res.status(200).json({
+        success: true,
+        message: "Đặt lại mật khẩu thành công"
+    })
   
 })
 //  hồ sơ người dùng 
@@ -165,10 +180,26 @@ export const updatePassword = handleAsyncError(async(req, res, next) => {
 })
  // Cập nhật hồ sơ người dùng
  export const updateProfile = handleAsyncError(async(req, res, next) => {
-    const {name, email} = req.body
+    const {name, email,avatar} = req.body
     const updateUserDetails={
         name,
         email
+    }
+    if(avatar !== "") {
+        const user = await User.findById(req.user.id);
+        const imageId = user.avatar.public_id
+        await cloudinary.uploader.destroy(imageId)
+        const myCloud = await cloudinary.uploader.upload(avatar, {
+            folder: 'avatars',
+            width: 150,
+            crop:'scale'
+        })
+
+        updateUserDetails.avatar = {
+            public_id : myCloud.public_id,
+            url: myCloud.secure_url,
+            
+        }
     }
     const user = await User.findByIdAndUpdate(req.user.id, 
     updateUserDetails, {
