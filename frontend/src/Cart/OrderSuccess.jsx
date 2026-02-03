@@ -17,7 +17,7 @@ function OrderSuccess() {
   const [closed, setClosed] = useState(false);
 
   const goToOrders = () => {
-    navigate("/orders/me");
+    navigate("/orders/user");
   };
 
   if (closed) {
