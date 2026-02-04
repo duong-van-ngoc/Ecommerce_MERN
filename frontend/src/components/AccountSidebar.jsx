@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import "./AccountSidebar.css";
+import "../componentStyles/AccountSidebar.css";
 
 function AccountSidebar() {
     const location = useLocation();
