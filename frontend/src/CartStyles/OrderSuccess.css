@@ -4,6 +4,7 @@
     opacity: 0;
     transform: translateY(-30px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -14,6 +15,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -24,9 +26,11 @@
     transform: scale(0);
     opacity: 0;
   }
+
   50% {
     transform: scale(1.2);
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
@@ -35,9 +39,17 @@
 
 /* ====== Layout ====== */
 .os-backdrop {
-  background: #f0fdf4; /* background_color */
-  min-height: 100vh;
-  width: 100%;
+  /* Fixed overlay - Phủ lên toàn bộ trang */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  /* Ưu tiên cao nhất */
+
+  background: rgba(0, 0, 0, 0.5);
+  /* Semi-transparent backdrop */
   padding: 24px;
 
   display: flex;
@@ -50,7 +62,8 @@
 }
 
 .os-popup {
-  background: #ffffff; /* surface_color */
+  background: #ffffff;
+  /* surface_color */
   border-radius: 16px;
   max-width: 480px;
   width: 100%;
@@ -82,7 +95,8 @@
   border-radius: 50%;
   transition: all 0.2s;
 
-  color: #166534; /* text_color */
+  color: #166534;
+  /* text_color */
   opacity: 0.5;
 }
 
@@ -97,7 +111,8 @@
   height: 80px;
   margin: 0 auto 24px;
 
-  background: #86efac; /* secondary_action_color */
+  background: #86efac;
+  /* secondary_action_color */
   border-radius: 50%;
 
   display: flex;
@@ -108,13 +123,15 @@
 }
 
 .os-checkicon {
-  stroke: #22c55e; /* primary_action_color */
+  stroke: #22c55e;
+  /* primary_action_color */
 }
 
 /* Text */
 .os-title {
   color: #166534;
-  font-size: 28px; /* 16 * 1.75 */
+  font-size: 28px;
+  /* 16 * 1.75 */
   font-weight: 700;
   margin: 0 0 16px 0;
   line-height: 1.2;
@@ -142,7 +159,8 @@
 
 /* Button */
 .os-btn {
-  background: #22c55e; /* primary_action_color */
+  background: #22c55e;
+  /* primary_action_color */
   color: white;
   font-size: 16px;
   font-weight: 600;

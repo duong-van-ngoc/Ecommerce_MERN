@@ -15,13 +15,16 @@ function Cart() {
   const { cartItems, loading, success, message, error } = useSelector((state) => state.cart)
   const [selectedItems, setSelectedItems] = useState({})
 
+  // Khởi tạo các item đã chọn 
   useEffect(() => {
-    const initialSelected = {}
-    cartItems.forEach(item => {
-      initialSelected[item.product] = true
-    })
-    setSelectedItems(initialSelected)
-  }, [cartItems])
+    if (cartItems.length > 0 && Object.keys(selectedItems).length === 0) {
+      const initialSelected = {}
+      cartItems.forEach(item => {
+        initialSelected[item.product] = false 
+      })
+      setSelectedItems(initialSelected)
+    }
+  }, []) 
 
   useEffect(() => {
     if (success && message) {
@@ -89,6 +92,7 @@ function Cart() {
       toast.error('Vui lòng chọn sản phẩm để đặt hàng', { position: 'top-center', autoClose: 2000 })
       return
     }
+    sessionStorage.removeItem("directBuyItem"); // Xóa mục mua ngay sau khi thành công
     navigate('/login?redirect=/shipping')
   }
 
@@ -98,7 +102,7 @@ function Cart() {
       <PageTitle title="Giỏ Hàng" />
 
       <div className="cart-page">
-        {/* Page Header */}
+        {/* Tiêu đề trang */}
         <header className="cart-page-header">
           <div className="cart-header-container">
             <div className="cart-header-left">
@@ -109,7 +113,7 @@ function Cart() {
               </button>
               <h1 className="cart-page-title">Giỏ Hàng Của Bạn</h1>
             </div>
-            
+
           </div>
         </header>
 
@@ -128,9 +132,9 @@ function Cart() {
             </div>
           ) : (
             <div className="cart-grid">
-              {/* Left Column */}
+              
               <div className="cart-left-column">
-                {/* Select All Header */}
+               
                 <div className="cart-select-header">
                   <div className="select-all-wrapper">
                     <input
@@ -149,10 +153,10 @@ function Cart() {
                   </button>
                 </div>
 
-                {/* Cart Items */}
+                
                 <div className="cart-items-list">
                   {cartItems.map((item, index) => {
-                    // TODO: Get from API when available
+                    
                     const mockOriginalPrice = Math.round(item.price * 1.3)
                     const discountPercent = Math.round((1 - item.price / mockOriginalPrice) * 100)
 
@@ -174,7 +178,6 @@ function Cart() {
                             {item.name}
                           </h3>
 
-                          {/* TODO: Replace with actual color/size from API */}
                           <div className="item-variant">
                             <span>Màu: <strong>Đen</strong></span>
                             <span className="variant-divider">|</span>
@@ -215,7 +218,6 @@ function Cart() {
                 </div>
               </div>
 
-              {/* Right Column - Order Summary */}
               <div className="order-summary">
                 <h2 className="summary-title">Thông tin đơn hàng</h2>
 
@@ -278,7 +280,7 @@ function Cart() {
         </div>
       </div>
 
-      {/* Mobile Sticky Checkout */}
+      // mobile
       {cartItems.length > 0 && (
         <div className="mobile-sticky-checkout">
           <div className="mobile-checkout-content">

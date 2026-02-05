@@ -8,7 +8,6 @@ import { getProduct, removeErrors } from '../features/products/productSlice';
 import { toast } from 'react-toastify';
 import Product from '../components/Product';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import NoProducts from '../components/NoProducts';
 import Loader from '../components/Loader';
 import Pagination from '../components/Pagination';
 
@@ -37,7 +36,7 @@ function Products() {
   const [sortBy, setSortBy] = useState('newest');
 
   // Available options (hardcoded for now - TODO: get from backend)
-  const categories = ["laptop", "mobile", "tv", "fruits", "glass"];
+  const categories = ["laptop", "mobile", "tv", "fruits", "glass", "Áo", "Quần", "Giày", "Đồng Hồ", "Túi xách", "Thắt lưng", "Kính mắt", "Tất", "Mũ", "Khăn"];
   const ratings = [5, 4, 3, 2, 1];
   const PRICE_MIN = 0;
   const PRICE_MAX = 3000;
@@ -255,7 +254,7 @@ function Products() {
                 <span className="rating-stars">
                   {'★'.repeat(rating)}{'☆'.repeat(5 - rating)}
                 </span>
-               
+
               </label>
             </div>
           ))}
@@ -384,7 +383,7 @@ function Products() {
               {/* Toolbar */}
               <div className="products-toolbar">
                 <div className="toolbar-top">
-                  
+
 
                   {/* Sort Dropdown */}
                   <div className="sort-section">

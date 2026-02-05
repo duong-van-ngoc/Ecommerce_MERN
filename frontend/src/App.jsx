@@ -24,6 +24,14 @@ import OrderSuccess from "./Cart/OrderSuccess";
 import Notifications from "./User/Notifications";
 import Vouchers from "./User/Vouchers";
 
+// Admin
+import AdminLayout from './admin/components/AdminLayout';
+import Dashboard from './admin/pages/Dashboard';
+import ProductsManagement from './admin/pages/ProductsManagement';
+import OrdersManagement from './admin/pages/OrdersManagement';
+import UsersManagement from './admin/pages/UsersManagement';
+import Settings from './admin/pages/Settings';
+
 
 
 function App() {
@@ -87,6 +95,17 @@ function App() {
         <Route path="/notifications/shopee" element={<ProtectedRoute element={<Notifications />} />} />
 
         <Route path="/vouchers" element={<ProtectedRoute element={<Vouchers />} />} />
+
+        {/* Admin Routes */}
+        <Route path="/admin/dashboard" element={<Dashboard />} />
+
+        {/* Admin Routes với Layout */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="products" element={<ProductsManagement />} />
+          <Route path="orders" element={<OrdersManagement />} />
+          <Route path="users" element={<UsersManagement />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
 
       </Routes>
 
