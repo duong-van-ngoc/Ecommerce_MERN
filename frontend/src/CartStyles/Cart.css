@@ -55,12 +55,10 @@
 }
 
 .cart-container {
-  display: flex;
-
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-
+  min-height: 100vh;
 }
 
 .empty-cart-container {
@@ -364,7 +362,11 @@
   border-radius: 8px;
   padding: 24px;
   position: sticky;
-  top: 140px;
+  top: 120px;
+  align-self: flex-start;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+  z-index: 10;
 }
 
 .summary-title {

@@ -18,7 +18,7 @@ const STATUS_TABS = [
   { id: "cancelled", label: "Đã hủy" },
 ];
 
-// Chuẩn hóa status (hỗ trợ cả có dấu và không dấu)
+// Chuẩn hóa status 
 const normalizeStatus = (status) => {
   if (!status) return "pending";
   const s = status.toLowerCase().trim();
@@ -96,6 +96,7 @@ function MyOrders() {
     return configs[normalized] || { bg: "#f5f5f5", color: "#666", text: status, statusText: "" };
   };
 
+
   const getItemImage = (item) =>
     item?.image || item?.images?.[0]?.url || item?.images?.[0] || "";
 
@@ -106,15 +107,15 @@ function MyOrders() {
 
       <div className="my-orders-page">
         <div className="orders-page-layout">
-          {/* Sidebar */}
+         
           <AccountSidebar />
 
-          {/* Main Content */}
+         
           <div className="orders-main-content">
-            {/* Header */}
+           
             <div className="orders-header-section">
               
-              {/* Tabs */}
+             
               <div className="orders-tab-bar">
                 {STATUS_TABS.map((tab) => (
                   <div
@@ -128,7 +129,6 @@ function MyOrders() {
               </div>
             </div>
 
-            {/* Search Bar */}
             <div className="orders-search-section">
               <div className="search-input-wrapper">
                 <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -145,12 +145,10 @@ function MyOrders() {
               </div>
             </div>
 
-            {/* Error */}
             {error && (
               <div className="orders-error">⚠️ {typeof error === 'string' ? error : 'Có lỗi xảy ra'}</div>
             )}
 
-            {/* Orders Container */}
             <div className="orders-container">
               {loading ? (
                 <div className="orders-loading">
@@ -173,7 +171,6 @@ function MyOrders() {
 
                     return (
                       <div className="order-card" key={order._id}>
-                        {/* Shop Header */}
                         <div className="order-shop-header">
                           <div className="shop-info">
                             <span className="shop-name">{user?.name || "Shop"}</span>
@@ -190,7 +187,6 @@ function MyOrders() {
                           </div>
                         </div>
 
-                        {/* Product List */}
                         <div className="order-products">
                           {order.orderItems?.map((item, idx) => (
                             <div className="product-item" key={idx}>
@@ -216,7 +212,6 @@ function MyOrders() {
                           ))}
                         </div>
 
-                        {/* Order Footer */}
                         <div className="order-card-footer">
                           <div className="footer-left">
                             <span className="order-date">🕐 {formatDate(order.createdAt)}</span>
@@ -227,7 +222,6 @@ function MyOrders() {
                           </div>
                         </div>
 
-                        {/* Action Buttons */}
                         <div className="order-actions">
                           {normalizeStatus(order.orderStatus) === "delivered" && (
                             <button className="btn-rebuy">Mua Lại</button>

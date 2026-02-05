@@ -9,7 +9,7 @@ function CartItem({item}) {
 
     const [quantity, setQuantity] = useState(item.quantity);
     // tính tổng tiền của sản phẩm
-    const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    // const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
     
     const dispatch = useDispatch(); 
 
@@ -69,7 +69,7 @@ function CartItem({item}) {
     }
   return (
     <div className="cart-item">
-              {/* //  phần thông tin sản phẩm */}
+              {/*    thông tin sản phẩm */}
               <div className="item-info">
                 <img src={item.image} alt={item.name} 
                             className='item-iamge'
@@ -81,7 +81,7 @@ function CartItem({item}) {
                 </div>
                 
               </div>
-              {/* // phần số lượng sản phẩm */}
+              {/* số lượng sản phẩm */}
                 <div className="quantity-controls">
                   <button className="quantity-button decrease-btn"
                           onClick={decreaseQuanntity} disabled={loading}
@@ -91,11 +91,11 @@ function CartItem({item}) {
                             onClick={increaseQuantity} disabled={loading}
                   >+</button>
                 </div>
-                  {/* // phần tổng tiền */}
+                  {/*  tổng tiền */}
                   <div className="item-total">
                     <span className="item-total-price">{(item.price*item.quantity).toFixed(2)}</span>
                   </div>
-                  {/* // phần xóa sản phẩm */}
+                  {/* // xóa sản phẩm */}
                   <div className="item-actions">
                     <button className="update-item-btn" 
                             onClick = {handleUpdate}

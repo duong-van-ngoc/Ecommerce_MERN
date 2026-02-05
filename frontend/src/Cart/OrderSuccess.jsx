@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import "../CartStyles/OrderSuccess.css";
 
 const defaultConfig = {
@@ -9,29 +9,37 @@ const defaultConfig = {
   button_text: "Đi tới trang Đơn đặt hàng",
 };
 
-function OrderSuccess() {
+/**
+ * OrderSuccess - Popup xác nhận đặt hàng thành công
+ * 
+ * @param {string} orderId - Mã đơn hàng từ server
+ * @param {function} onClose - Callback khi đóng popup
+ */
+function OrderSuccess({ orderId, onClose }) {
   const navigate = useNavigate();
-  const [params] = useSearchParams();
-  const orderId = params.get("orderId");
-
-  const [closed, setClosed] = useState(false);
 
   const goToOrders = () => {
+    if (onClose) {
+      onClose(); // Đóng popup
+    }
     navigate("/orders/user");
   };
 
-  if (closed) {
-    return <div className="os-closed">Popup đã đóng</div>;
-  }
+  const handleBackdropClick = (e) => {
+    // Chỉ đóng khi click vào backdrop, không phải popup content
+    if (e.target.className === 'os-backdrop') {
+      if (onClose) onClose();
+    }
+  };
 
   return (
-    <div className="os-backdrop">
+    <div className="os-backdrop" onClick={handleBackdropClick}>
       <div className="os-popup">
         <button
           className="os-close"
           type="button"
           aria-label="Close"
-          onClick={() => setClosed(true)}
+          onClick={onClose}
         >
           <svg
             width="20"
@@ -68,7 +76,7 @@ function OrderSuccess() {
         <p className="os-message">{defaultConfig.success_message}</p>
 
         <p className="os-orderid">
-          Mã đơn hàng: <strong>{orderId || "Xem tại trang Đơn hàng"}</strong>
+          Mã đơn hàng: <strong>{orderId ? `#${orderId.slice(-6)}` : "Xem tại trang Đơn hàng"}</strong>
         </p>
 
         <button className="os-btn" type="button" onClick={goToOrders}>

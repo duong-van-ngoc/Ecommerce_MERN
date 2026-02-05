@@ -46,6 +46,9 @@
 .user-info {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .user-name {
@@ -59,13 +62,14 @@
 }
 
 .edit-profile {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 12px;
+    font-size: 13px;
     color: #888;
     text-decoration: none;
-    transition: color 0.2s;
+    line-height: 1;
+    white-space: nowrap;
 }
 
 .edit-profile:hover {
@@ -78,14 +82,16 @@
 }
 
 .menu-item {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 16px;
+    gap: 12px;
+    padding: 12px 20px;
     text-decoration: none;
     color: #333;
     font-size: 14px;
     transition: all 0.2s;
+    /* Remove border-left here to use pseudo-element for cleaner look or just fix box-sizing */
     border-left: 3px solid transparent;
 }
 
@@ -96,7 +102,7 @@
 
 .menu-item.active {
     color: #ee4d2d;
-    background: #fff5f5;
+    background: linear-gradient(90deg, #fff5f5 0%, #fff 100%);
     border-left-color: #ee4d2d;
     font-weight: 500;
 }

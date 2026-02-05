@@ -19,39 +19,53 @@ function ProductDetails() {
   const [selectedColor, setSelectedColor] = useState(0)
   const [selectedSize, setSelectedSize] = useState(1) // Default to M
 
-  // Redux state
+  // State của Redux
   const { loading, error, product } = useSelector((state) => state.product)
   const { loading: cartLoading, error: cartError, success, message } = useSelector((state) => state.cart)
 
   const dispatch = useDispatch();
   const { id } = useParams();
 
-  // Mock data for features not yet in API
-  // TODO: Replace with API data when backend is updated
-  const mockColors = [
-    { name: "Đen", code: "#000" },
-    { name: "Trắng", code: "#fff" },
-    { name: "Xanh dương", code: "#3b82f6" },
-    { name: "Đỏ", code: "#ef4444" },
-    { name: "Tím", code: "#8b5cf6" },
-  ];
+  // Hàm hỗ trợ ánh xạ tên màu sang mã hex (Tạm thời hardcode, sau này có thể lưu trong DB hoặc config)
+  const colorMap = {
+    'Đen': '#000000', 'Black': '#000000',
+    'Trắng': '#ffffff', 'White': '#ffffff',
+    'Xanh dương': '#3b82f6', 'Blue': '#3b82f6',
+    'Đỏ': '#ef4444', 'Red': '#ef4444',
+    'Tím': '#8b5cf6', 'Purple': '#8b5cf6',
+    'Vàng': '#eab308', 'Yellow': '#eab308',
+    'Xám': '#6b7280', 'Gray': '#6b7280',
+    'Hồng': '#ec4899', 'Pink': '#ec4899',
+    'Xanh lá': '#22c55e', 'Green': '#22c55e',
+    'Cam': '#f97316', 'Orange': '#f97316',
+    'Nâu': '#78350f', 'Brown': '#78350f',
+    'Be': '#f5f5dc', 'Beige': '#f5f5dc',
+    'Kem': '#fffdd0', 'Cream': '#fffdd0',
+    'Xanh đen': '#0f172a', 'Navy': '#0f172a',
+    'Xanh rêu': '#3f6212', 'Moss': '#3f6212',
+    'Bạc': '#c0c0c0', 'Silver': '#c0c0c0'
+  };
 
-  const mockSizes = [
-    { name: "S", available: true },
-    { name: "M", available: true },
-    { name: "L", available: true },
-    { name: "XL", available: true },
-    { name: "XXL", available: false },
-  ];
+  // Dữ liệu thực từ API (có fallback nếu thiếu)
+  const productColors = product?.colors?.length > 0
+    ? product.colors.map(c => ({ name: c, code: colorMap[c] || '#cccccc' }))
+    : [];
 
-  // TODO: Get from API - product.originalPrice
-  const mockOriginalPrice = product?.price ? Math.round(product.price * 1.3) : 0;
-  const discountPercent = mockOriginalPrice ? Math.round((1 - product?.price / mockOriginalPrice) * 100) : 0;
+  const productSizes = product?.sizes?.length > 0
+    ? product.sizes.map(s => ({ name: s, available: true }))
+    : [];
 
-  // TODO: Get from API - product.soldCount
-  const mockSoldCount = 5432;
+  // Giá & Giảm giá
+  const originalPrice = product?.originalPrice || 0;
+  // Nếu không có giá gốc, coi như không giảm giá
+  const discountPercent = (originalPrice > product?.price)
+    ? Math.round(((originalPrice - product.price) / originalPrice) * 100)
+    : 0;
 
-  // TODO: Get from API - /api/products/related/:id
+  // Số lượng đã bán
+  const soldCount = product?.sold || 0;
+
+  // TODO: Cần API riêng cho Sản Phẩm Liên Quan. Tạm thời vẫn mock hoặc lọc từ Tất Cả Sản Phẩm
   const mockRelatedProducts = [
     { id: 1, name: "Áo Polo Nam Basic", price: 349000, originalPrice: 499000, image: "https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9?w=300&h=300&fit=crop", badge: "NEW" },
     { id: 2, name: "Áo Sơ Mi Oxford", price: 399000, image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=300&h=300&fit=crop" },
@@ -133,12 +147,12 @@ function ProductDetails() {
     return new Intl.NumberFormat('vi-VN').format(price) + '₫';
   }
 
-  // Get product images or use fallback
+  // Lấy ảnh sản phẩm hoặc sử dụng ảnh dự phòng
   const productImages = product?.images?.length > 0
     ? product.images.map(img => img.url.replace('./', '/'))
     : ['https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=800&fit=crop'];
 
-  // Calculate rating distribution (mock if not available from API)
+  // Tính toán phân bổ đánh giá (mock nếu không có sẵn từ API)
   const totalReviews = product?.numOfReviews || 0;
   const ratingDistribution = [
     { stars: 5, count: Math.round(totalReviews * 0.85) },
@@ -155,9 +169,9 @@ function ProductDetails() {
 
       <div className="product-details-page">
         <div className="product-details-container">
-          {/* Main Product Section */}
+          {/* Phần Sản Phẩm Chính */}
           <div className="product-main-grid">
-            {/* Image Gallery */}
+            {/* Thư viện ảnh */}
             <div className="product-gallery">
               <div className="main-image-container">
                 <img
@@ -179,7 +193,7 @@ function ProductDetails() {
               </div>
             </div>
 
-            {/* Product Info */}
+            {/* Thông tin sản phẩm */}
             <div className="product-info-section">
               <h1 className="product-title">{product.name}</h1>
 
@@ -195,7 +209,7 @@ function ProductDetails() {
                 </div>
                 <span className="meta-divider">|</span>
                 <div className="sold-count">
-                  <span>{mockSoldCount.toLocaleString()}</span> Đã bán
+                  <span>{soldCount.toLocaleString()}</span> Đã bán
                 </div>
               </div>
 
@@ -204,48 +218,53 @@ function ProductDetails() {
                 <span className="current-price">{formatPrice(product.price)}</span>
                 {discountPercent > 0 && (
                   <>
-                    <span className="original-price">{formatPrice(mockOriginalPrice)}</span>
+                    <span className="original-price">{formatPrice(originalPrice)}</span>
                     <span className="discount-badge">-{discountPercent}%</span>
                   </>
                 )}
               </div>
 
-              {/* Color Selection - TODO: Replace with API data */}
-              <div className="selection-group">
-                <div className="selection-label">
-                  Màu sắc <span>{mockColors[selectedColor].name}</span>
+              {/* Color Selection */}
+              {productColors.length > 0 && (
+                <div className="selection-group">
+                  <div className="selection-label">
+                    Màu sắc <span>{productColors[selectedColor]?.name}</span>
+                  </div>
+                  <div className="color-options">
+                    {productColors.map((color, index) => (
+                      <div
+                        key={index}
+                        className={`color-swatch ${selectedColor === index ? 'active' : ''}`}
+                        style={{ backgroundColor: color.code }}
+                        onClick={() => setSelectedColor(index)}
+                        title={color.name}
+                      />
+                    ))}
+                  </div>
                 </div>
-                <div className="color-options">
-                  {mockColors.map((color, index) => (
-                    <div
-                      key={index}
-                      className={`color-swatch ${selectedColor === index ? 'active' : ''}`}
-                      style={{ backgroundColor: color.code }}
-                      onClick={() => setSelectedColor(index)}
-                    />
-                  ))}
-                </div>
-              </div>
+              )}
 
-              {/* Size Selection - TODO: Replace with API data */}
-              <div className="selection-group">
-                <div className="selection-label">
-                  Kích thước
-                  <button className="size-guide">Hướng dẫn chọn size</button>
+              {/* Size Selection */}
+              {productSizes.length > 0 && (
+                <div className="selection-group">
+                  <div className="selection-label">
+                    Kích thước
+                    <button className="size-guide">Hướng dẫn chọn size</button>
+                  </div>
+                  <div className="size-options">
+                    {productSizes.map((size, index) => (
+                      <button
+                        key={index}
+                        className={`size-btn ${selectedSize === index ? 'active' : ''} ${!size.available ? 'disabled' : ''}`}
+                        onClick={() => size.available && setSelectedSize(index)}
+                        disabled={!size.available}
+                      >
+                        {size.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="size-options">
-                  {mockSizes.map((size, index) => (
-                    <button
-                      key={index}
-                      className={`size-btn ${selectedSize === index ? 'active' : ''} ${!size.available ? 'disabled' : ''}`}
-                      onClick={() => size.available && setSelectedSize(index)}
-                      disabled={!size.available}
-                    >
-                      {size.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              )}
 
               {/* Quantity */}
               <div className="quantity-section">
@@ -258,13 +277,25 @@ function ProductDetails() {
                 <span className="stock-info">Còn {product.stock} sản phẩm</span>
               </div>
 
-              {/* CTA Buttons */}
+              {/* Các nút hành động (CTA) */}
               {product.stock > 0 && (
                 <div className="cta-section">
                   <button className="add-to-cart-btn" onClick={addToCart} disabled={cartLoading}>
                     🛒 {cartLoading ? "Đang thêm..." : "THÊM VÀO GIỎ HÀNG"}
                   </button>
-                  <button className="buy-now-btn">
+                  <button className="buy-now-btn" onClick={() => {
+                    const buyNowItem = {
+                      product: product._id,
+                      name: product.name,
+                      price: product.price,
+                      image: product.images?.[0]?.url,
+                      stock: product.stock,
+                      quantity: quantity
+                    };
+                    sessionStorage.setItem("directBuyItem", JSON.stringify(buyNowItem));
+                    dispatch(removeErrors()); // Clean up errors if any
+                    navigate('/login?redirect=shipping');
+                  }}>
                     MUA NGAY
                   </button>
                 </div>
@@ -428,7 +459,7 @@ function ProductDetails() {
             </div>
           </div>
 
-          {/* Related Products - TODO: Replace with API data */}
+          {/* Sản phẩm liên quan - TODO: Thay thế bằng dữ liệu API */}
           <div className="related-section">
             <h2>Sản phẩm liên quan</h2>
             <div className="related-grid">
@@ -458,7 +489,7 @@ function ProductDetails() {
         </div>
       </div>
 
-      {/* Mobile Sticky CTA */}
+      {/* Nút CTA cố định trên thiết bị di động */}
       {product.stock > 0 && (
         <div className="mobile-sticky-cta">
           <button className="add-to-cart-btn" onClick={addToCart} disabled={cartLoading}>

@@ -1,0 +1,230 @@
+/* Products Management Styles */
+
+/* Header */
+.products-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.products-page-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+    color: var(--admin-text);
+}
+
+.products-subtitle {
+    color: var(--admin-text-secondary);
+    font-size: 15px;
+    margin: 0;
+}
+
+.btn-add-product {
+    padding: 12px 24px;
+    background: var(--admin-primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-add-product:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Table Container */
+.products-table-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.products-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.products-table thead {
+    background: #f9fafb;
+}
+
+.products-table th {
+    text-align: left;
+    padding: 16px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--admin-text-secondary);
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.products-table td {
+    padding: 16px;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: top;
+}
+
+.products-table tbody tr {
+    height: 92px;
+}
+
+.products-table tbody td {
+    height: 92px;
+}
+
+.products-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+/* Product Thumbnail */
+.product-thumbnail {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.product-name {
+    font-weight: 500;
+    color: var(--admin-text);
+    max-width: 300px;
+    margin:0 !important;
+}
+
+.product-price {
+    font-weight: 600;
+    color: var(--admin-primary);
+    font-size: 16px;
+}
+
+/* Stock Badge */
+.stock-badge {
+    padding: 4px 12px;
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--admin-success);
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.stock-badge.low {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--admin-danger);
+}
+
+/* Rating */
+.rating {
+    font-size: 14px;
+    color: var(--admin-text-secondary);
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-edit,
+.btn-delete {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-edit {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.btn-edit:hover {
+    background: rgba(59, 130, 246, 0.2);
+    transform: scale(1.1);
+}
+
+.btn-delete {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.btn-delete:hover {
+    background: rgba(239, 68, 68, 0.2);
+    transform: scale(1.1);
+}
+
+/* No Products */
+.no-products {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--admin-text-secondary);
+    font-size: 16px;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 32px;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-content h2 {
+    margin: 0 0 24px 0;
+    font-size: 24px;
+    color: var(--admin-text);
+}
+
+.modal-content button {
+    padding: 10px 20px;
+    background: var(--admin-primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .products-management {
+        padding: 20px;
+    }
+
+    .products-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .products-table-container {
+        overflow-x: auto;
+    }
+
+    .products-table {
+        min-width: 800px;
+    }
+}

@@ -3,15 +3,30 @@ import '../CartStyles/orderConfirm.css'
 import PageTitle from '../components/PageTitle'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux' // Thêm useDispatch
 import CheckoutPath from './CheckoutPath'
 import { useNavigate } from 'react-router-dom'
+import { createOrder } from '../features/orders/orderSlice' // Import createOrder thunk
+import OrderSuccess from './OrderSuccess' // Import popup component
+import { toast } from 'react-toastify' // Import toast
 
 function OrderConfirm() {
-  const { shippingInfo, cartItems = [] } = useSelector((state) => state.cart)
+  const dispatch = useDispatch() // Thêm dispatch hook
+  const { shippingInfo, cartItems: globalCartItems = [] } = useSelector((state) => state.cart)
   const { user } = useSelector((state) => state.user)
 
-  // ✅ payment method state (COD mặc định)
+  // Kiểm tra sản phẩm mua ngay
+  let cartItems = globalCartItems;
+  const directBuyItem = sessionStorage.getItem("directBuyItem");
+  if (directBuyItem) {
+    cartItems = [JSON.parse(directBuyItem)];
+  }
+
+  // State để điều khiển popup thông báo thành công
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false)
+  const [createdOrderId, setCreatedOrderId] = useState(null)
+
+  // ✅ trạng thái phương thức thanh toán (mặc định là COD)
   const [paymentMethod, setPaymentMethod] = useState(() => {
     try {
       return JSON.parse(sessionStorage.getItem('paymentMethod') || '"cod"')
@@ -33,6 +48,7 @@ function OrderConfirm() {
     .filter(Boolean)
     .join(', ')
 
+  // Tính tổng tiền dựa trên các mục giỏ hàng ĐANG HOẠT ĐỘNG (hoặc giỏ hàng chung hoặc mua ngay)
   const subtotal = cartItems.reduce(
     (acc, item) => acc + Number(item.price) * Number(item.quantity),
     0
@@ -43,12 +59,78 @@ function OrderConfirm() {
 
   const navigate = useNavigate()
 
-  const proceesToPayment = () => {
-    const data = { subtotal, shippingCharges, tax, total }
-    sessionStorage.setItem('orderInfo', JSON.stringify(data))
-    sessionStorage.setItem('paymentMethod', JSON.stringify(paymentMethod))
-    // navigate('/process/payment')
-    navigate(`/order/success?orderId=${data.orderId}`);
+  /**
+   * Xử lý đặt hàng
+   * FLOW:
+   * 1. Validate cart items
+   * 2. Chuẩn bị order data
+   * 3. Dispatch createOrder API
+   * 4. Success → Hiện popup
+   * 5. Error → Hiện thông báo lỗi
+   */
+  const proceesToPayment = async () => {
+    // Validation
+    if (cartItems.length === 0) {
+      toast.error('Giỏ hàng đang trống!', { position: 'top-center' })
+      return
+    }
+
+    // Ánh xạ thông tin giao hàng frontend sang cấu trúc model backend
+    const mappedShippingInfo = {
+      address: `${shippingInfo.address}, ${shippingInfo.wardName || ''}`,
+      city: shippingInfo.districtName, // Ánh xạ Quận/Huyện -> City
+      state: shippingInfo.provinceName, // Ánh xạ Tỉnh/Thành -> State
+      country: shippingInfo.country || 'VN',
+      pinCode: Number(shippingInfo.pinCode) || 700000,
+      phoneNo: Number(shippingInfo.phoneNumber || shippingInfo.phoneNo)
+    }
+
+    // Chuẩn bị order data
+    const orderData = {
+      shippingInfo: mappedShippingInfo,
+      orderItems: cartItems.map(item => ({
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image || item.images?.[0]?.url || item.images?.[0],
+        product: item.product
+      })),
+      paymentInfo: {
+        method: paymentMethod,
+        status: paymentMethod === 'cod' ? 'Chưa thanh toán' : 'Đã thanh toán'
+      },
+      itemsPrice: Number(subtotal),
+      taxPrice: Number(tax),
+      shippingPrice: Number(shippingCharges),
+      totalPrice: Number(total)
+    }
+
+    try {
+      const result = await dispatch(createOrder(orderData)).unwrap()
+
+      // Lưu thông tin đơn hàng vào sessionStorage
+      const data = { subtotal, shippingCharges, tax, total }
+      sessionStorage.setItem('orderInfo', JSON.stringify(data))
+      sessionStorage.setItem('paymentMethod', JSON.stringify(paymentMethod))
+
+      // Lưu order ID và hiện popup
+      setCreatedOrderId(result.order._id)
+      setShowSuccessPopup(true)
+      sessionStorage.removeItem("directBuyItem"); // Xóa mục mua ngay sau khi thành công
+
+      // Toast success
+      toast.success('Đặt hàng thành công!', {
+        position: 'top-center',
+        autoClose: 2000
+      })
+    } catch (error) {
+      // Xử lý lỗi
+      toast.error(error || 'Đặt hàng thất bại. Vui lòng thử lại!', {
+        position: 'top-center',
+        autoClose: 3000
+      })
+      console.error('Create order error:', error)
+    }
   }
 
   const formatVND = (n) => Number(n || 0).toLocaleString('vi-VN') + ' đ'
@@ -71,7 +153,6 @@ function OrderConfirm() {
           <h1 className="confirm-header">🛒 Xác nhận đơn hàng</h1>
 
           <div className="confirm-content">
-            {/* Main Section */}
             <div className="main-section">
               {/* Customer Information */}
               <div className="section-card">
@@ -185,9 +266,7 @@ function OrderConfirm() {
               </div>
             </div>
 
-            {/* Sidebar Section */}
             <div className="sidebar-section">
-              {/* ✅ Payment Method block (GHÉP TỪ HTML CỦA BẠN) */}
               <div className="section-card">
                 <div className="section-header">
                   <h2 className="section-title">
@@ -223,7 +302,7 @@ function OrderConfirm() {
                         <div className="payment-icon">💵</div>
                         <div className="payment-info">
                           <div className="payment-name">Thanh toán khi nhận hàng</div>
-                          
+
                         </div>
                       </div>
                     </label>
@@ -339,7 +418,7 @@ function OrderConfirm() {
                 </div>
               </div>
 
-              {/* (tuỳ chọn) hiển thị method đang chọn để debug */}
+              {/* (tùy chọn) hiển thị phương thức đang chọn để debug */}
               {/* <div style={{ marginTop: 10, color: "#666" }}>Method: {paymentMethod}</div> */}
             </div>
           </div>
@@ -347,6 +426,17 @@ function OrderConfirm() {
       </div>
 
       <Footer />
+
+      {/* Success Popup - Hiện khi đặt hàng thành công */}
+      {showSuccessPopup && (
+        <OrderSuccess
+          orderId={createdOrderId}
+          onClose={() => {
+            setShowSuccessPopup(false)
+            navigate('/orders/user')
+          }}
+        />
+      )}
     </>
   )
 }
