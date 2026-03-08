@@ -7,9 +7,10 @@ import PageTitle from "../components/PageTitle";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import AccountSidebar from "../components/AccountSidebar";
+import ReviewComment from "./ReviewComment";
 import "../CartStyles/MyOrders.css";
 
-// Các tab trạng thái
+// Status tabs
 const STATUS_TABS = [
   { id: "all", label: "Tất cả" },
   { id: "pending", label: "Chờ thanh toán" },
@@ -18,7 +19,7 @@ const STATUS_TABS = [
   { id: "cancelled", label: "Đã hủy" },
 ];
 
-// Chuẩn hóa status 
+// Normalize status
 const normalizeStatus = (status) => {
   if (!status) return "pending";
   const s = status.toLowerCase().trim();
@@ -43,6 +44,8 @@ function MyOrders() {
   const dispatch = useDispatch();
   const [currentTab, setCurrentTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [reviewProduct, setReviewProduct] = useState(null);
+  const [reviewOrderId, setReviewOrderId] = useState(null);
 
   const { orders = [], loading, error } = useSelector((state) => state.order);
   const { user } = useSelector((state) => state.user);
@@ -51,7 +54,7 @@ function MyOrders() {
     dispatch(getMyOrders());
   }, [dispatch]);
 
-  // Lọc và sắp xếp đơn hàng
+  // Filter and sort orders
   const filteredOrders = useMemo(() => {
     let result = [...orders];
     result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -88,14 +91,13 @@ function MyOrders() {
   const getStatusConfig = (status) => {
     const normalized = normalizeStatus(status);
     const configs = {
-      pending: { bg: "#fff7e6", color: "#fa8c16", text: "CHỜ XỬ LÝ", statusText: "" },
-      shipping: { bg: "#e6f7ff", color: "#1890ff", text: "ĐANG GIAO", statusText: "Đang trên đường giao đến bạn" },
-      delivered: { bg: "#dcf8eb", color: "#00ab56", text: "HOÀN THÀNH", statusText: "Giao hàng thành công" },
-      cancelled: { bg: "#ffe6e6", color: "#ee4d2d", text: "ĐÃ HỦY", statusText: "Đơn hàng đã bị hủy" },
+      pending: { className: "status-pending", text: "CHỜ XỬ LÝ", statusText: "" },
+      shipping: { className: "status-shipping", text: "ĐANG GIAO", statusText: "Đang trên đường giao đến bạn" },
+      delivered: { className: "status-delivered", text: "HOÀN THÀNH", statusText: "Giao hàng thành công" },
+      cancelled: { className: "status-cancelled", text: "ĐÃ HỦY", statusText: "Đơn hàng đã bị hủy" },
     };
-    return configs[normalized] || { bg: "#f5f5f5", color: "#666", text: status, statusText: "" };
+    return configs[normalized] || { className: "", text: status, statusText: "" };
   };
-
 
   const getItemImage = (item) =>
     item?.image || item?.images?.[0]?.url || item?.images?.[0] || "";
@@ -107,86 +109,98 @@ function MyOrders() {
 
       <div className="my-orders-page">
         <div className="orders-page-layout">
-         
+
           <AccountSidebar />
 
-         
-          <div className="orders-main-content">
-           
-            <div className="orders-header-section">
-              
-             
+          {/* Main Content */}
+          <main className="orders-main-content">
+            {/* Header with title + search */}
+            <header className="orders-header-section">
+              <div className="orders-header-top">
+                <h1 className="orders-page-title">Đơn hàng của tôi</h1>
+                <div className="orders-search-wrapper">
+                  <span className="search-icon-box">
+                    <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                  </span>
+                  <input
+                    type="text"
+                    className="search-input"
+                    placeholder="Tìm kiếm theo ID đơn hàng hoặc Tên sản phẩm..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Tab Bar */}
               <div className="orders-tab-bar">
                 {STATUS_TABS.map((tab) => (
-                  <div
+                  <button
                     key={tab.id}
                     className={`tab-item ${currentTab === tab.id ? "active" : ""}`}
                     onClick={() => setCurrentTab(tab.id)}
                   >
                     {tab.label}
-                  </div>
+                  </button>
                 ))}
               </div>
-            </div>
+            </header>
 
-            <div className="orders-search-section">
-              <div className="search-input-wrapper">
-                <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <path d="m21 21-4.35-4.35"></path>
-                </svg>
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder="Bạn có thể tìm kiếm theo ID đơn hàng hoặc Tên Sản phẩm"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </div>
-
+            {/* Error */}
             {error && (
               <div className="orders-error">⚠️ {typeof error === 'string' ? error : 'Có lỗi xảy ra'}</div>
             )}
 
-            <div className="orders-container">
+            {/* Scrollable Body */}
+            <div className="orders-body">
               {loading ? (
                 <div className="orders-loading">
                   <div className="spinner"></div>
                   <p>Đang tải đơn hàng...</p>
                 </div>
               ) : filteredOrders.length === 0 ? (
+                /* Empty State */
                 <div className="orders-empty">
-                  <div className="empty-icon">📦</div>
-                  <h3>{searchQuery ? "Không tìm thấy đơn hàng phù hợp" : "Chưa có đơn hàng"}</h3>
-                  <p>{searchQuery ? "Thử tìm kiếm với từ khóa khác" : "Hãy mua sắm để có đơn hàng đầu tiên!"}</p>
+                  <div className="empty-icon-circle">
+                    <svg className="empty-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                  </div>
+                  <h3 className="empty-title">
+                    {searchQuery ? "Không tìm thấy đơn hàng phù hợp" : "Chưa có đơn hàng nào"}
+                  </h3>
+                  <p className="empty-desc">
+                    {searchQuery ? "Thử tìm kiếm với từ khóa khác" : "Hãy mua sắm để có đơn hàng đầu tiên!"}
+                  </p>
                   {!searchQuery && (
                     <Link to="/products" className="btn-shop-now">Mua sắm ngay</Link>
                   )}
                 </div>
               ) : (
+                /* Orders List */
                 <div className="orders-list">
                   {filteredOrders.map((order) => {
                     const statusConfig = getStatusConfig(order.orderStatus);
+                    const normalized = normalizeStatus(order.orderStatus);
 
                     return (
                       <div className="order-card" key={order._id}>
-                        <div className="order-shop-header">
-                          <div className="shop-info">
+                        {/* Order Header */}
+                        <div className="order-card-header">
+                          <div className="order-header-left">
                             <span className="shop-name">{user?.name || "Shop"}</span>
-                          </div>
-                          <div className="order-status-info">
-                            {statusConfig.statusText && (
-                              <span className="status-text" style={{ color: statusConfig.color }}>
-                                {statusConfig.statusText}
-                              </span>
-                            )}
-                            <span className="status-badge" style={{ background: statusConfig.bg, color: statusConfig.color }}>
+                            <span className="header-divider">|</span>
+                            <span className={`status-badge ${statusConfig.className}`}>
                               {statusConfig.text}
                             </span>
                           </div>
+                          <span className="order-id">ID: #{order._id?.slice(-8).toUpperCase()}</span>
                         </div>
 
+                        {/* Product List */}
                         <div className="order-products">
                           {order.orderItems?.map((item, idx) => (
                             <div className="product-item" key={idx}>
@@ -195,38 +209,54 @@ function MyOrders() {
                                 alt={item.name}
                                 className="product-image"
                                 onError={(e) => {
-                                  e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect fill='%23f5f5f5' width='80' height='80'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='24'%3E📦%3C/text%3E%3C/svg%3E";
+                                  e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect fill='%23f1f5f9' width='80' height='80' rx='8'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='24'%3E📦%3C/text%3E%3C/svg%3E";
                                 }}
                               />
                               <div className="product-info">
-                                <div className="product-name">{item.name}</div>
-                                <div className="product-quantity">x{item.quantity}</div>
-                              </div>
-                              <div className="product-prices">
-                                {item.originalPrice && Number(item.originalPrice) > Number(item.price) && (
-                                  <div className="original-price">₫{formatVND(item.originalPrice)}</div>
-                                )}
-                                <div className="current-price">₫{formatVND(item.price)}</div>
+                                <h3 className="product-name">{item.name}</h3>
+                                <p className="product-meta">Số lượng: {item.quantity}</p>
+                                <p className="product-price-inline">₫{formatVND(item.price)}</p>
                               </div>
                             </div>
                           ))}
                         </div>
 
+                        {/* Order Footer */}
                         <div className="order-card-footer">
-                          <div className="footer-left">
-                            <span className="order-date">🕐 {formatDate(order.createdAt)}</span>
+                          <div className="footer-date">
+                            Đặt hàng ngày <span className="date-value">{formatDate(order.createdAt)}</span>
                           </div>
-                          <div className="footer-right">
-                            <span className="total-label">Thành tiền:</span>
-                            <span className="total-price">₫{formatVND(order.totalPrice)}</span>
+                          <div className="footer-actions-row">
+                            <div className="total-block">
+                              <span className="total-label">Tổng tiền</span>
+                              <span className="total-price">₫{formatVND(order.totalPrice)}</span>
+                            </div>
+                            <div className="action-buttons">
+                              <Link to={`/order/${order._id}`} className="btn-detail">Xem Chi Tiết</Link>
+                              {normalized === "delivered" && (
+                                <>
+                                  <button
+                                    className="btn-review"
+                                    onClick={() => {
+                                      const firstItem = order.orderItems?.[0];
+                                      if (firstItem) {
+                                        setReviewProduct({
+                                          _id: firstItem.productId || firstItem.product || firstItem._id,
+                                          name: firstItem.name,
+                                          images: firstItem.images || (firstItem.image ? [{ url: firstItem.image }] : []),
+                                          category: firstItem.category || "",
+                                        });
+                                        setReviewOrderId(order._id);
+                                      }
+                                    }}
+                                  >
+                                    Đánh giá
+                                  </button>
+                                  <button className="btn-rebuy">Mua Lại</button>
+                                </>
+                              )}
+                            </div>
                           </div>
-                        </div>
-
-                        <div className="order-actions">
-                          {normalizeStatus(order.orderStatus) === "delivered" && (
-                            <button className="btn-rebuy">Mua Lại</button>
-                          )}
-                          <Link to={`/order/${order._id}`} className="btn-detail">Xem Chi Tiết</Link>
                         </div>
                       </div>
                     );
@@ -234,11 +264,26 @@ function MyOrders() {
                 </div>
               )}
             </div>
-          </div>
+          </main>
+
         </div>
       </div>
 
       <Footer />
+
+      {/* Review Modal */}
+      <ReviewComment
+        isOpen={!!reviewProduct}
+        onClose={() => {
+          setReviewProduct(null);
+          setReviewOrderId(null);
+        }}
+        product={reviewProduct}
+        orderId={reviewOrderId}
+        onSuccess={() => {
+          dispatch(getMyOrders());
+        }}
+      />
     </>
   );
 }
