@@ -17,7 +17,7 @@ function ProductDetails() {
   const [activeTab, setActiveTab] = useState(0)
   const [selectedImage, setSelectedImage] = useState(0)
   const [selectedColor, setSelectedColor] = useState(0)
-  const [selectedSize, setSelectedSize] = useState(1) // Default to M
+  const [selectedSize, setSelectedSize] = useState(0) // Default to first size
 
   // State của Redux
   const { loading, error, product } = useSelector((state) => state.product)
@@ -140,11 +140,14 @@ function ProductDetails() {
   }
 
   const addToCart = () => {
-    dispatch(addItemsToCart({ id, quantity }))
+    const color = productColors[selectedColor]?.name || '';
+    const size = productSizes[selectedSize]?.name || '';
+    dispatch(addItemsToCart({ id, quantity, size, color }))
   }
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN').format(price) + '₫';
+    if (price === undefined || price === null) return '0 ₫';
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(price));
   }
 
   // Lấy ảnh sản phẩm hoặc sử dụng ảnh dự phòng
@@ -236,7 +239,13 @@ function ProductDetails() {
                         key={index}
                         className={`color-swatch ${selectedColor === index ? 'active' : ''}`}
                         style={{ backgroundColor: color.code }}
-                        onClick={() => setSelectedColor(index)}
+                        onClick={() => {
+                          setSelectedColor(index);
+                          // Tự động chuyển ảnh theo màu (nếu có ảnh tương ứng)
+                          if (index < productImages.length) {
+                            setSelectedImage(index);
+                          }
+                        }}
                         title={color.name}
                       />
                     ))}
@@ -290,7 +299,9 @@ function ProductDetails() {
                       price: product.price,
                       image: product.images?.[0]?.url,
                       stock: product.stock,
-                      quantity: quantity
+                      quantity: quantity,
+                      size: productSizes[selectedSize]?.name || '',
+                      color: productColors[selectedColor]?.name || ''
                     };
                     sessionStorage.setItem("directBuyItem", JSON.stringify(buyNowItem));
                     dispatch(removeErrors()); // Clean up errors if any

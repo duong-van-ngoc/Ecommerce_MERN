@@ -1,6 +1,6 @@
 
 // Mô hình dữ liệu sản phẩm
-import mongoose  from "mongoose";   
+import mongoose from "mongoose";
 
 const productSchema = new mongoose.Schema({ // tạo schema cho sản phẩm
     name: {
@@ -14,11 +14,48 @@ const productSchema = new mongoose.Schema({ // tạo schema cho sản phẩm
         type: String,
         required: [true, "Nhập mô tả sản phẩm"]
     },
-    price: { // giá sản phẩm
+    // --- NHÓM GIÁ & KHO ---
+    price: { // giá bán (sau khi giảm)
         type: Number,
         required: [true, "Nhập giá sản phẩm"],
         maxLength: [10, "Giá sản phẩm không được vượt quá 10 ký tự"]
     },
+    originalPrice: { // giá gốc (để hiện gạch ngang)
+        type: Number,
+        default: 0
+    },
+    stock: { // số lượng tồn kho
+        type: Number,
+        required: [true, "Nhập số lượng sản phẩm"],
+        maxLength: [10, "Số lượng sản phẩm không được vượt quá 10 ký tự"],
+        default: 1
+    },
+    sold: { // số lượng đã bán (social proof)
+        type: Number,
+        default: 0
+    },
+
+    // --- NHÓM THUỘC TÍNH SẢN PHẨM (Fashion) ---
+    category: { // danh mục (Áo thun, Quần Jean...)
+        type: String,
+        required: [true, "Nhập danh mục sản phẩm"]
+    },
+    brand: { // thương hiệu
+        type: String,
+        default: "No Brand"
+    },
+    material: { // chất liệu (Cotton, Len...)
+        type: String,
+        default: ""
+    },
+    sizes: [ // mảng các size có sẵn: ["S", "M", "L"]
+        { type: String }
+    ],
+    colors: [ // mảng các màu có sẵn: ["Red", "Blue"]
+        { type: String }
+    ],
+
+    // --- HÌNH ẢNH & ĐÁNH GIÁ ---
     ratings: { // đánh giá trung bình của sản phẩm
         type: Number,
         default: 0
@@ -36,16 +73,6 @@ const productSchema = new mongoose.Schema({ // tạo schema cho sản phẩm
         }
     ],
 
-    category: { // danh mục sản phẩm
-        type: String,
-        required: [true, "Nhập danh mục sản phẩm"]
-    },
-    stock: { // số lượng sản phẩm trong kho
-        type: Number,
-        required: [true, "Nhập số lượng sản phẩm"],
-        maxLength: [10, "Số lượng sản phẩm không được vượt quá 10 ký tự"],
-        default: 1
-    },
     numOfReviews: { // số lượng đánh giá của sản phẩm
         type: Number,
         default: 0
@@ -55,13 +82,13 @@ const productSchema = new mongoose.Schema({ // tạo schema cho sản phẩm
         {
             user: { // id người dùng đánh giá
                 type: mongoose.Schema.ObjectId, // tham chiếu đến bảng User
-                ref: "User", 
+                ref: "User",
                 required: true
             },
             name: { // tên người dùng đánh giá
                 type: String,
-                required: true 
-            },  
+                required: true
+            },
             rating: { // số sao đánh giá
                 type: Number,
                 required: true
@@ -75,7 +102,7 @@ const productSchema = new mongoose.Schema({ // tạo schema cho sản phẩm
     user: {
         type: mongoose.Schema.ObjectId,
         ref: "User",
-        required:true
+        required: true
     },
     createdAt: { // ngày tạo sản phẩm
         type: Date,
@@ -85,4 +112,4 @@ const productSchema = new mongoose.Schema({ // tạo schema cho sản phẩm
 })
 
 export default mongoose.model("Product", productSchema); // xuất model Product để sử dụng ở các file khác
-                                                        // Product: tên model, productSchema: schema của model
+// Product: tên model, productSchema: schema của model

@@ -4,9 +4,9 @@ import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import '../styles/AdminLayout.css';
 
-/**
- * AdminLayout - Layout chung cho toàn bộ trang admin
- */
+
+//  AdminLayout - Layout chung cho toàn bộ trang admin
+
 function AdminLayout() {
     const { isAuthenticated, user } = useSelector(state => state.user);
 

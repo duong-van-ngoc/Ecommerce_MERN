@@ -1,42 +1,45 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
-import axios from "axios"; 
+import axios from "axios";
 // thêm san pham vao gio hang
 
-export const addItemsToCart = createAsyncThunk('cart/addItemsToCart', async({id, quantity}, {rejectWithValue}) => {
+export const addItemsToCart = createAsyncThunk('cart/addItemsToCart', async ({ id, quantity, isUpdate, size, color }, { rejectWithValue }) => {
     try {
         const { data } = await axios.get(`/api/v1/products/${id}`);
         console.log('thêm sản phẩm vào giỏ hàng thành công (cartSlice) ', data);
-        
+
         return {
             product: data.product._id,
             name: data.product.name,
             price: data.product.price,
             image: data.product.images[0].url,
             stock: data.product.stock,
-            quantity: quantity
+            quantity: quantity,
+            isUpdate: isUpdate,
+            size: size,
+            color: color
 
         }
 
     } catch (error) {
-        return rejectWithValue(error.response?.data ||  'Đã xảy ra lỗi')
+        return rejectWithValue(error.response?.data || 'Đã xảy ra lỗi')
     }
 })
 
 
 
 // them vao gio hang 
-const cartSlice = createSlice ({
+const cartSlice = createSlice({
     name: 'cart',
     // định nghĩa trạng thái ban đầu của giỏ hàng 
     initialState: {
-        cartItems: JSON.parse(localStorage.getItem('cartItems'))  || [], 
-        loading:false,
+        cartItems: JSON.parse(localStorage.getItem('cartItems')) || [],
+        loading: false,
         error: null,
         success: false,
         message: null,
-        removingId:null,
-        shippingInfo:  JSON.parse(localStorage.getItem('shippingInfo'))  || {
+        removingId: null,
+        shippingInfo: JSON.parse(localStorage.getItem('shippingInfo')) || {
             address: "",
             pinCode: "",
             phoneNumber: "",
@@ -47,35 +50,46 @@ const cartSlice = createSlice ({
             provinceName: "",
             districtName: "",
             wardName: "",
-        }, 
+        },
 
 
     },
     reducers: {
-        removeErrors:(state) => {
+        removeErrors: (state) => {
             state.error = null
         },
-        removeMessage:(state) => {
+        removeMessage: (state) => {
             state.message = null
             state.success = false
         },
-        removeItemFromCart:(state, action) => {
-            state.removingId = action.payload; 
-            
-            state.cartItems = state.cartItems.filter(item => item.product !== action.payload); // lọc bỏ sản phẩm có id trùng với payload
-            localStorage.setItem('cartItems', JSON.stringify(state.cartItems)); // cập nhật lại localStorage
-            state.removingId = null; 
+        removeItemFromCart: (state, action) => {
+            const { product, size, color } = action.payload;
 
+            // Lọc bỏ sản phẩm khớp cả ID, size và màu
+            state.cartItems = state.cartItems.filter(item =>
+                !(item.product === product && item.size === size && item.color === color)
+            );
+
+            localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
         },
-        saveShippingInfo:(state, action) => {
+        saveShippingInfo: (state, action) => {
             state.shippingInfo = action.payload
             localStorage.setItem('shippingInfo', JSON.stringify(state.shippingInfo));
 
 
         },
+        removeOrderedItems: (state, action) => {
+            const orderedItems = action.payload;
 
-     },
-     extraReducers : (builder) => {
+            // Tạo danh sách các key duy nhất của sản phẩm đã đặt (product + size + color)
+            const orderedKeys = new Set(orderedItems.map(item => `${item.product}-${item.size}-${item.color}`));
+
+            state.cartItems = state.cartItems.filter(item => !orderedKeys.has(`${item.product}-${item.size}-${item.color}`));
+            localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
+        },
+
+    },
+    extraReducers: (builder) => {
         // them san pham vao gio hang
         builder.addCase(addItemsToCart.pending, (state) => {
             state.loading = true;
@@ -83,16 +97,24 @@ const cartSlice = createSlice ({
             state.success = false;
             state.message = null;
         })
-        
+
         builder.addCase(addItemsToCart.fulfilled, (state, action) => {
             const item = action.payload;
 
-            // kiem tra san pham da co trong gio hang chua
-            const exitstingItem = state.cartItems.find((i) => i.product === item.product);
-            if(exitstingItem) {
-                
-                exitstingItem.quantity = item.quantity;
-                state.message = `Đã cập nhật số lượng ${item.name} trong giỏ hàng thành công`;
+            // kiem tra san pham da co trong gio hang chua (Check cả size và color)
+            const exitstingItem = state.cartItems.find((i) =>
+                i.product === item.product && i.size === item.size && i.color === item.color
+            );
+
+            if (exitstingItem) {
+
+                if (item.isUpdate) {
+                    exitstingItem.quantity = item.quantity;
+                    state.message = `Đã cập nhật số lượng ${item.name} trong giỏ hàng thành công`;
+                } else {
+                    exitstingItem.quantity += item.quantity;
+                    state.message = `Đã thêm ${item.name} vào giỏ hàng thành công`;
+                }
 
             } else {
                 state.cartItems.push(item);
@@ -107,16 +129,16 @@ const cartSlice = createSlice ({
             localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
 
         })
-        
+
         builder.addCase(addItemsToCart.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload?.message || 'Đã xảy ra lỗi khi thêm vào giỏ hàng';
         })
 
-    
+
     }
 
 })
 
-export const {removeErrors, removeMessage, removeItemFromCart,saveShippingInfo, } = cartSlice.actions
+export const { removeErrors, removeMessage, removeItemFromCart, saveShippingInfo, removeOrderedItems } = cartSlice.actions
 export default cartSlice.reducer
