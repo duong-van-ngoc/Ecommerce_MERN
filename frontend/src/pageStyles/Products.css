@@ -151,19 +151,7 @@
   padding: 24px;
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  max-height: calc(100vh - 120px);
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-secondary) transparent;
-}
-
-.filter-sidebar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.filter-sidebar::-webkit-scrollbar-thumb {
-  background-color: var(--color-secondary);
-  border-radius: 3px;
+  /* Removed max-height and overflow to disable scroll as requested */
 }
 
 .filter-header {

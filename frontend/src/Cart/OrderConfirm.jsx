@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom'
 import { createOrder } from '../features/orders/orderSlice' // Import createOrder thunk
 import OrderSuccess from './OrderSuccess' // Import popup component
 import { toast } from 'react-toastify' // Import toast
+import { removeOrderedItems } from '../features/cart/cartSlice'
 
 function OrderConfirm() {
   const dispatch = useDispatch() // Thêm dispatch hook
@@ -18,8 +19,12 @@ function OrderConfirm() {
   // Kiểm tra sản phẩm mua ngay
   let cartItems = globalCartItems;
   const directBuyItem = sessionStorage.getItem("directBuyItem");
+  const selectedOrderItems = sessionStorage.getItem("selectedOrderItems");
+
   if (directBuyItem) {
     cartItems = [JSON.parse(directBuyItem)];
+  } else if (selectedOrderItems) {
+    cartItems = JSON.parse(selectedOrderItems);
   }
 
   // State để điều khiển popup thông báo thành công
@@ -117,6 +122,10 @@ function OrderConfirm() {
       setCreatedOrderId(result.order._id)
       setShowSuccessPopup(true)
       sessionStorage.removeItem("directBuyItem"); // Xóa mục mua ngay sau khi thành công
+      sessionStorage.removeItem("selectedOrderItems"); // Xóa mục đã chọn sau khi thành công
+
+      // Xóa sản phẩm đã đặt khỏi giỏ hàng
+      dispatch(removeOrderedItems(cartItems));
 
       // Toast success
       toast.success('Đặt hàng thành công!', {
@@ -413,7 +422,7 @@ function OrderConfirm() {
                     disabled={cartItems.length === 0}
                     title={cartItems.length === 0 ? 'Giỏ hàng đang trống' : ''}
                   >
-                    Đặt hàng
+                    Xác nhận đặt hàng
                   </button>
                 </div>
               </div>

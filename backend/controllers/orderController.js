@@ -40,50 +40,50 @@ export const createNewOrder = handleAsyncError(async (req, res, next) => {
 
 // xem chi tiết nội dung của một đơn hàng 
 
-export const getSingleOrder = handleAsyncError(async(req, res, next) => {
-    const order = await Order.findById(req.params.id).populate("user", "name email")
-    if(!order) {
-        return next(new HandleError("Không tìm thấy đơn đặt hàng", 404))
+export const getSingleOrder = handleAsyncError(async (req, res, next) => {
+  const order = await Order.findById(req.params.id).populate("user", "name email")
+  if (!order) {
+    return next(new HandleError("Không tìm thấy đơn đặt hàng", 404))
 
-    }
-    res.status(200).json({
-        success: true,
-        order
-    })
+  }
+  res.status(200).json({
+    success: true,
+    order
+  })
 
 
 })
 
 // Xem tất cả đơn hàng của user hiện tại
 
-export const allMyOrder = handleAsyncError(async(req, res, next) => {
-    const orders = await Order.find({user: req.user.id})
-    if(!orders) {
-        return next(new HandleError("Không tìm thấy đơn hàng", 404))
+export const allMyOrder = handleAsyncError(async (req, res, next) => {
+  const orders = await Order.find({ user: req.user.id })
+  if (!orders) {
+    return next(new HandleError("Không tìm thấy đơn hàng", 404))
 
-    }
+  }
 
-    res.status(200).json({
-        success: true,
-        orders
-    })
+  res.status(200).json({
+    success: true,
+    orders
+  })
 })
 
 //   lấy tất cả các đơn đặt hàng 
 
-export const getAllOrder = handleAsyncError(async(req, res, next) => {
-    const orders = await Order.find();
+export const getAllOrder = handleAsyncError(async (req, res, next) => {
+  const orders = await Order.find().populate("user", "name email");
 
-    let totalAmount = 0
-    orders.forEach(order => {
-        totalAmount += order.totalPrice
-    })
+  let totalAmount = 0
+  orders.forEach(order => {
+    totalAmount += order.totalPrice
+  })
 
-    res.status(200).json({
-        success: true,
-        orders,
-        totalAmount
-    })
+  res.status(200).json({
+    success: true,
+    orders,
+    totalAmount
+  })
 })
 
 // cập nhật trạng thái đơn hàng
@@ -129,30 +129,30 @@ export const updateOrderStauts = handleAsyncError(async (req, res, next) => {
 
 
 async function updateQuantity(id, quantity) {
-    const product = await Product.findById(id);
-    if(!product) {
-        throw new HandleError("Không tìm thấy sản phẩm", 404);
-    }
-    product.stock -= quantity
-    await product.save({validateBeforeSave: false})
+  const product = await Product.findById(id);
+  if (!product) {
+    throw new HandleError("Không tìm thấy sản phẩm", 404);
+  }
+  product.stock -= quantity
+  await product.save({ validateBeforeSave: false })
 }
 
-export const deleteOrder = handleAsyncError(async(req, res, next) => {
-    const order = await Order.findById(req.params.id) 
+export const deleteOrder = handleAsyncError(async (req, res, next) => {
+  const order = await Order.findById(req.params.id)
 
-    if(!order) {
-        return next(new HandleError("Không tìm thấy đơn hàng", 404))
-    }
-    if(order.orderStatus !== 'Delivered') {
-        return next(new HandleError("Đơn hàng đang được xử lý không thể xóa đơn hàng", 404))
-    }
+  if (!order) {
+    return next(new HandleError("Không tìm thấy đơn hàng", 404))
+  }
+  if (order.orderStatus !== 'Delivered') {
+    return next(new HandleError("Đơn hàng đang được xử lý không thể xóa đơn hàng", 404))
+  }
 
-    await Order.deleteOne({
-        _id: req.params.id
-    })
+  await Order.deleteOne({
+    _id: req.params.id
+  })
 
-    res.status(200).json({
-        success: true,
-        message: "Xóa đơn hàng thành công"
-    })
+  res.status(200).json({
+    success: true,
+    message: "Xóa đơn hàng thành công"
+  })
 })

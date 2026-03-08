@@ -130,7 +130,7 @@ function Products() {
   const handleSortChange = (e) => {
     setSortBy(e.target.value);
     // TODO: Send to backend when API supports sorting
-    toast.info('Sorting will be available soon!', { position: 'top-center' });
+    toast.info('lỗi', { position: 'top-center' });
   };
 
   // Clear all filters

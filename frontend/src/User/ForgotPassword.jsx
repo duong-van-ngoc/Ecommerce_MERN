@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react'
-import '../UserStyles/Form.css'
+import '../UserStyles/ForgotPassword.css'
 import PageTitle from '../components/PageTitle'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { useDispatch, useSelector } from 'react-redux'
 import { forgotPassword, removeErrors, removeSuccess } from '../features/user/userSlice'
 import { toast } from 'react-toastify'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Loader from '../components/Loader'
-
 
 function ForgotPassword() {
     const {loading, error, success, message} = useSelector(state => state.user);
@@ -19,7 +18,7 @@ function ForgotPassword() {
     const ForgotPasswordEmail = (e) => {
         e.preventDefault();
         const myForm = new FormData()
-        myForm.set('email', email) 
+        myForm.set('email', email)
         dispatch(forgotPassword(myForm))
         setEmail("");
     }
@@ -42,36 +41,71 @@ function ForgotPassword() {
 
     },[dispatch, success])
 
-
-
-
-
-
-
   return (
     <>
     {loading?(<Loader />) : (
         <>
             <PageTitle title="Quên mật khẩu" />
             <Navbar />
-            <div className="container forgot-container">
-                <div className="form-content email-group">
-                    <form  className="form" onSubmit={ForgotPasswordEmail}>
-                        <h2>Quen mat khau</h2>
-                        <div className="input-group">
-                            <input type="email" 
-                                placeholder="Nhap email da dang ki"
-                                name="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                />
-                        </div>
-                        <button className="authBtn">
-                        Gửi
-                        </button>
-                    </form>
+            <main className="forgot-password-page">
+                <div className="forgot-password-background">
+                    <div className="forgot-password-orb forgot-password-orb-left" />
+                    <div className="forgot-password-orb forgot-password-orb-right" />
                 </div>
-            </div>
+
+                <section className="forgot-password-shell">
+                    <div className="forgot-password-card">
+                        <div className="forgot-password-header">
+                            <div className="forgot-password-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                                    <path d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 0h10.5A2.25 2.25 0 0119.5 12.75v6A2.25 2.25 0 0117.25 21h-10.5A2.25 2.25 0 014.5 18.75v-6A2.25 2.25 0 016.75 10.5z" strokeLinecap="round" strokeLinejoin="round" />
+                                    <path d="M9.75 15.75l1.5 1.5 3-3" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </div>
+                            <h1>Quên mật khẩu</h1>
+                            <p>Nhập email của bạn để nhận liên kết đặt lại mật khẩu qua hộp thư điện tử.</p>
+                        </div>
+
+                        <form className="forgot-password-form" onSubmit={ForgotPasswordEmail}>
+                            <div className="forgot-password-field">
+                                <label htmlFor="forgot-password-email">Địa chỉ Email</label>
+                                <div className="forgot-password-input-group">
+                                    <span className="forgot-password-input-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                                            <path d="M21.75 7.5v9A2.25 2.25 0 0119.5 18.75h-15A2.25 2.25 0 012.25 16.5v-9m19.5 0A2.25 2.25 0 0019.5 5.25h-15A2.25 2.25 0 002.25 7.5m19.5 0l-8.69 5.527a2.25 2.25 0 01-2.12 0L2.25 7.5" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    </span>
+                                    <input
+                                        id="forgot-password-email"
+                                        type="email"
+                                        placeholder="name@company.com"
+                                        name="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <button className="forgot-password-submit" type="submit">
+                                <span>Gửi yêu cầu</span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                                    <path d="M6 12h12" strokeLinecap="round" strokeLinejoin="round" />
+                                    <path d="M13.5 6.75L18.75 12l-5.25 5.25" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </button>
+                        </form>
+
+                        <div className="forgot-password-footer">
+                            <Link to="/login" className="forgot-password-back-link">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                                    <path d="M15.75 19.5L8.25 12l7.5-7.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                                Quay lại đăng nhập
+                            </Link>
+                        </div>
+                    </div>
+                </section>
+            </main>
             <Footer />
 
         </>

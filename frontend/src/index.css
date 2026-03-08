@@ -1,24 +1,87 @@
-:root { 
-    
-    --primary-main: #6C5B7B; 
-    --primary-dark: #4E4A59; 
-    --primary-light: #F8B5B1; 
-    
-    --bg-primary: #2E2E3C; 
-    --bg-secondary: #3B3B4F; 
-    
-    --text-primary: #EAE7E0; 
-    --text-secondary: #B9A7A0; 
-    --text-light: #FFFFFF; 
-    
-    --border-color: #5C4A6F; 
-    
+@import "tailwindcss";
 
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2); 
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.15); 
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap');
+
+@theme {
+    --color-accent: #722F37;
+    --color-bg-primary: #FAFAF8;
+    --color-surface: #FFFFFF;
+    --color-text-primary: #1A1A1A;
+    --color-text-secondary: #6B6B6B;
+
+    --font-display: 'Cormorant Garamond', Georgia, serif;
+    --font-body: 'Outfit', sans-serif;
+
+    --animate-fade-up: fadeInUp 0.8s ease-out forwards;
+    --animate-fade-left: fadeInLeft 0.8s ease-out forwards;
+    --animate-fade-right: fadeInRight 0.8s ease-out forwards;
 }
-*{
-    margin:0;
-    padding: 0;
-    box-sizing: border-box;
+
+@layer base {
+    body {
+        @apply font-body bg-bg-primary text-text-primary overflow-x-hidden;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Custom Utilities from Design */
+.btn-editorial {
+    @apply relative overflow-hidden;
+}
+
+.btn-editorial::before {
+    content: '';
+    @apply absolute top-0 -left-full w-full h-full bg-accent transition-all duration-300 -z-0;
+}
+
+.btn-editorial:hover::before {
+    @apply left-0;
+}
+
+.btn-editorial span {
+    @apply relative z-10 block;
+}
+
+.btn-editorial:hover span {
+    @apply text-white;
+}
+
+.writing-vertical {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
 }

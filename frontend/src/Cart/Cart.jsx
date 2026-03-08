@@ -5,7 +5,7 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { useSelector, useDispatch } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
-import { addItemsToCart, removeItemFromCart, removeMessage, removeErrors } from '../features/cart/cartSlice'
+import { addItemsToCart, removeItemFromCart, removeMessage, removeErrors, removeOrderedItems } from '../features/cart/cartSlice'
 import { toast } from 'react-toastify'
 
 function Cart() {
@@ -15,16 +15,23 @@ function Cart() {
   const { cartItems, loading, success, message, error } = useSelector((state) => state.cart)
   const [selectedItems, setSelectedItems] = useState({})
 
+  const getItemKey = (item) => `${item.product}-${item.size || ''}-${item.color || ''}`
+
   // Khởi tạo các item đã chọn 
   useEffect(() => {
-    if (cartItems.length > 0 && Object.keys(selectedItems).length === 0) {
-      const initialSelected = {}
-      cartItems.forEach(item => {
-        initialSelected[item.product] = false 
-      })
-      setSelectedItems(initialSelected)
+    if (cartItems.length > 0) {
+      // Chỉ reset nếu selectedItems rỗng hoặc có item mới chưa được track
+      // Tuy nhiên để đơn giản, có thể giữ logic cũ hoặc merge
+      // Ở đây giữ logic: nếu chưa select gì thì init false
+      if (Object.keys(selectedItems).length === 0) {
+        const initialSelected = {}
+        cartItems.forEach(item => {
+          initialSelected[getItemKey(item)] = false
+        })
+        setSelectedItems(initialSelected)
+      }
     }
-  }, []) 
+  }, [cartItems]) // Thêm dependencies để track changes tốt hơn nếu cần
 
   useEffect(() => {
     if (success && message) {
@@ -40,7 +47,7 @@ function Cart() {
     }
   }, [error, dispatch])
 
-  const selectedCartItems = cartItems.filter(item => selectedItems[item.product])
+  const selectedCartItems = cartItems.filter(item => selectedItems[getItemKey(item)])
   const subtotal = selectedCartItems.reduce((acc, item) => acc + item.price * item.quantity, 0)
   const discount = Math.floor(subtotal * 0.1)
   const shippingCharges = subtotal >= 500000 ? 0 : 30000
@@ -51,40 +58,45 @@ function Cart() {
   const toggleSelectAll = (checked) => {
     const newSelected = {}
     cartItems.forEach(item => {
-      newSelected[item.product] = checked
+      newSelected[getItemKey(item)] = checked
     })
     setSelectedItems(newSelected)
   }
 
-  const toggleItem = (productId) => {
-    setSelectedItems(prev => ({ ...prev, [productId]: !prev[productId] }))
+  const toggleItem = (item) => {
+    const key = getItemKey(item)
+    setSelectedItems(prev => ({ ...prev, [key]: !prev[key] }))
   }
 
-  const allSelected = cartItems.length > 0 && cartItems.every(item => selectedItems[item.product])
+  const allSelected = cartItems.length > 0 && cartItems.every(item => selectedItems[getItemKey(item)])
 
-  const updateQuantity = (productId, change, currentQty, stock) => {
+  const updateQuantity = (productId, change, currentQty, stock, size, color) => {
     const newQty = currentQty + change
     if (newQty < 1) return
     if (newQty > stock) {
       toast.error(`Số lượng không thể vượt quá ${stock}`, { position: 'top-center', autoClose: 2000 })
       return
     }
-    dispatch(addItemsToCart({ id: productId, quantity: newQty }))
+    dispatch(addItemsToCart({ id: productId, quantity: newQty, isUpdate: true, size, color }))
   }
 
-  const deleteItem = (productId) => {
-    dispatch(removeItemFromCart(productId))
+  const deleteItem = (productId, size, color) => {
+    dispatch(removeItemFromCart({ product: productId, size, color }))
     toast.success('Đã xóa sản phẩm', { position: 'top-center', autoClose: 2000 })
   }
 
   const deleteSelected = () => {
-    const selectedIds = Object.keys(selectedItems).filter(id => selectedItems[id])
-    if (selectedIds.length === 0) {
+    const itemsToDelete = cartItems.filter(item => selectedItems[getItemKey(item)])
+
+    if (itemsToDelete.length === 0) {
       toast.error('Vui lòng chọn sản phẩm cần xóa', { position: 'top-center', autoClose: 2000 })
       return
     }
-    selectedIds.forEach(id => dispatch(removeItemFromCart(id)))
-    toast.success(`Đã xóa ${selectedIds.length} sản phẩm`, { position: 'top-center', autoClose: 2000 })
+
+    itemsToDelete.forEach(item => {
+      dispatch(removeItemFromCart({ product: item.product, size: item.size, color: item.color }))
+    })
+    toast.success(`Đã xóa ${itemsToDelete.length} sản phẩm`, { position: 'top-center', autoClose: 2000 })
   }
 
   const checkoutHandler = () => {
@@ -93,6 +105,7 @@ function Cart() {
       return
     }
     sessionStorage.removeItem("directBuyItem"); // Xóa mục mua ngay sau khi thành công
+    sessionStorage.setItem("selectedOrderItems", JSON.stringify(selectedCartItems)); // Lưu các sản phẩm đã chọn
     navigate('/login?redirect=/shipping')
   }
 
@@ -132,9 +145,9 @@ function Cart() {
             </div>
           ) : (
             <div className="cart-grid">
-              
+
               <div className="cart-left-column">
-               
+
                 <div className="cart-select-header">
                   <div className="select-all-wrapper">
                     <input
@@ -153,10 +166,10 @@ function Cart() {
                   </button>
                 </div>
 
-                
+
                 <div className="cart-items-list">
                   {cartItems.map((item, index) => {
-                    
+
                     const mockOriginalPrice = Math.round(item.price * 1.3)
                     const discountPercent = Math.round((1 - item.price / mockOriginalPrice) * 100)
 
@@ -166,7 +179,7 @@ function Cart() {
                           type="checkbox"
                           className="cart-checkbox"
                           checked={selectedItems[item.product] || false}
-                          onChange={() => toggleItem(item.product)}
+                          onChange={() => toggleItem(item)}
                         />
 
                         <div className="item-image" onClick={() => navigate(`/product/${item.product}`)}>
@@ -179,9 +192,9 @@ function Cart() {
                           </h3>
 
                           <div className="item-variant">
-                            <span>Màu: <strong>Đen</strong></span>
+                            <span>Màu: <strong>{item.color || 'Không'}</strong></span>
                             <span className="variant-divider">|</span>
-                            <span>Size: <strong>M</strong></span>
+                            <span>Size: <strong>{item.size || 'Không'}</strong></span>
                           </div>
 
                           <div className="item-price-row">
@@ -195,18 +208,18 @@ function Cart() {
                           <div className="quantity-control">
                             <button
                               className="qty-btn"
-                              onClick={() => updateQuantity(item.product, -1, item.quantity, item.stock)}
+                              onClick={() => updateQuantity(item.product, -1, item.quantity, item.stock, item.size, item.color)}
                               disabled={loading || item.quantity <= 1}
                             >−</button>
                             <span className="qty-value">{item.quantity}</span>
                             <button
                               className="qty-btn"
-                              onClick={() => updateQuantity(item.product, 1, item.quantity, item.stock)}
+                              onClick={() => updateQuantity(item.product, 1, item.quantity, item.stock, item.size, item.color)}
                               disabled={loading || item.quantity >= item.stock}
                             >+</button>
                           </div>
 
-                          <button className="delete-btn" onClick={() => deleteItem(item.product)} disabled={loading}>
+                          <button className="delete-btn" onClick={() => deleteItem(item.product, item.size, item.color)} disabled={loading}>
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>

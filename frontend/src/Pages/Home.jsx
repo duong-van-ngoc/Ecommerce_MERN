@@ -1,55 +1,62 @@
-import React ,{useEffect} from 'react'
-import Footer from '../components/Footer'
-import Navbar from '../components/Navbar'
-import ImageSlide from '../components/ImageSlider'
-import Product from '../components/Product'
-import Loader from '../components/Loader'
+import React, { useEffect } from 'react';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import Loader from '../components/Loader';
+import PageTitle from '../components/PageTitle';
 
-import '../pageStyles/Home.css'
-import PageTitle from '../components/PageTitle'
-import { useDispatch, useSelector } from 'react-redux'
-import {getProduct, removeErrors } from '../features/products/productSlice'
-import {toast} from 'react-toastify'
+// New Components (Maison Style)
+import HeroSection from '../components/HeroSection';
+import CategoryGrid from '../components/CategoryGrid';
+import NewArrivals from '../components/NewArrivals';
 
-
-
+import { useDispatch, useSelector } from 'react-redux';
+import { getProduct, removeErrors } from '../features/products/productSlice';
+import { toast } from 'react-toastify';
 
 function Home() {
-   const {loading, error, products,productCount} =  useSelector((state) => state.product)
-  
-    const dispatch = useDispatch();
-    useEffect(() => {
+  const { loading, error, products, productCount } = useSelector((state) => state.product);
+  const dispatch = useDispatch();
 
-        dispatch(getProduct({keyword:""}));
-        
-        
-    }, [dispatch])
+  useEffect(() => {
+    dispatch(getProduct({ keyword: "" }));
+  }, [dispatch]);
 
-    useEffect(() => {
-      if(error) {
-        toast.error(error.message, {position: 'top-center' , autoClose:3000});
-        dispatch(removeErrors())
-      }
-    }, [dispatch, error])
+  useEffect(() => {
+    if (error) {
+      toast.error(error.message || error, { position: 'top-center', autoClose: 3000 });
+      dispatch(removeErrors());
+    }
+  }, [dispatch, error]);
+
   return (
     <>
-    {/* <Loader /> */}
-    {loading? (<Loader/>) :( <>
-        <PageTitle title = "Home - E Commerce App"/>
-        <Navbar />
-        <ImageSlide />
-        <div className="home-container">
-          <h2 className="home-heading">Xu huong hien tai</h2>
-          <div className="home-product-container">
-          {products.map((product, index) => (
-            <Product product = {product } key= {index}/>
-          ))}
-          </div>
-        </div>
-        <Footer/>
-    </>)}
+      <PageTitle title="Trang chủ" />
+
+      {/* 
+               We wrap everything in a Fragment or div. 
+               Note: Navbar and Footer are existing components. 
+               We might need to check if they match the new style later, 
+               but for now we keep them to maintain navigation functionality.
+            */}
+      <Navbar />
+
+      {/* Main Content Area */}
+      <main className="w-full min-h-screen bg-[#FAFAF8] text-[#1A1A1A]">
+
+        {/* Hero Section */}
+        <HeroSection />
+
+        {/* Shop By Category */}
+        <CategoryGrid />
+
+        {/* New Arrivals (Products) */}
+        <NewArrivals products={products} loading={loading} />
+
+      </main>
+
+      <Footer />
     </>
-  )
+  );
 }
 
-export default Home
+export default Home;

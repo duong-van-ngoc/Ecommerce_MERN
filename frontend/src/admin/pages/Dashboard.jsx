@@ -5,9 +5,6 @@ import { toast } from 'react-toastify';
 import { fetchDashboardStats, fetchRecentOrders } from '../adminSLice/adminSlice';
 import '../styles/Dashboard.css';
 
-/**
- * Dashboard - Trang tổng quan admin (Standalone - có sidebar riêng)
- */
 function Dashboard() {
     const dispatch = useDispatch();
     const { isAuthenticated, user } = useSelector(state => state.user);
