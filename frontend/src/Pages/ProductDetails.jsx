@@ -454,16 +454,6 @@ function ProductDetails() {
                   </div>
                 )}
 
-                {/* Write Review Form */}
-                <div className="write-review-section">
-                  <h3>Viết đánh giá</h3>
-                  <Rating value={0} disabled={false} />
-                  <textarea
-                    className="review-textarea"
-                    placeholder="Nhập đánh giá của bạn..."
-                  />
-                  <button className="submit-review-btn">Gửi đánh giá</button>
-                </div>
               </div>
 
 

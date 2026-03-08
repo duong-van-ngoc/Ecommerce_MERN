@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react'
 import Home from './pages/Home'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import ProductDetails from './Pages/ProductDetails'
+import ProductDetails from './pages/ProductDetails'
 import Products from './pages/Products'
 import Register from './User/Register'
 import Login from './User/Login'

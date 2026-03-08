@@ -1,0 +1,54 @@
+{
+  "compilerOptions": {
+    // Biên dịch sang chuẩn JS ES2020 (hỗ trợ ?., ??, Promise.allSettled)
+    "target": "ES2020",
+    // Dùng hệ thống module ESNext (import/export) — bắt buộc cho Vite
+    "module": "ESNext",
+    // Các API mà editor được phép nhận diện:
+    // ES2020 = JS API, DOM = Browser API (document, window), DOM.Iterable = for...of trên DOM
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    // Xử lý JSX theo cách React 17+ (không cần import React ở đầu file)
+    "jsx": "react-jsx",
+    // Resolve import theo cách của bundler (Vite) — hỗ trợ path alias, exports field
+    "moduleResolution": "bundler",
+    // Cho phép import file .ts/.tsx (cần khi dùng moduleResolution: bundler)
+    "allowImportingTsExtensions": true,
+    // Coi mỗi file là module độc lập — tương thích với cách Vite xử lý từng file riêng
+    "isolatedModules": true,
+    // Không tạo file output — vì Vite đã lo việc build, file này chỉ phục vụ editor
+    "noEmit": true,
+    // Tắt kiểm tra type nghiêm ngặt — vì dự án dùng JavaScript thuần, không có type
+    "strict": false,
+    // Bỏ qua kiểm tra type trong node_modules — tránh lỗi từ thư viện bên thứ 3
+    "skipLibCheck": true,
+    // Cho phép editor xử lý file .js và .jsx (mặc định chỉ xử lý .ts/.tsx)
+    "allowJs": true,
+    // Cho phép import thư viện CommonJS bằng cú pháp import (vd: import axios from 'axios')
+    "esModuleInterop": true,
+    // Bắt buộc viết đúng HOA/thường tên file — tránh lỗi khi deploy lên Linux
+    "forceConsistentCasingInFileNames": true,
+    // Cho phép import file .json (vd: import data from './data.json')
+    "resolveJsonModule": true,
+    // Thư mục gốc để tính đường dẫn alias
+    "baseUrl": ".",
+    // Path alias: @/* trỏ tới ./src/* (tránh import dài ../../../components/X)
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  },
+  // Chỉ scan file trong thư mục src/ — không check config bên ngoài
+  "include": [
+    "src"
+  ],
+  // Bỏ qua node_modules (quá nặng) và dist (thư mục build)
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

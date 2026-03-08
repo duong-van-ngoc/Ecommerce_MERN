@@ -30,16 +30,19 @@ function Products() {
 
   // Filter states
   const [selectedCategories, setSelectedCategories] = useState(categoryFromURL ? [categoryFromURL] : []);
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 3000 }); // Range slider values
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 30000000 }); // Range slider values (VND)
   const [selectedRating, setSelectedRating] = useState(null);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [sortBy, setSortBy] = useState('newest');
 
-  // Available options (hardcoded for now - TODO: get from backend)
+  // Available options
   const categories = ["laptop", "mobile", "tv", "fruits", "glass", "Áo", "Quần", "Giày", "Đồng Hồ", "Túi xách", "Thắt lưng", "Kính mắt", "Tất", "Mũ", "Khăn"];
   const ratings = [5, 4, 3, 2, 1];
   const PRICE_MIN = 0;
-  const PRICE_MAX = 3000;
+  const PRICE_MAX = 30000000; // 30 triệu VND
+
+  // Helper: format giá VND
+  const formatVND = (value) => value.toLocaleString('vi-VN') + '₫';
 
   // Close drawer when route changes
   useEffect(() => {
@@ -56,12 +59,27 @@ function Products() {
     return () => document.body.classList.remove('no-scroll');
   }, [isMobileDrawerOpen]);
 
-  // Fetch products
+  // Fetch products — delay (debounce) để không gọi quá nhiều khi user thao tác kéo thanh giá
   useEffect(() => {
-    // Use only the first selected category for now (backend supports single category)
-    const category = selectedCategories.length > 0 ? selectedCategories[0] : null;
-    dispatch(getProduct({ keyword, page: currentPage, category }));
-  }, [dispatch, currentPage, selectedCategories, keyword]);
+    const delayDebounceFn = setTimeout(() => {
+      const category = selectedCategories.length > 0 ? selectedCategories[0] : null;
+
+      dispatch(getProduct({
+        keyword,
+        page: currentPage,
+        category,
+        price: (priceRange.min > PRICE_MIN || priceRange.max < PRICE_MAX)
+          ? { gte: priceRange.min, lte: priceRange.max }
+          : null,
+        sort: sortBy,
+        ratings: selectedRating,
+        inStock: inStockOnly,
+      }));
+    }, 500); // Đợi 500ms khi người dùng ngừng thao tác thanh giá mới gọi API
+
+    // Hủy bỏ / reset timeout nếu có thay đổi liên tục trước khi hết 500ms
+    return () => clearTimeout(delayDebounceFn);
+  }, [dispatch, currentPage, selectedCategories, keyword, priceRange, sortBy, selectedRating, inStockOnly]);
 
   // Handle errors
   useEffect(() => {
@@ -106,31 +124,30 @@ function Products() {
     navigate(`?${newSearchParams.toString()}`);
   };
 
-  // Price range handler (TODO: backend integration)
+  // Price range handler — khi user click "Áp dụng" trên slider giá
+  // priceRange state đã được update bởi slider onChange
+  // useEffect sẽ tự trigger khi priceRange thay đổi
   const handleApplyPrice = () => {
-    // TODO: Send to backend when API supports price filtering
-    toast.info('Price filter will be available soon!', { position: 'top-center' });
+    setCurrentPage(1);
+    // useEffect sẽ tự re-fetch với priceRange mới
   };
 
-  // Rating filter handler (TODO: backend integration)
+  // Rating filter handler
   const handleRatingChange = (rating) => {
     setSelectedRating(rating === selectedRating ? null : rating);
-    // TODO: Send to backend when API supports rating filtering
-    toast.info('Rating filter will be available soon!', { position: 'top-center' });
+    setCurrentPage(1);
   };
 
-  // Stock filter handler (TODO: backend integration)
+  // Stock filter handler
   const handleStockToggle = () => {
     setInStockOnly(!inStockOnly);
-    // TODO: Send to backend when API supports stock filtering
-    toast.info('Stock filter will be available soon!', { position: 'top-center' });
+    setCurrentPage(1);
   };
 
-  // Sort handler (TODO: backend integration)
+  // Sort handler
   const handleSortChange = (e) => {
     setSortBy(e.target.value);
-    // TODO: Send to backend when API supports sorting
-    toast.info('lỗi', { position: 'top-center' });
+    setCurrentPage(1);
   };
 
   // Clear all filters
@@ -188,7 +205,7 @@ function Products() {
         </div>
       </div>
 
-      {/* Price Range - TODO: Backend integration */}
+      {/* Price Range */}
       <div className="filter-section">
         <h3>Khoảng giá</h3>
         <div className="price-range-container">
@@ -226,18 +243,14 @@ function Products() {
             </div>
           </div>
           <div className="price-values">
-            <span className="price-min">${priceRange.min}</span>
-            <span className="price-max">${priceRange.max}</span>
+            <span className="price-min">{formatVND(priceRange.min)}</span>
+            <span className="price-max">{formatVND(priceRange.max)}</span>
           </div>
         </div>
-        {priceRange.min > PRICE_MIN || priceRange.max < PRICE_MAX ? (
-          <p style={{ fontSize: '12px', color: '#f59e0b', marginTop: '8px' }}>
-            ⚠️ TODO: Backend chưa hỗ trợ
-          </p>
-        ) : null}
+
       </div>
 
-      {/* Rating Filter - TODO: Backend integration */}
+      {/* Rating Filter */}
       <div className="filter-section">
         <h3>Đánh giá</h3>
         <div className="filter-options">
@@ -259,14 +272,10 @@ function Products() {
             </div>
           ))}
         </div>
-        {selectedRating ? (
-          <p style={{ fontSize: '12px', color: '#f59e0b', marginTop: '8px' }}>
-            ⚠️ TODO: Backend chưa hỗ trợ
-          </p>
-        ) : null}
+
       </div>
 
-      {/* Stock Filter - TODO: Backend integration */}
+      {/* Stock Filter */}
       <div className="filter-section">
         <h3>Tình trạng</h3>
         <div className="filter-option">
@@ -281,11 +290,7 @@ function Products() {
             Chỉ hàng còn sẵn
           </label>
         </div>
-        {inStockOnly ? (
-          <p style={{ fontSize: '12px', color: '#f59e0b', marginTop: '8px' }}>
-            ⚠️ TODO: Backend chưa hỗ trợ
-          </p>
-        ) : null}
+
       </div>
     </>
   );

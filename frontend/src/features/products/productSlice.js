@@ -1,29 +1,61 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 
+// Lấy danh sách sản phẩm (có filter + sort + pagination)
 export const getProduct = createAsyncThunk('product/getProduct',
-  async ({ keyword, page = 1, category }, { rejectWithValue }) => {
+  async ({ keyword, page = 1, category, price, sort, ratings, inStock }, { rejectWithValue }) => {
     try {
+      // Bắt đầu với page
+      let link = `/api/v1/products?page=${page}`;
 
-     let link = '/api/v1/products?page=' +page;
+      // Filter: category
+      if (category) {
+        link += `&category=${category}`;
+      }
 
-        if (category) {
-          link += `&category=${category}`;
+      // Search: keyword
+      if (keyword) {
+        link += `&keyword=${keyword}`;
+      }
+
+      // Filter: price range
+      // price = { gte: 100000, lte: 500000 }
+      if (price) {
+        if (price.gte !== undefined && price.gte !== null && price.gte > 0) {
+          link += `&price[gte]=${price.gte}`;
         }
-
-        if (keyword) {
-          link += `&keyword=${keyword}`;
+        if (price.lte !== undefined && price.lte !== null) {
+          link += `&price[lte]=${price.lte}`;
         }
+      }
 
+      // Filter: ratings (tối thiểu N sao)
+      if (ratings && ratings > 0) {
+        link += `&ratings[gte]=${ratings}`;
+      }
 
-    //  const link = keyword
-    //     ? `/api/v1/products?keyword=${encodeURIComponent(keyword)}&page=${page}`
-    //     : `/api/v1/products?page=${page}`;
+      // Filter: stock (chỉ sản phẩm còn hàng)
+      if (inStock) {
+        link += `&stock=true`;
+      }
+
+      // Sort: price (tăng/giảm), newest, etc.
+      // sort values: "price" (tăng), "-price" (giảm), "-createdAt" (mới nhất), "-sold" (bán chạy)
+      if (sort && sort !== 'newest') {
+        // Map frontend sort values → backend sort param
+        const sortMap = {
+          'price-asc': 'price',
+          'price-desc': '-price',
+          'rating': '-ratings',
+          'bestselling': '-sold',
+          'newest': '-createdAt',
+        };
+        const sortParam = sortMap[sort] || sort;
+        link += `&sort=${sortParam}`;
+      }
 
       const { data } = await axios.get(link);
-      
-      console.log('response', data);
       return data;
 
     } catch (error) {
@@ -54,60 +86,60 @@ export const getProductDetails = createAsyncThunk(
 
 
 const productSlice = createSlice({
-    name: 'product',
-    initialState: {
-        products: [],
-        productCount:0,
-        loading:false,
-        error:null,
-        product:null,
-        resultPerPage:4,
-        totalPages:0
-    },
-    reducers:{
-        removeErrors:(state) => {
-            state.error = null
-        }
-    },
-    extraReducers: (builder) => {
-        //lay san pham 
-        builder.addCase(getProduct.pending, (state) => {
-            state.loading = true;
-            state.error = null;
-        
-        })
-        .addCase(getProduct.fulfilled, (state, action) => {
-            console.log('action.payload', action.payload);
-            state.loading = false
-            state.error = null;
-            state.products = action.payload.products;
-            state.productCount = action.payload.productCount;
-            state.resultPerPage = action.payload.resultPerPage;
-            state.totalPages = action.payload.totalPages;
-        })    
-        .addCase(getProduct.rejected, (state, action) => {
-            state.loading = false;
-            state.error = action.payload || 'Đã xảy ra lỗi';
-            state.products=[]
-        })
-
-        // lay thong tin chi tiet  san pham
-        builder.addCase(getProductDetails.pending,(state) => {
-            state.loading = true;
-            state.error = null
-        })
-        .addCase(getProductDetails.fulfilled, (state, action) => {
-            console.log('product details', action.payload);
-            state.loading = false;
-            state.error = null;
-            state.product = action.payload.product;
-        })
-        .addCase(getProductDetails.rejected, (state, action) => {
-            state.loading = false;
-            state.error = action.payload || 'Đã xảy ra lỗi';
-        })
-
+  name: 'product',
+  initialState: {
+    products: [],
+    productCount: 0,
+    loading: false,
+    error: null,
+    product: null,
+    resultPerPage: 4,
+    totalPages: 0
+  },
+  reducers: {
+    removeErrors: (state) => {
+      state.error = null
     }
+  },
+  extraReducers: (builder) => {
+    //lay san pham 
+    builder.addCase(getProduct.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+
+    })
+      .addCase(getProduct.fulfilled, (state, action) => {
+        console.log('action.payload', action.payload);
+        state.loading = false
+        state.error = null;
+        state.products = action.payload.products;
+        state.productCount = action.payload.productCount;
+        state.resultPerPage = action.payload.resultPerPage;
+        state.totalPages = action.payload.totalPages;
+      })
+      .addCase(getProduct.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Đã xảy ra lỗi';
+        state.products = []
+      })
+
+    // lay thong tin chi tiet  san pham
+    builder.addCase(getProductDetails.pending, (state) => {
+      state.loading = true;
+      state.error = null
+    })
+      .addCase(getProductDetails.fulfilled, (state, action) => {
+        console.log('product details', action.payload);
+        state.loading = false;
+        state.error = null;
+        state.product = action.payload.product;
+      })
+      .addCase(getProductDetails.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Đã xảy ra lỗi';
+      })
+
+  }
 
 })
 
