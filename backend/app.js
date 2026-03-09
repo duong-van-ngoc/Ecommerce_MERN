@@ -12,6 +12,11 @@ import cookieParser from 'cookie-parser';
 import fileUpload from 'express-fileupload';
 const app = express();
 
+// Express v5: enable 'extended' query parser (qs library)
+// to support nested bracket notation: ?price[lte]=100000 → { price: { lte: "100000" } }
+// Without this, Express v5 uses native querystring which parses as flat keys
+app.set('query parser', 'extended');
+
 
 // middleware
 app.use(express.json()); // để đọc dữ liệu dạng json từ client gửi lên

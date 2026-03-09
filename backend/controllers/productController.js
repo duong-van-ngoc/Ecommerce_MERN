@@ -19,9 +19,9 @@ export const createProducts = handleAsyncError(async (req, res, next) => {
     if (typeof req.body.images === "string") {
         images.push(req.body.images);
     } else if (res.req.files && res.req.files.images) {
-     
+
         const files = Array.isArray(res.req.files.images) ? res.req.files.images : [res.req.files.images];
-       
+
     } else {
         // No images
     }
@@ -55,7 +55,7 @@ export const createProducts = handleAsyncError(async (req, res, next) => {
     req.body.images = imagesLinks;
     req.body.user = req.user.id;
 
-   
+
 
 
     if (!req.body.sizes) req.body.sizes = [];
@@ -79,7 +79,7 @@ export const getAllProducts = handleAsyncError(async (req, res, next) => {
     const resultPerPage = 10
 
     const apiFeatures = new APIFunctionality(Product.find(), req.query)
-        .search().filter()
+        .search().filter().sort()
     // lọc filter trước khi phân trang 
     const filteredQuery = apiFeatures.query.clone()  // tạo bản sao của query để đếm số lượng sản phẩm sau khi filter
     const productCount = await filteredQuery.countDocuments()
@@ -94,10 +94,7 @@ export const getAllProducts = handleAsyncError(async (req, res, next) => {
     }
     // phân trang 
     apiFeatures.pagination(resultPerPage);
-    const products = await apiFeatures.query
-    if (!products || products.length === 0) {
-        return next(new HandleError(" không tìm thấy sản phẩm ", 404))
-    }
+    const products = await apiFeatures.query;
     res.status(200).json({
         success: true,
         products,

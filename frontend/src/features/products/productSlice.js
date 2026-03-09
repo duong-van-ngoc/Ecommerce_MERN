@@ -45,9 +45,9 @@ export const getProduct = createAsyncThunk('product/getProduct',
       if (sort && sort !== 'newest') {
         // Map frontend sort values → backend sort param
         const sortMap = {
-          'price-asc': 'price',
-          'price-desc': '-price',
-          'rating': '-ratings',
+          'price_asc': 'price',
+          'price_desc': '-price',
+          'rating_desc': '-ratings',
           'bestselling': '-sold',
           'newest': '-createdAt',
         };
