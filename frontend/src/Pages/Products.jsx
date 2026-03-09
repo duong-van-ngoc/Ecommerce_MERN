@@ -30,7 +30,8 @@ function Products() {
 
   // Filter states
   const [selectedCategories, setSelectedCategories] = useState(categoryFromURL ? [categoryFromURL] : []);
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 30000000 }); // Range slider values (VND)
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 30000000 }); // Filter values (VND)
+  const [priceError, setPriceError] = useState(''); // Validation error message
   const [selectedRating, setSelectedRating] = useState(null);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [sortBy, setSortBy] = useState('newest');
@@ -40,6 +41,14 @@ function Products() {
   const ratings = [5, 4, 3, 2, 1];
   const PRICE_MIN = 0;
   const PRICE_MAX = 30000000; // 30 triệu VND
+
+  // Preset price ranges (Shopee-style chips)
+  const pricePresets = [
+    { label: 'Dưới 100k', min: 0, max: 100000 },
+    { label: '100k - 500k', min: 100000, max: 500000 },
+    { label: '500k - 1tr', min: 500000, max: 1000000 },
+    { label: 'Trên 1tr', min: 1000000, max: PRICE_MAX },
+  ];
 
   // Helper: format giá VND
   const formatVND = (value) => value.toLocaleString('vi-VN') + '₫';
@@ -124,12 +133,22 @@ function Products() {
     navigate(`?${newSearchParams.toString()}`);
   };
 
-  // Price range handler — khi user click "Áp dụng" trên slider giá
-  // priceRange state đã được update bởi slider onChange
-  // useEffect sẽ tự trigger khi priceRange thay đổi
+  // Price input handler — validate trước khi apply
   const handleApplyPrice = () => {
+    if (priceRange.min > 0 && priceRange.max > 0 && priceRange.min > priceRange.max) {
+      setPriceError('Khoảng giá không hợp lệ');
+      return;
+    }
+    setPriceError('');
     setCurrentPage(1);
     // useEffect sẽ tự re-fetch với priceRange mới
+  };
+
+  // Preset chip click handler
+  const handlePresetClick = (preset) => {
+    setPriceRange({ min: preset.min, max: preset.max });
+    setPriceError('');
+    setCurrentPage(1);
   };
 
   // Rating filter handler
@@ -205,49 +224,67 @@ function Products() {
         </div>
       </div>
 
-      {/* Price Range */}
+      {/* Price Range — Shopee-style Input Fields */}
       <div className="filter-section">
         <h3>Khoảng giá</h3>
-        <div className="price-range-container">
-          <div className="price-slider-wrapper">
-            <div className="price-slider">
-              <div
-                className="price-slider-track"
-                style={{
-                  left: `${(priceRange.min / PRICE_MAX) * 100}%`,
-                  width: `${((priceRange.max - priceRange.min) / PRICE_MAX) * 100}%`
-                }}
-              />
-              <input
-                type="range"
-                min={PRICE_MIN}
-                max={PRICE_MAX}
-                value={priceRange.min}
-                onChange={(e) => {
-                  const value = Math.min(Number(e.target.value), priceRange.max - 1);
-                  setPriceRange({ ...priceRange, min: value });
-                }}
-                style={{ zIndex: priceRange.min > PRICE_MAX - 100 ? 5 : 3 }}
-              />
-              <input
-                type="range"
-                min={PRICE_MIN}
-                max={PRICE_MAX}
-                value={priceRange.max}
-                onChange={(e) => {
-                  const value = Math.max(Number(e.target.value), priceRange.min + 1);
-                  setPriceRange({ ...priceRange, max: value });
-                }}
-                style={{ zIndex: 4 }}
-              />
-            </div>
+
+        {/* Min/Max Input Row */}
+        <div className="price-inputs-row">
+          <div className="price-input-wrapper">
+            <input
+              type="number"
+              className="price-input"
+              placeholder="Từ ₫"
+              value={priceRange.min || ''}
+              onChange={(e) => {
+                const value = e.target.value === '' ? 0 : Number(e.target.value);
+                setPriceRange({ ...priceRange, min: value });
+                setPriceError('');
+              }}
+            />
           </div>
-          <div className="price-values">
-            <span className="price-min">{formatVND(priceRange.min)}</span>
-            <span className="price-max">{formatVND(priceRange.max)}</span>
+          <span className="price-divider">—</span>
+          <div className="price-input-wrapper">
+            <input
+              type="number"
+              className="price-input"
+              placeholder="Đến ₫"
+              value={priceRange.max >= PRICE_MAX ? '' : priceRange.max}
+              onChange={(e) => {
+                const value = e.target.value === '' ? PRICE_MAX : Number(e.target.value);
+                setPriceRange({ ...priceRange, max: value });
+                setPriceError('');
+              }}
+            />
           </div>
         </div>
 
+        {/* Error Message */}
+        {priceError && (
+          <p className="price-error">{priceError}</p>
+        )}
+
+        {/* Apply Button */}
+        <button className="price-apply-btn" onClick={handleApplyPrice}>
+          Áp dụng
+        </button>
+
+        {/* Preset Chips */}
+        <div className="price-presets">
+          <p className="price-presets-label">Gợi ý:</p>
+          <div className="price-presets-chips">
+            {pricePresets.map((preset, index) => (
+              <button
+                key={index}
+                className={`preset-chip ${priceRange.min === preset.min && priceRange.max === preset.max ? 'active' : ''
+                  }`}
+                onClick={() => handlePresetClick(preset)}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Rating Filter */}

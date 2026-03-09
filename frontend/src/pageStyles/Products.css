@@ -249,102 +249,134 @@
   user-select: none;
 }
 
-/* Price Range Slider */
-.price-range-container {
-  padding: 8px 0;
-}
-
-.price-slider-wrapper {
-  position: relative;
-  height: 30px;
-  margin-bottom: 8px;
-}
-
-.price-slider {
-  position: relative;
-  width: 100%;
-  height: 4px;
-  background: #E5E7EB;
-  border-radius: 2px;
-  margin-top: 23px;
-}
-
-.price-slider-track {
-  position: absolute;
-  height: 100%;
-  background: var(--color-primary);
-  border-radius: 2px;
-}
-
-.price-slider input[type="range"] {
-  position: absolute;
-  width: 100%;
-  height: 4px;
-  background: none;
-  pointer-events: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  top: 0;
-}
-
-.price-slider input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  background: white;
-  border: 3px solid var(--color-primary);
-  border-radius: 50%;
-  cursor: pointer;
-  pointer-events: all;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  transition: all 0.15s ease;
-}
-
-.price-slider input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.price-slider input[type="range"]::-webkit-slider-thumb:active {
-  transform: scale(1.05);
-}
-
-.price-slider input[type="range"]::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  background: white;
-  border: 3px solid var(--color-primary);
-  border-radius: 50%;
-  cursor: pointer;
-  pointer-events: all;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  transition: all 0.15s ease;
-}
-
-.price-slider input[type="range"]::-moz-range-thumb:hover {
-  transform: scale(1.15);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.price-slider input[type="range"]::-moz-range-thumb:active {
-  transform: scale(1.05);
-}
-
-.price-values {
+/* Price Filter — Shopee-style Input Fields */
+.price-inputs-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--color-secondary);
-  padding: 0 2px;
+  gap: 8px;
+  margin-top: 12px;
+  margin-bottom: 10px;
 }
 
-.price-min,
-.price-max {
+.price-input-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+.price-input {
+  width: 100%;
+  font-size: 13px;
+  border: 1.5px solid #D1D5DB;
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+}
+
+/* Hide number input spinners */
+.price-input::-webkit-outer-spin-button,
+.price-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.price-input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.price-input::placeholder {
+  color: #9CA3AF;
+}
+
+.price-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.price-divider {
+  color: #9CA3AF;
+  flex-shrink: 0;
+  font-size: 14px;
+  user-select: none;
+}
+
+/* Error Message */
+.price-error {
+  font-size: 12px;
+  color: #EF4444;
+  margin: 0 0 8px 0;
+}
+
+/* Apply Button */
+.price-apply-btn {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  background-color: var(--color-primary);
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s, opacity 0.2s;
+  margin-bottom: 12px;
+}
+
+.price-apply-btn:hover {
+  opacity: 0.9;
+}
+
+.price-apply-btn:active {
+  transform: scale(0.98);
+}
+
+/* Preset Chips */
+.price-presets {
+  border-top: 1px solid #F3F4F6;
+  padding-top: 12px;
+}
+
+.price-presets-label {
+  font-size: 12px;
   color: var(--color-secondary);
+  margin: 0 0 8px 0;
+}
+
+.price-presets-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.preset-chip {
+  font-size: 12px;
+  padding: 5px 10px;
+  background-color: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 20px;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.preset-chip:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.preset-chip.active {
+  background-color: #FEF3C7;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 500;
 }
 
 .apply-price-btn {
