@@ -106,6 +106,77 @@ export const deleteProduct = createAsyncThunk(
 );
 
 /**
+ * Async Thunk - Import sản phẩm hàng loạt từ Excel/CSV
+ */
+export const importProducts = createAsyncThunk(
+    'admin/importProducts',
+    async (products, { rejectWithValue }) => {
+        try {
+            const { data } = await axios.post('/api/v1/admin/products/import',
+                { products },
+                { withCredentials: true }
+            );
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Import sản phẩm thất bại');
+        }
+    }
+);
+
+/**
+ * Async Thunk - Import tồn kho hàng loạt
+ */
+export const importStock = createAsyncThunk(
+    'admin/importStock',
+    async (items, { rejectWithValue }) => {
+        try {
+            const { data } = await axios.put('/api/v1/admin/products/import-stock',
+                { items },
+                { withCredentials: true }
+            );
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Import tồn kho thất bại');
+        }
+    }
+);
+
+/**
+ * Async Thunk - Cập nhật tồn kho 1 sản phẩm
+ */
+export const updateSingleStock = createAsyncThunk(
+    'admin/updateSingleStock',
+    async ({ id, quantity }, { rejectWithValue }) => {
+        try {
+            const { data } = await axios.put(`/api/v1/admin/products/${id}/stock`,
+                { quantity },
+                { withCredentials: true }
+            );
+            return data.product;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Cập nhật tồn kho thất bại');
+        }
+    }
+);
+
+/**
+ * Async Thunk - Tìm kiếm sản phẩm theo tên (Admin)
+ */
+export const searchAdminProducts = createAsyncThunk(
+    'admin/searchAdminProducts',
+    async (name, { rejectWithValue }) => {
+        try {
+            const { data } = await axios.get(`/api/v1/admin/products/search?name=${encodeURIComponent(name)}`, {
+                withCredentials: true
+            });
+            return data.products;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Tìm kiếm thất bại');
+        }
+    }
+);
+
+/**
  * === ORDERS MANAGEMENT ===
  */
 
@@ -324,7 +395,9 @@ const adminSlice = createSlice({
         products: [],
         orders: [],
         users: [],
-        settings: null,  // Settings state - Lưu cài đặt từ server
+        settings: null,
+        searchResults: [],    // Kết quả tìm kiếm sản phẩm
+        importResult: null,   // Kết quả import
         loading: false,
         error: null
     },
@@ -586,6 +659,86 @@ const adminSlice = createSlice({
 
             /** REJECTED: Khi update fail */
             .addCase(updateSettings.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            });
+
+        // ===== Import Products (batch) =====
+        builder
+            .addCase(importProducts.pending, (state) => {
+                state.loading = true;
+                state.importResult = null;
+            })
+            .addCase(importProducts.fulfilled, (state, action) => {
+                state.loading = false;
+                state.importResult = action.payload;
+                // Thêm sản phẩm mới vào danh sách
+                if (action.payload.products) {
+                    state.products = [...state.products, ...action.payload.products];
+                }
+            })
+            .addCase(importProducts.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            });
+
+        // ===== Import Stock (batch) =====
+        builder
+            .addCase(importStock.pending, (state) => {
+                state.loading = true;
+                state.importResult = null;
+            })
+            .addCase(importStock.fulfilled, (state, action) => {
+                state.loading = false;
+                state.importResult = action.payload;
+                // Cập nhật stock trong danh sách products
+                if (action.payload.details) {
+                    action.payload.details.forEach(item => {
+                        const idx = state.products.findIndex(p => p._id === item._id);
+                        if (idx !== -1) {
+                            state.products[idx].stock = item.newStock;
+                        }
+                    });
+                }
+            })
+            .addCase(importStock.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            });
+
+        // ===== Update Single Stock =====
+        builder
+            .addCase(updateSingleStock.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(updateSingleStock.fulfilled, (state, action) => {
+                state.loading = false;
+                const idx = state.products.findIndex(p => p._id === action.payload._id);
+                if (idx !== -1) {
+                    state.products[idx] = action.payload;
+                }
+                // Cập nhật cả searchResults
+                const sIdx = state.searchResults.findIndex(p => p._id === action.payload._id);
+                if (sIdx !== -1) {
+                    state.searchResults[sIdx].stock = action.payload.stock;
+                }
+            })
+            .addCase(updateSingleStock.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            });
+
+        // ===== Search Admin Products =====
+        builder
+            .addCase(searchAdminProducts.pending, (state) => {
+                state.loading = true;
+                state.searchResults = [];
+            })
+            .addCase(searchAdminProducts.fulfilled, (state, action) => {
+                state.loading = false;
+                state.searchResults = action.payload;
+            })
+            .addCase(searchAdminProducts.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             });

@@ -30,9 +30,14 @@ export const getProduct = createAsyncThunk('product/getProduct',
         }
       }
 
-      // Filter: ratings (tối thiểu N sao)
-      if (ratings && ratings > 0) {
-        link += `&ratings[gte]=${ratings}`;
+      // Filter: ratings (khoảng sao: gte → $gte, lt → $lt)
+      if (ratings) {
+        if (ratings.gte !== undefined) {
+          link += `&ratings[gte]=${ratings.gte}`;
+        }
+        if (ratings.lt !== undefined) {
+          link += `&ratings[lt]=${ratings.lt}`;
+        }
       }
 
       // Filter: stock (chỉ sản phẩm còn hàng)

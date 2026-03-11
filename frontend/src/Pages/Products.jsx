@@ -30,7 +30,8 @@ function Products() {
 
   // Filter states
   const [selectedCategories, setSelectedCategories] = useState(categoryFromURL ? [categoryFromURL] : []);
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 30000000 }); // Filter values (VND)
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 30000000 }); // UI input values (VND)
+  const [appliedPrice, setAppliedPrice] = useState(null); // Actual filter sent to API
   const [priceError, setPriceError] = useState(''); // Validation error message
   const [selectedRating, setSelectedRating] = useState(null);
   const [inStockOnly, setInStockOnly] = useState(false);
@@ -68,27 +69,22 @@ function Products() {
     return () => document.body.classList.remove('no-scroll');
   }, [isMobileDrawerOpen]);
 
-  // Fetch products — delay (debounce) để không gọi quá nhiều khi user thao tác kéo thanh giá
+  // Fetch products — chỉ gọi khi appliedPrice thay đổi (nhấn Áp dụng / click chip)
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      const category = selectedCategories.length > 0 ? selectedCategories[0] : null;
+    const category = selectedCategories.length > 0 ? selectedCategories[0] : null;
 
-      dispatch(getProduct({
-        keyword,
-        page: currentPage,
-        category,
-        price: (priceRange.min > PRICE_MIN || priceRange.max < PRICE_MAX)
-          ? { gte: priceRange.min, lte: priceRange.max }
-          : null,
-        sort: sortBy,
-        ratings: selectedRating,
-        inStock: inStockOnly,
-      }));
-    }, 500); // Đợi 500ms khi người dùng ngừng thao tác thanh giá mới gọi API
-
-    // Hủy bỏ / reset timeout nếu có thay đổi liên tục trước khi hết 500ms
-    return () => clearTimeout(delayDebounceFn);
-  }, [dispatch, currentPage, selectedCategories, keyword, priceRange, sortBy, selectedRating, inStockOnly]);
+    dispatch(getProduct({
+      keyword,
+      page: currentPage,
+      category,
+      price: appliedPrice,
+      sort: sortBy,
+      ratings: selectedRating
+        ? { gte: selectedRating, lt: selectedRating + 1 }
+        : null,
+      inStock: inStockOnly,
+    }));
+  }, [dispatch, currentPage, selectedCategories, keyword, appliedPrice, sortBy, selectedRating, inStockOnly]);
 
   // Handle errors
   useEffect(() => {
@@ -140,13 +136,20 @@ function Products() {
       return;
     }
     setPriceError('');
+    // Tạo filter thực sự → trigger useEffect gọi API
+    const newPrice =
+      (priceRange.min > PRICE_MIN || priceRange.max < PRICE_MAX)
+        ? { gte: priceRange.min, lte: priceRange.max }
+        : null;
+    setAppliedPrice(newPrice);
     setCurrentPage(1);
-    // useEffect sẽ tự re-fetch với priceRange mới
   };
 
   // Preset chip click handler
   const handlePresetClick = (preset) => {
     setPriceRange({ min: preset.min, max: preset.max });
+    // Chip = áp dụng ngay, gửi API luôn
+    setAppliedPrice({ gte: preset.min, lte: preset.max });
     setPriceError('');
     setCurrentPage(1);
   };
@@ -173,6 +176,7 @@ function Products() {
   const handleClearAll = () => {
     setSelectedCategories([]);
     setPriceRange({ min: PRICE_MIN, max: PRICE_MAX });
+    setAppliedPrice(null);
     setSelectedRating(null);
     setInStockOnly(false);
     setSortBy('newest');
@@ -186,6 +190,7 @@ function Products() {
       handleCategoryToggle(value);
     } else if (filterType === 'price') {
       setPriceRange({ min: PRICE_MIN, max: PRICE_MAX });
+      setAppliedPrice(null);
     } else if (filterType === 'rating') {
       setSelectedRating(null);
     } else if (filterType === 'stock') {
@@ -196,7 +201,7 @@ function Products() {
   // Calculate active filter count
   const activeFilterCount =
     selectedCategories.length +
-    (priceRange.min > PRICE_MIN || priceRange.max < PRICE_MAX ? 1 : 0) +
+    (appliedPrice ? 1 : 0) +
     (selectedRating ? 1 : 0) +
     (inStockOnly ? 1 : 0);
 
@@ -313,22 +318,7 @@ function Products() {
       </div>
 
       {/* Stock Filter */}
-      <div className="filter-section">
-        <h3>Tình trạng</h3>
-        <div className="filter-option">
-          <input
-            type="checkbox"
-            id={`${isMobile ? 'mobile-' : ''}in-stock`}
-            className="custom-checkbox"
-            checked={inStockOnly}
-            onChange={handleStockToggle}
-          />
-          <label htmlFor={`${isMobile ? 'mobile-' : ''}in-stock`}>
-            Chỉ hàng còn sẵn
-          </label>
-        </div>
-
-      </div>
+      
     </>
   );
 

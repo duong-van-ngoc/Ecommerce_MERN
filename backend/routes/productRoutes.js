@@ -8,7 +8,11 @@ import {
   deleteReviewProduct,
   createProducts,
   updateProduct,
-  deteteProduct
+  deteteProduct,
+  importProducts,
+  importStock,
+  updateStock,
+  searchProducts
 } from "../controllers/productController.js";
 
 import { verifyUserAuth, roleBasedAccess } from "../middleware/userAuth.js";
@@ -27,6 +31,26 @@ router
 router
   .route("/admin/products/create")
   .post(verifyUserAuth, roleBasedAccess("admin"), createProducts);
+
+// Import sản phẩm hàng loạt từ Excel/CSV
+router
+  .route("/admin/products/import")
+  .post(verifyUserAuth, roleBasedAccess("admin"), importProducts);
+
+// Import tồn kho hàng loạt
+router
+  .route("/admin/products/import-stock")
+  .put(verifyUserAuth, roleBasedAccess("admin"), importStock);
+
+// Tìm kiếm sản phẩm theo tên
+router
+  .route("/admin/products/search")
+  .get(verifyUserAuth, roleBasedAccess("admin"), searchProducts);
+
+// Cập nhật tồn kho 1 sản phẩm
+router
+  .route("/admin/products/:id/stock")
+  .put(verifyUserAuth, roleBasedAccess("admin"), updateStock);
 
 router
   .route("/admin/products/:id")
