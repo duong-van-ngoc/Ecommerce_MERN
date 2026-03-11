@@ -1,9 +1,9 @@
 
 import React, { useEffect } from 'react'
-import Home from './pages/Home'
+import Home from './pages/Home.jsx'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import ProductDetails from './pages/ProductDetails'
-import Products from './pages/Products'
+import ProductDetails from './pages/ProductDetails.jsx'
+import Products from './pages/Products.jsx'
 import Register from './User/Register'
 import Login from './User/Login'
 import { useDispatch, useSelector } from 'react-redux'

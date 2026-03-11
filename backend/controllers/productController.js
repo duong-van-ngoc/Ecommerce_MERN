@@ -281,3 +281,183 @@ export const getAdminProducts = handleAsyncError(async (req, res, next) => {
         products
     })
 })
+
+// =============================================
+// Admin - Import sản phẩm hàng loạt từ Excel/CSV
+// POST /api/v1/admin/products/import
+// =============================================
+export const importProducts = handleAsyncError(async (req, res, next) => {
+    const { products } = req.body;
+
+    if (!products || !Array.isArray(products) || products.length === 0) {
+        return next(new HandleError("Danh sách sản phẩm trống", 400));
+    }
+
+    const imported = [];
+    const errors = [];
+
+    for (let i = 0; i < products.length; i++) {
+        const item = products[i];
+        try {
+            // Validate required fields
+            if (!item.name || !item.name.trim()) {
+                errors.push({ row: i + 1, name: item.name || '', message: 'Thiếu trường name' });
+                continue;
+            }
+            if (!item.description || !item.description.trim()) {
+                errors.push({ row: i + 1, name: item.name, message: 'Thiếu trường description' });
+                continue;
+            }
+            if (item.price === undefined || item.price === null || isNaN(item.price) || Number(item.price) <= 0) {
+                errors.push({ row: i + 1, name: item.name, message: 'Trường price không hợp lệ' });
+                continue;
+            }
+            if (item.stock === undefined || item.stock === null || isNaN(item.stock) || Number(item.stock) < 0) {
+                errors.push({ row: i + 1, name: item.name, message: 'Trường stock không hợp lệ' });
+                continue;
+            }
+            if (!item.category || !item.category.trim()) {
+                errors.push({ row: i + 1, name: item.name, message: 'Thiếu trường category' });
+                continue;
+            }
+
+            // Parse sizes and colors from comma-separated string
+            let sizes = item.sizes || [];
+            if (typeof sizes === 'string') {
+                sizes = sizes.split(',').map(s => s.trim()).filter(s => s);
+            }
+
+            let colors = item.colors || [];
+            if (typeof colors === 'string') {
+                colors = colors.split(',').map(c => c.trim()).filter(c => c);
+            }
+
+            // Create product with placeholder image
+            const productData = {
+                name: item.name.trim(),
+                description: item.description.trim(),
+                price: Number(item.price),
+                originalPrice: Number(item.originalPrice) || 0,
+                stock: Number(item.stock),
+                category: item.category.trim(),
+                brand: item.brand || 'No Brand',
+                material: item.material || '',
+                sizes,
+                colors,
+                images: [{
+                    public_id: 'placeholder',
+                    url: 'https://res.cloudinary.com/demo/image/upload/v1/placeholder.png'
+                }],
+                user: req.user.id
+            };
+
+            const product = await Product.create(productData);
+            imported.push(product);
+        } catch (err) {
+            errors.push({ row: i + 1, name: item.name || '', message: err.message });
+        }
+    }
+
+    res.status(200).json({
+        success: true,
+        imported: imported.length,
+        failed: errors.length,
+        errors,
+        products: imported
+    });
+})
+
+// =============================================
+// Admin - Import tồn kho hàng loạt (cập nhật stock theo tên SP)
+// PUT /api/v1/admin/products/import-stock
+// =============================================
+export const importStock = handleAsyncError(async (req, res, next) => {
+    const { items } = req.body;
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+        return next(new HandleError("Danh sách nhập hàng trống", 400));
+    }
+
+    const updated = [];
+    const notFound = [];
+
+    for (const item of items) {
+        if (!item.name || !item.quantity || isNaN(item.quantity) || Number(item.quantity) <= 0) {
+            notFound.push({ name: item.name || '(trống)', reason: 'Tên hoặc số lượng không hợp lệ' });
+            continue;
+        }
+
+        // Search by exact name (case-insensitive)
+        const product = await Product.findOne({
+            name: { $regex: `^${item.name.trim()}$`, $options: 'i' }
+        });
+
+        if (!product) {
+            notFound.push({ name: item.name, reason: 'Không tìm thấy sản phẩm' });
+            continue;
+        }
+
+        product.stock += Number(item.quantity);
+        await product.save({ validateBeforeSave: false });
+        updated.push({
+            _id: product._id,
+            name: product.name,
+            oldStock: product.stock - Number(item.quantity),
+            addedQty: Number(item.quantity),
+            newStock: product.stock
+        });
+    }
+
+    res.status(200).json({
+        success: true,
+        updated: updated.length,
+        notFound,
+        details: updated
+    });
+})
+
+// =============================================
+// Admin - Cập nhật tồn kho 1 sản phẩm
+// PUT /api/v1/admin/products/:id/stock
+// =============================================
+export const updateStock = handleAsyncError(async (req, res, next) => {
+    const { quantity } = req.body;
+
+    if (quantity === undefined || isNaN(quantity) || Number(quantity) <= 0) {
+        return next(new HandleError("Số lượng nhập không hợp lệ", 400));
+    }
+
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+        return next(new HandleError("Sản phẩm không tồn tại", 404));
+    }
+
+    product.stock += Number(quantity);
+    await product.save({ validateBeforeSave: false });
+
+    res.status(200).json({
+        success: true,
+        product
+    });
+})
+
+// =============================================
+// Admin - Tìm kiếm sản phẩm theo tên
+// GET /api/v1/admin/products/search?name=áo
+// =============================================
+export const searchProducts = handleAsyncError(async (req, res, next) => {
+    const { name } = req.query;
+
+    if (!name || !name.trim()) {
+        return next(new HandleError("Vui lòng nhập tên sản phẩm để tìm kiếm", 400));
+    }
+
+    const products = await Product.find({
+        name: { $regex: name.trim(), $options: 'i' }
+    }).select('_id name stock price category images');
+
+    res.status(200).json({
+        success: true,
+        products
+    });
+})
