@@ -20,6 +20,7 @@ import Shipping from './Cart/Shipping'
 import OrderConfirm from './Cart/OrderConfirm'
 import Payment from './Cart/Payment'
 import MyOrders from "./Cart/MyOrders";
+import OrderDetails from "./Cart/OrderDetails";
 import OrderSuccess from "./Cart/OrderSuccess";
 import Notifications from "./User/Notifications";
 import Vouchers from "./User/Vouchers";
@@ -81,6 +82,10 @@ function App() {
         <Route
           path="/orders/user"
           element={<ProtectedRoute element={<MyOrders />} />}
+        />
+        <Route
+          path="/order/:id"
+          element={<ProtectedRoute element={<OrderDetails />} />}
         />
 
         <Route

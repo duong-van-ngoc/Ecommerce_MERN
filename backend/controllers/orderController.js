@@ -46,6 +46,12 @@ export const getSingleOrder = handleAsyncError(async (req, res, next) => {
     return next(new HandleError("Không tìm thấy đơn đặt hàng", 404))
 
   }
+  
+  // Kiểm tra quyền: Chỉ admin hoặc người mua mới được xem
+  if (req.user.role !== 'admin' && order.user._id.toString() !== req.user.id.toString()) {
+    return next(new HandleError("Bạn không có quyền truy cập đơn hàng này", 403));
+  }
+
   res.status(200).json({
     success: true,
     order

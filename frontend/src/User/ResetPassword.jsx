@@ -77,7 +77,7 @@ function ResetPassword() {
                                value= {confirmPassword} 
                                onChange={(e) => setConfirmPassword(e.target.value)}/>
                     </div>
-                    <button className="authBtn">
+                    <button className="authBtn hover-btn-gradient">
                        Đặt lại Mật Khẩu  
                     </button>
                 </form>

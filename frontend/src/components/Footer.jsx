@@ -17,14 +17,14 @@ function Footer() {
           <div className="footer-section social">
             <h3>Theo dõi chúng tôi</h3>
             <div className="social-">
-              <a href="" target='_blank'>
-                  <GitHub  className='social-icon' />
+              <a href="" target='_blank' className="hover-scale-up">
+                  <GitHub  className='social-icon hover-icon-btn' />
               </a>
-              <a href="" target='_blank'>
-                <Facebook className='social-icon'/>
+              <a href="" target='_blank' className="hover-scale-up">
+                <Facebook className='social-icon hover-icon-btn'/>
               </a>
-              <a href="" target='_blank'>
-                <Instagram className='socail-icon'/>
+              <a href="" target='_blank' className="hover-scale-up">
+                <Instagram className='socail-icon hover-icon-btn'/>
               </a>
             </div>
           </div>

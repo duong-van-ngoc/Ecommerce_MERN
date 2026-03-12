@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { fetchAllOrders, updateOrderStatus, deleteOrder } from '../adminSLice/adminSlice';
@@ -175,9 +176,9 @@ function OrdersManagement() {
                                     <td>{new Date(order.createdAt).toLocaleDateString('vi-VN')}</td>
                                     <td>
                                         <div className="action-buttons">
-                                            <button className="btn-view" title="Xem">
+                                            <Link to={`/order/${order._id}`} className="btn-view" title="Xem">
                                                 👁️
-                                            </button>
+                                            </Link>
                                             <button
                                                 className="btn-delete"
                                                 onClick={() => handleDelete(order._id)}

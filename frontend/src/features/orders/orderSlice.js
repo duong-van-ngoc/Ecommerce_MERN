@@ -35,6 +35,16 @@ export const getMyOrders = createAsyncThunk('order/getAllMyOrders', async (_, { 
     }
 })
 
+// lấy chi tiết 1 đơn hàng
+export const getOrderDetails = createAsyncThunk('order/getOrderDetails', async (id, { rejectWithValue }) => {
+    try {
+        const { data } = await axios.get(`/api/v1/order/${id}`)
+        return data;
+    } catch (error) {
+        return rejectWithValue(error.response?.data || "khong tai duoc chi tiet don hang")
+    }
+})
+
 
 const orderSlice = createSlice({
     name: 'orders',
@@ -44,6 +54,7 @@ const orderSlice = createSlice({
         error: null,
         orders: [],
         order: {},
+        orderDetails: {},
         orderId: null,
     },
     reducers: {
@@ -86,6 +97,19 @@ const orderSlice = createSlice({
             .addCase(getMyOrders.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload || "Không tải được đơn hàng";
+            })
+            // lay chi tiet don hang
+            .addCase(getOrderDetails.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getOrderDetails.fulfilled, (state, action) => {
+                state.loading = false;
+                state.orderDetails = action.payload?.order || {};
+            })
+            .addCase(getOrderDetails.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || "Không tải được chi tiết đơn hàng";
             });
     }
 })

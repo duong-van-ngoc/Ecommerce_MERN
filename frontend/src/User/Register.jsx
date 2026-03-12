@@ -93,7 +93,7 @@ function Register() {
                             onChange={registerDataChange}
                         />
 
-                        <label htmlFor="register-avatar" className="register-avatar-picker">
+                        <label htmlFor="register-avatar" className="register-avatar-picker hover-scale-up">
                             <div className="register-avatar-shell">
                                 <img
                                     src={avatarPreview}
@@ -177,13 +177,13 @@ function Register() {
                         </div>
                     </div>
 
-                    <button className="register-submit-btn">
+                    <button className="register-submit-btn hover-btn-gradient">
                         {loading ? 'Registering...' : 'Register Now'}
                     </button>
 
                     <p className="register-login-link">
                         Already have an account?
-                        <Link to="/login">Log in</Link>
+                        <Link to="/login" className="hover-link-slide">Log in</Link>
                     </p>
                 </form>
             </div>

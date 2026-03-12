@@ -86,7 +86,7 @@ function ForgotPassword() {
                                 </div>
                             </div>
 
-                            <button className="forgot-password-submit" type="submit">
+                            <button className="forgot-password-submit hover-btn-gradient" type="submit">
                                 <span>Gửi yêu cầu</span>
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                                     <path d="M6 12h12" strokeLinecap="round" strokeLinejoin="round" />
@@ -96,7 +96,7 @@ function ForgotPassword() {
                         </form>
 
                         <div className="forgot-password-footer">
-                            <Link to="/login" className="forgot-password-back-link">
+                            <Link to="/login" className="forgot-password-back-link hover-link-slide">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                                     <path d="M15.75 19.5L8.25 12l7.5-7.5" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>

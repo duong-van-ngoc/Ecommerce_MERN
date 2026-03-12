@@ -34,10 +34,10 @@ function Pagination({
       {
         currentPage > 1 && (
           <>
-            <button className="pagination-btn"onClick={() => onPageChange(1)} > 
+            <button className="pagination-btn hover-btn-outline" onClick={() => onPageChange(1)} > 
                {firstPageText}
             </button>
-            <button className="pagination-btn"onClick={() => onPageChange(currentPage - 1)} >  
+            <button className="pagination-btn hover-btn-outline" onClick={() => onPageChange(currentPage - 1)} >  
                {prevPageText}
             </button>
           </>
@@ -47,7 +47,7 @@ function Pagination({
 
       {
         getPageNumbers().map((number) => (
-          <button className={`pagination-btn ${currentPage === number? activeClass:''}`}
+          <button className={`pagination-btn hover-btn-outline ${currentPage === number? activeClass:''}`}
                   key={number}
                   onClick={() => onPageChange(number)}
           >
@@ -61,10 +61,10 @@ function Pagination({
       {
         currentPage < totalPages && (
           <>
-            <button className="pagination-btn"onClick={() => onPageChange(currentPage + 1)} >
+            <button className="pagination-btn hover-btn-outline" onClick={() => onPageChange(currentPage + 1)} >
                {nextPageText}
             </button>
-            <button className="pagination-btn"onClick={() => onPageChange(totalPages)} >
+            <button className="pagination-btn hover-btn-outline" onClick={() => onPageChange(totalPages)} >
               {lastPageText}
             </button>
           </>
