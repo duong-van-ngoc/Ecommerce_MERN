@@ -3,4 +3,13 @@ node_modules
 config.env
 .env
 .env.*
-.agent
+
+# Ignore agent folder
+.agent/
+
+# Ignore custom requested folders
+fix_bug/
+test_data/
+skills/
+plan/
+debug/
