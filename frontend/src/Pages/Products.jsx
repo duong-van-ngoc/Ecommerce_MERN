@@ -13,7 +13,7 @@ import Pagination from '../components/Pagination';
 
 function Products() {
   // Redux state
-  const { loading, error, products, resultPerPage, productCount, totalPages } = useSelector(state => state.product);
+  const { loading, error, products, productCount } = useSelector(state => state.product);
   const dispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
@@ -37,8 +37,7 @@ function Products() {
   const [inStockOnly, setInStockOnly] = useState(false);
   const [sortBy, setSortBy] = useState('newest');
 
-  // Available options
-  const categories = ["laptop", "mobile", "tv", "fruits", "glass", "Áo", "Quần", "Giày", "Đồng Hồ", "Túi xách", "Thắt lưng", "Kính mắt", "Tất", "Mũ", "Khăn"];
+
   const ratings = [5, 4, 3, 2, 1];
   const PRICE_MIN = 0;
   const PRICE_MAX = 30000000; // 30 triệu VND
@@ -52,7 +51,7 @@ function Products() {
   ];
 
   // Helper: format giá VND
-  const formatVND = (value) => value.toLocaleString('vi-VN') + '₫';
+  
 
   // Close drawer when route changes
   useEffect(() => {
@@ -160,11 +159,6 @@ function Products() {
     setCurrentPage(1);
   };
 
-  // Stock filter handler
-  const handleStockToggle = () => {
-    setInStockOnly(!inStockOnly);
-    setCurrentPage(1);
-  };
 
   // Sort handler
   const handleSortChange = (e) => {
@@ -184,19 +178,6 @@ function Products() {
     navigate('/products');
   };
 
-  // Remove individual filter
-  const handleRemoveFilter = (filterType, value) => {
-    if (filterType === 'category') {
-      handleCategoryToggle(value);
-    } else if (filterType === 'price') {
-      setPriceRange({ min: PRICE_MIN, max: PRICE_MAX });
-      setAppliedPrice(null);
-    } else if (filterType === 'rating') {
-      setSelectedRating(null);
-    } else if (filterType === 'stock') {
-      setInStockOnly(false);
-    }
-  };
 
   // Calculate active filter count
   const activeFilterCount =
@@ -206,121 +187,221 @@ function Products() {
     (inStockOnly ? 1 : 0);
 
   // Render filter section (reusable for desktop and mobile)
-  const renderFilters = (isMobile = false) => (
-    <>
-      {/* Category Filter */}
-      <div className="filter-section">
-        <h3>Danh mục</h3>
-        <div className="filter-options">
-          {categories.map((category) => (
-            <div key={category} className="filter-option">
-              <input
-                type="checkbox"
-                id={`${isMobile ? 'mobile-' : ''}category-${category}`}
-                className="custom-checkbox"
-                checked={selectedCategories.includes(category)}
-                onChange={() => handleCategoryToggle(category)}
-              />
-              <label htmlFor={`${isMobile ? 'mobile-' : ''}category-${category}`}>
-                {category.charAt(0).toUpperCase() + category.slice(1)}
-              </label>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Price Range — Shopee-style Input Fields */}
-      <div className="filter-section">
-        <h3>Khoảng giá</h3>
-
-        {/* Min/Max Input Row */}
-        <div className="price-inputs-row">
-          <div className="price-input-wrapper">
-            <input
-              type="number"
-              className="price-input"
-              placeholder="Từ ₫"
-              value={priceRange.min || ''}
-              onChange={(e) => {
-                const value = e.target.value === '' ? 0 : Number(e.target.value);
-                setPriceRange({ ...priceRange, min: value });
-                setPriceError('');
-              }}
-            />
-          </div>
-          <span className="price-divider">—</span>
-          <div className="price-input-wrapper">
-            <input
-              type="number"
-              className="price-input"
-              placeholder="Đến ₫"
-              value={priceRange.max >= PRICE_MAX ? '' : priceRange.max}
-              onChange={(e) => {
-                const value = e.target.value === '' ? PRICE_MAX : Number(e.target.value);
-                setPriceRange({ ...priceRange, max: value });
-                setPriceError('');
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Error Message */}
-        {priceError && (
-          <p className="price-error">{priceError}</p>
-        )}
-
-        {/* Apply Button */}
-        <button className="price-apply-btn" onClick={handleApplyPrice}>
-          Áp dụng
+  const renderFilters = (isMobile = false) => {
+    const renderCategoryLink = (label, filterValue, isBold = false) => {
+      const isActive = selectedCategories.includes(filterValue);
+      return (
+        <button
+          className={`hover-link-slide text-left inline-block ${isActive || isBold ? 'font-medium text-black active' : 'text-gray-600'}`}
+          onClick={(e) => { e.preventDefault(); handleCategoryToggle(filterValue); }}
+        >
+          {label}
         </button>
+      );
+    };
 
-        {/* Preset Chips */}
-        <div className="price-presets">
-          <p className="price-presets-label">Gợi ý:</p>
-          <div className="price-presets-chips">
-            {pricePresets.map((preset, index) => (
-              <button
-                key={index}
-                className={`preset-chip ${priceRange.min === preset.min && priceRange.max === preset.max ? 'active' : ''
-                  }`}
-                onClick={() => handlePresetClick(preset)}
-              >
-                {preset.label}
-              </button>
+    return (
+      <>
+        <style>
+          {`
+          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+          .heading-serif { font-family: 'Playfair+Display', serif; }
+        `}
+        </style>
+
+        {/* Category Filter */}
+        <div className="filter-section">
+          <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-6">Khám Phá Danh Mục</h2>
+          <div className="space-y-8">
+            {/* Men's Section */}
+            <div>
+              <h3 className="text-sm font-semibold mb-4 flex items-center justify-between group cursor-pointer">NAM</h3>
+              <ul className="space-y-4 pl-1 text-sm text-gray-600">
+                <li>
+                  <span className="block font-medium text-black mb-2">Áo</span>
+                  <ul className="pl-3 space-y-2 border-l border-gray-100">
+                    <li>{renderCategoryLink('Thun', 'Áo thun nam')}</li>
+                    <li>{renderCategoryLink('Sơ mi', 'Áo sơ mi nam')}</li>
+                    <li>{renderCategoryLink('Hoodie', 'Áo hoodie nam')}</li>
+                    <li>{renderCategoryLink('Khoác', 'Áo khoác nam')}</li>
+                    <li>{renderCategoryLink('Polo', 'Áo polo nam')}</li>
+                  </ul>
+                </li>
+                <li>
+                  <span className="block font-medium text-black mb-2">Quần</span>
+                  <ul className="pl-3 space-y-2 border-l border-gray-100">
+                    <li>{renderCategoryLink('Jean', 'Quần jean nam')}</li>
+                    <li>{renderCategoryLink('Short', 'Quần short nam')}</li>
+                    <li>{renderCategoryLink('Kaki', 'Quần kaki nam')}</li>
+                    <li>{renderCategoryLink('Jogger', 'Quần jogger nam')}</li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+            {/* Women's Section */}
+            <div>
+              <h3 className="text-sm font-semibold mb-4 flex items-center justify-between group cursor-pointer">NỮ</h3>
+              <ul className="space-y-4 pl-1 text-sm text-gray-600">
+                <li>
+                  <span className="block font-medium text-black mb-2">Áo</span>
+                  <ul className="pl-3 space-y-2 border-l border-gray-100">
+                    <li>{renderCategoryLink('Thun', 'Áo thun nữ')}</li>
+                    <li>{renderCategoryLink('Sơ mi', 'Áo sơ mi nữ')}</li>
+                    <li>{renderCategoryLink('Kiểu', 'Áo kiểu nữ')}</li>
+                    <li>{renderCategoryLink('Khoác', 'Áo khoác nữ')}</li>
+                  </ul>
+                </li>
+                <li>
+                  <span className="block font-medium text-black mb-2">Váy</span>
+                  <ul className="pl-3 space-y-2 border-l border-gray-100">
+                    <li>{renderCategoryLink('Ngắn', 'Váy ngắn nữ')}</li>
+                    <li>{renderCategoryLink('Dài', 'Váy dài nữ')}</li>
+                    <li>{renderCategoryLink('Body', 'Váy body nữ')}</li>
+                  </ul>
+                </li>
+                <li>{renderCategoryLink('Quần', 'Quần nữ', true)}</li>
+              </ul>
+            </div>
+            {/* Unisex Section */}
+            <div>
+              <h3 className="text-sm font-semibold mb-4 flex items-center justify-between group cursor-pointer">UNISEX</h3>
+              <ul className="space-y-3 pl-1 text-sm text-gray-600">
+                <li>{renderCategoryLink('Áo thun', 'Áo thun unisex')}</li>
+                <li>{renderCategoryLink('Hoodie', 'Hoodie unisex')}</li>
+                <li>{renderCategoryLink('Áo khoác', 'Áo khoác unisex')}</li>
+              </ul>
+            </div>
+            {/* Accessories & Shoes Section */}
+            <div>
+              <h3 className="text-sm font-semibold mb-4 flex items-center justify-between group cursor-pointer">PHỤ KIỆN & GIÀY DÉP</h3>
+              <ul className="space-y-4 pl-1 text-sm text-gray-600">
+                <li>
+                  <span className="block font-medium text-black mb-2">Giày dép</span>
+                  <ul className="pl-3 space-y-2 border-l border-gray-100">
+                    <li>{renderCategoryLink('Giày dép nam', 'Giày dép nam')}</li>
+                    <li>{renderCategoryLink('Giày dép nữ', 'Giày dép nữ')}</li>
+                    <li>{renderCategoryLink('Giày dép unisex', 'Giày dép unisex')}</li>
+                  </ul>
+                </li>
+                <li>
+                  <span className="block font-medium text-black mb-2">Phụ kiện Nam</span>
+                  <ul className="pl-3 space-y-2 border-l border-gray-100">
+                    <li>{renderCategoryLink('Mũ', 'Mũ nam')}</li>
+                    <li>{renderCategoryLink('Thắt lưng', 'Thắt lưng nam')}</li>
+                    <li>{renderCategoryLink('Ví', 'Ví nam')}</li>
+                    <li>{renderCategoryLink('Kính', 'Kính nam')}</li>
+                    <li>{renderCategoryLink('Trang sức', 'Trang sức nam')}</li>
+                  </ul>
+                </li>
+                <li>
+                  <span className="block font-medium text-black mb-2">Phụ kiện Nữ</span>
+                  <ul className="pl-3 space-y-2 border-l border-gray-100">
+                    <li>{renderCategoryLink('Túi xách', 'Túi xách nữ')}</li>
+                    <li>{renderCategoryLink('Mũ', 'Mũ nữ')}</li>
+                    <li>{renderCategoryLink('Kính', 'Kính nữ')}</li>
+                    <li>{renderCategoryLink('Trang sức', 'Trang sức nữ')}</li>
+                    <li>{renderCategoryLink('Khăn', 'Khăn nữ')}</li>
+                  </ul>
+                </li>
+                <li>{renderCategoryLink('Phụ kiện unisex', 'Phụ kiện unisex')}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Price Range — Shopee-style Input Fields */}
+        <div className="filter-section">
+          <h3>Khoảng giá</h3>
+
+          {/* Min/Max Input Row */}
+          <div className="price-inputs-row">
+            <div className="price-input-wrapper">
+              <input
+                type="number"
+                className="price-input"
+                placeholder="Từ ₫"
+                value={priceRange.min || ''}
+                onChange={(e) => {
+                  const value = e.target.value === '' ? 0 : Number(e.target.value);
+                  setPriceRange({ ...priceRange, min: value });
+                  setPriceError('');
+                }}
+              />
+            </div>
+            <span className="price-divider">—</span>
+            <div className="price-input-wrapper">
+              <input
+                type="number"
+                className="price-input"
+                placeholder="Đến ₫"
+                value={priceRange.max >= PRICE_MAX ? '' : priceRange.max}
+                onChange={(e) => {
+                  const value = e.target.value === '' ? PRICE_MAX : Number(e.target.value);
+                  setPriceRange({ ...priceRange, max: value });
+                  setPriceError('');
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Error Message */}
+          {priceError && (
+            <p className="price-error">{priceError}</p>
+          )}
+
+          {/* Apply Button */}
+          <button className="price-apply-btn" onClick={handleApplyPrice}>
+            Áp dụng
+          </button>
+
+          {/* Preset Chips */}
+          <div className="price-presets">
+            <p className="price-presets-label">Gợi ý:</p>
+            <div className="price-presets-chips">
+              {pricePresets.map((preset, index) => (
+                <button
+                  key={index}
+                  className={`preset-chip ${priceRange.min === preset.min && priceRange.max === preset.max ? 'active' : ''
+                    }`}
+                  onClick={() => handlePresetClick(preset)}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Rating Filter */}
+        <div className="filter-section">
+          <h3>Đánh giá</h3>
+          <div className="filter-options">
+            {ratings.map((rating) => (
+              <div key={rating} className="filter-option">
+                <input
+                  type="checkbox"
+                  id={`${isMobile ? 'mobile-' : ''}rating-${rating}`}
+                  className="custom-checkbox"
+                  checked={selectedRating === rating}
+                  onChange={() => handleRatingChange(rating)}
+                />
+                <label htmlFor={`${isMobile ? 'mobile-' : ''}rating-${rating}`} className="rating-option">
+                  <span className="rating-stars">
+                    {'★'.repeat(rating)}{'☆'.repeat(5 - rating)}
+                  </span>
+
+                </label>
+              </div>
             ))}
           </div>
-        </div>
-      </div>
 
-      {/* Rating Filter */}
-      <div className="filter-section">
-        <h3>Đánh giá</h3>
-        <div className="filter-options">
-          {ratings.map((rating) => (
-            <div key={rating} className="filter-option">
-              <input
-                type="checkbox"
-                id={`${isMobile ? 'mobile-' : ''}rating-${rating}`}
-                className="custom-checkbox"
-                checked={selectedRating === rating}
-                onChange={() => handleRatingChange(rating)}
-              />
-              <label htmlFor={`${isMobile ? 'mobile-' : ''}rating-${rating}`} className="rating-option">
-                <span className="rating-stars">
-                  {'★'.repeat(rating)}{'☆'.repeat(5 - rating)}
-                </span>
-
-              </label>
-            </div>
-          ))}
         </div>
 
-      </div>
+        {/* Stock Filter */}
 
-      {/* Stock Filter */}
-      
-    </>
-  );
+      </>
+    );
+  };
 
   return (
     <>
@@ -328,7 +409,7 @@ function Products() {
       <Navbar />
 
       {/* Breadcrumb */}
-      <div className="breadcrumb-section">
+      {/* <div className="breadcrumb-section">
         <div className="breadcrumb-container">
           <div className="breadcrumb">
             <Link to="/">Trang chủ</Link>
@@ -338,7 +419,7 @@ function Products() {
             </span>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Mobile Filter Button */}
       <div className="mobile-filter-bar">

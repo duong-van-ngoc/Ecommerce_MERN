@@ -8,6 +8,7 @@ const router = express.Router()
 
 
 router.route("/order/new").post(verifyUserAuth, createNewOrder)
+router.route("/order/:id").get(verifyUserAuth, getSingleOrder)
 router.route("/admin/order/:id")
 .put(verifyUserAuth,roleBasedAccess('admin'), updateOrderStauts)
 .get(verifyUserAuth,roleBasedAccess('admin'), getSingleOrder)

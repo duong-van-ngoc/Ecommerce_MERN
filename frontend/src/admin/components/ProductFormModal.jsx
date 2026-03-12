@@ -271,21 +271,12 @@ function ProductFormModal({ product, onClose }) {
                                             required
                                         >
                                             <option value="">Chọn danh mục</option>
-                                            <option value="Laptop">Laptop</option>
-                                            <option value="Mobile">Mobile</option>
-                                            <option value="TV">TV</option>
-                                            <option value="Fruits">Fruits</option>
-                                            <option value="Glass">Glass</option>
-                                            <option value="Áo">Áo</option>
-                                            <option value="Quần">Quần</option>
-                                            <option value="Giày">Giày</option>
-                                            <option value="Đồng Hồ">Đồng Hồ</option>
+                                            <option value="Quần áo">Quần áo</option>
+                                            <option value="Phụ kiện">Phụ kiện</option>
+                                            <option value="Giày dép">Giày dép</option>
                                             <option value="Túi xách">Túi xách</option>
-                                            <option value="Thắt lưng">Thắt lưng</option>
-                                            <option value="Kính mắt">Kính mắt</option>
-                                            <option value="Tất">Tất</option>
+                                            <option value="Đồng hồ">Đồng hồ</option>
                                             <option value="Mũ">Mũ</option>
-                                            <option value="Khăn">Khăn</option>
                                             <option value="Khác">Khác</option>
                                         </select>
                                     </div>

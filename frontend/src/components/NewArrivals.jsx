@@ -29,14 +29,14 @@ const NewArrivals = ({ products, loading }) => {
                         <button
                             onClick={() => scroll('left')}
                             aria-label="Trước đó"
-                            className="na-nav-btn"
+                            className="na-nav-btn hover-icon-btn"
                         >
                             <svg className="na-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
                         </button>
                         <button
                             onClick={() => scroll('right')}
                             aria-label="Tiếp theo"
-                            className="na-nav-btn"
+                            className="na-nav-btn hover-icon-btn"
                         >
                             <svg className="na-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
                         </button>

@@ -36,7 +36,7 @@ function OrderSuccess({ orderId, onClose }) {
     <div className="os-backdrop" onClick={handleBackdropClick}>
       <div className="os-popup">
         <button
-          className="os-close"
+          className="os-close hover-icon-btn"
           type="button"
           aria-label="Close"
           onClick={onClose}
@@ -79,7 +79,7 @@ function OrderSuccess({ orderId, onClose }) {
           Mã đơn hàng: <strong>{orderId ? `#${orderId.slice(-6)}` : "Xem tại trang Đơn hàng"}</strong>
         </p>
 
-        <button className="os-btn" type="button" onClick={goToOrders}>
+        <button className="os-btn hover-btn-gradient" type="button" onClick={goToOrders}>
           {defaultConfig.button_text}
         </button>
       </div>

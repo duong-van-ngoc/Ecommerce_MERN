@@ -139,7 +139,7 @@ const Vouchers = () => {
                                                 </div>
                                                 <div className="progress-text">Đã dùng {voucher.usedPercent}%</div>
                                             </div>
-                                            <button className={`use-btn ${voucher.saved ? "saved" : ""}`}>
+                                            <button className={`use-btn hover-btn-gradient ${voucher.saved ? "saved" : ""}`}>
                                                 {voucher.saved ? "Đã lưu" : "Lưu"}
                                             </button>
                                         </div>

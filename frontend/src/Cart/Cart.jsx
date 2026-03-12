@@ -119,7 +119,7 @@ function Cart() {
         <header className="cart-page-header">
           <div className="cart-header-container">
             <div className="cart-header-left">
-              <button className="back-btn" onClick={() => navigate(-1)}>
+              <button className="back-btn hover-icon-btn" onClick={() => navigate(-1)}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M15 19l-7-7 7-7" />
                 </svg>
@@ -141,7 +141,7 @@ function Cart() {
               </div>
               <h2 className="empty-cart-message">Giỏ hàng của bạn đang trống</h2>
               <p className="empty-cart-submessage">Hãy thêm sản phẩm yêu thích vào giỏ hàng nhé!</p>
-              <Link to="/products" className="continue-shopping-btn">Tiếp tục mua sắm</Link>
+              <Link to="/products" className="continue-shopping-btn hover-btn-gradient">Tiếp tục mua sắm</Link>
             </div>
           ) : (
             <div className="cart-grid">
@@ -161,7 +161,7 @@ function Cart() {
                       Chọn tất cả ({cartItems.length} sản phẩm)
                     </label>
                   </div>
-                  <button className="delete-selected-btn" onClick={deleteSelected}>
+                  <button className="delete-selected-btn hover-btn-outline" onClick={deleteSelected}>
                     Xóa các sản phẩm đã chọn
                   </button>
                 </div>
@@ -182,12 +182,12 @@ function Cart() {
                           onChange={() => toggleItem(item)}
                         />
 
-                        <div className="item-image" onClick={() => navigate(`/product/${item.product}`)}>
+                        <div className="item-image hover-scale-up" onClick={() => navigate(`/product/${item.product}`)}>
                           <img src={item.image} alt={item.name} />
                         </div>
 
                         <div className="item-info">
-                          <h3 className="item-name" onClick={() => navigate(`/product/${item.product}`)}>
+                          <h3 className="item-name hover-link-slide" onClick={() => navigate(`/product/${item.product}`)}>
                             {item.name}
                           </h3>
 
@@ -263,7 +263,7 @@ function Cart() {
                   </div>
                 </div>
 
-                <button className="checkout-btn" onClick={checkoutHandler} disabled={selectedCartItems.length === 0 || loading}>
+                <button className="checkout-btn hover-btn-gradient" onClick={checkoutHandler} disabled={selectedCartItems.length === 0 || loading}>
                   TIẾN HÀNH ĐẶT HÀNG
                 </button>
 

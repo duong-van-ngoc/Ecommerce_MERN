@@ -57,8 +57,8 @@ function Profile() {
                                     </div>
 
                                     <div className="profile-buttons">
-                                        <Link to="/orders/user">Đơn đặt hàng</Link>
-                                        <Link to="/password/update">Đặt lại mật khẩu</Link>
+                                        <Link to="/orders/user" className="hover-btn-gradient">Đơn đặt hàng</Link>
+                                        <Link to="/password/update" className="hover-btn-gradient">Đặt lại mật khẩu</Link>
                                     </div>
                                 </div>
                             </div>

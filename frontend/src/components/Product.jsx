@@ -28,12 +28,12 @@ function Product({ product }) {
                     <img
                         src={product.images?.[0]?.url || "/public/ao/ao_khoac.jpg"}
                         alt={product.name}
-                        className="product-image-card"
+                        className="product-image-card hover-scale-up"
                     />
 
                     {/* Wishlist Button */}
                     <button
-                        className="product-card__wishlist"
+                        className="product-card__wishlist hover-icon-btn"
                         onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -60,7 +60,7 @@ function Product({ product }) {
                     )}
 
                     {/* Name */}
-                    <h3 className="product-title">{product.name}</h3>
+                    <h3 className="product-title hover-link-slide text-black pb-1 mb-1">{product.name}</h3>
 
                     {/* Price Row */}
                     <div className="product-card__price-row">

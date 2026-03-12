@@ -88,7 +88,7 @@ function UpdateProfile() {
                                     onChange={profileImageUpdate}
                                 />
 
-                                <label htmlFor="update-profile-avatar" className="update-profile-avatar-upload">
+                                <label htmlFor="update-profile-avatar" className="update-profile-avatar-upload hover-scale-up">
                                     <div className="update-profile-avatar-frame">
                                         <img
                                             src={avatarPreview}
@@ -146,7 +146,7 @@ function UpdateProfile() {
                                     />
                                 </div>
 
-                                <button className="update-profile-submit" type="submit">
+                                <button className="update-profile-submit hover-btn-gradient" type="submit">
                                     Update Profile
                                 </button>
                             </form>

@@ -239,7 +239,7 @@ function Shipping() {
               </div>
             )}
           </div>
-                <button className="shipping-submit-btn">Tiếp tục</button>
+                <button className="shipping-submit-btn hover-btn-gradient">Tiếp tục</button>
             </form>
         </div>
 

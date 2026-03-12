@@ -119,13 +119,13 @@ function Payment() {
       <CheckoutPath activePath={2} />
 
       <div className="payment-container">
-        <Link to="/order/confirm" className="payment-go-back">
+        <Link to="/order/confirm" className="payment-go-back hover-link-slide">
           Quay lại
         </Link>
 
         {error ? <p style={{ color: "red", marginTop: 10 }}>{error}</p> : null}
 
-        <button className="payment-btn" onClick={placeOrderCOD} disabled={loading}>
+        <button className="payment-btn hover-btn-gradient" onClick={placeOrderCOD} disabled={loading}>
           {loading ? "Đang tạo đơn..." : `Thanh toán khi nhận hàng (${displayTotal})`}
         </button>
       </div>

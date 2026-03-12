@@ -83,7 +83,7 @@ function UpdatePassword() {
                                value= {confirmPassword} 
                                onChange={(e) => setConfirmPassword(e.target.value)}/>
                     </div>
-                    <button className="authBtn">
+                    <button className="authBtn hover-btn-gradient">
                         Cập Nhật Mật Khẩu  
                     </button>
                 </form>
