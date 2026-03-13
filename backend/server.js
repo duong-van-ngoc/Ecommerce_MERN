@@ -11,7 +11,7 @@ connectMongoDatabase(); // kết nối database
 
 // cấu hình cloudinary
 cloudinary.config({
-    cloud_name:process.env.CLOUNDINARY_NAME,
+    cloud_name:process.env.CLOUNDINARY_NAME || process.env.CLOUDINARY_NAME,
     api_key:process.env.API_KEY,
     api_secret:process.env.API_SECRET
 })

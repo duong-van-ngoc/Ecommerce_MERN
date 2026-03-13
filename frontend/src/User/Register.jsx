@@ -7,6 +7,8 @@ import {useSelector, useDispatch} from 'react-redux'
 import { register, removeSuccess } from '../features/user/userSlice'
 import { removeErrors } from '../features/user/userSlice'
 
+const DEFAULT_AVATAR_PREVIEW = '/images/profile.png'
+
 function Register() {
 
     const [user, setUser] = useState({
@@ -15,8 +17,8 @@ function Register() {
         password:''
     })
     const [avatar, setAvatar] = useState("")
-
-    const [avatarPreview, setAvatarPreview] = useState('./images/profile.png')
+    const [showPassword, setShowPassword] = useState(false)
+    const [avatarPreview, setAvatarPreview] = useState(DEFAULT_AVATAR_PREVIEW)
      const {name, email, password} = user
     const {success, loading, error} = useSelector(state => state.user)
     const dispatch = useDispatch()
@@ -24,6 +26,12 @@ function Register() {
 
     const registerDataChange= (e) => {
         if(e.target.name === 'avatar') {
+           const file = e.target.files?.[0]
+           if(!file) {
+                setAvatar("")
+                setAvatarPreview(DEFAULT_AVATAR_PREVIEW)
+                return
+           }
            const reader=  new FileReader()
            reader.onload = () => {
             if(reader.readyState === 2) {
@@ -31,7 +39,7 @@ function Register() {
                 setAvatar(reader.result)
             }
            }
-           reader.readAsDataURL(e.target.files[0])
+           reader.readAsDataURL(file)
         }else{
             setUser({...user,[e.target.name]:e.target.value})
         }
@@ -48,11 +56,8 @@ function Register() {
         myForm.set('name', name);
         myForm.set('email', email);
         myForm.set('password', password);
-        myForm.set('avatar', avatar);
-        console.log(myForm.entries());
-        for(let pair of myForm.entries() ) {
-            console.log(pair[0]+ ':' + pair[1]);
-
+        if(avatar) {
+            myForm.set('avatar', avatar);
         }
         dispatch(register(myForm))
 
@@ -131,7 +136,7 @@ function Register() {
                                 id="register-name"
                                 type="text"
                                 name="name"
-                                placeholder="Enter your full name"
+                                placeholder="Enter your username"
                                 value={name}
                                 onChange={registerDataChange}
                             />
@@ -167,12 +172,31 @@ function Register() {
                             </span>
                             <input
                                 id="register-password"
-                                type="password"
+                                type={showPassword ? 'text' : 'password'}
                                 name="password"
-                                placeholder="Create a strong password"
+                                placeholder="Enter password"
                                 value={password}
                                 onChange={registerDataChange}
                             />
+                            {/* <button
+                                type="button"
+                                className="register-password-toggle"
+                                onClick={() => setShowPassword((prev) => !prev)}
+                                aria-label={showPassword ? 'An mat khau' : 'Hien mat khau'}
+                            >
+                                {showPassword ? (
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                                        <path d="M3 3l18 18" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M10.585 10.587a2 2 0 102.828 2.828" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M9.878 5.09A9.77 9.77 0 0112 4.875c6.75 0 9.75 7.125 9.75 7.125a15.708 15.708 0 01-4.054 5.138M6.61 6.61C4.123 8.312 2.25 12 2.25 12S5.25 19.125 12 19.125a9.84 9.84 0 004.056-.86" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                ) : (
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                                        <path d="M2.25 12S5.25 5.25 12 5.25 21.75 12 21.75 12 18.75 18.75 12 18.75 2.25 12 2.25 12z" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                )}
+                            </button> */}
                         </div>
                     </div>
 
