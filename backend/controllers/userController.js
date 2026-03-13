@@ -7,24 +7,39 @@ import crypto from "crypto";
 import mongoose from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
 
+const getDefaultAvatar = () => {
+    const frontendUrl = process.env.FRONTEND_URL?.replace(/\/$/, "");
+
+    return {
+        public_id: "default-avatar",
+        url: frontendUrl ? `${frontendUrl}/images/profile.png` : "/images/profile.png"
+    };
+};
+
 
 
 // Đăng ký 
 export const registerUser = handleAsyncError(async (req, res, next) => {
     const {name, email, password, avatar} = req.body;
-    const myCloud = await cloudinary.uploader.upload(avatar, {
-        folder: 'avatars',
-        width:150,
-        crop: "scale"
-    })
+    let avatarData = getDefaultAvatar();
+
+    if(avatar) {
+        const myCloud = await cloudinary.uploader.upload(avatar, {
+            folder: 'avatars',
+            width:150,
+            crop: "scale"
+        })
+
+        avatarData = {
+            public_id: myCloud.public_id,
+            url: myCloud.secure_url
+        }
+    }
     const user = await User.create({
         name,
         email,
         password,
-        avatar: {
-            public_id: myCloud.public_id,
-            url: myCloud.secure_url
-        }
+        avatar: avatarData
     })
 
     sendToken(user, 200, res)
@@ -53,10 +68,13 @@ export const loginUser = handleAsyncError(async(req, res, next) => {
 
 // Đăng xuất 
 export const logout = handleAsyncError(async (req, res, next) => {
+    const isProduction = process.env.NODE_ENV === "production";
 
     res.cookie('token', null,{
         expires: new Date(Date.now()),
-        httpOnly : true
+        httpOnly : true,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax"
     })
     res.status(200).json({
         success: true,

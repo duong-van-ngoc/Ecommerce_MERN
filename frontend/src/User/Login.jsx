@@ -111,12 +111,12 @@ function Login() {
                             onChange={(e) => {setLoginPassword(e.target.value)}}
                             className="login-input login-input-password"
                         />
-                        <button className="login-password-toggle" type="button" aria-label="Toggle password visibility">
+                        {/* <button className="login-password-toggle" type="button" aria-label="Toggle password visibility">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                                 <path d="M2.25 12S5.25 5.25 12 5.25 21.75 12 21.75 12 18.75 18.75 12 18.75 2.25 12 2.25 12z" strokeLinecap="round" strokeLinejoin="round" />
                                 <path d="M12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
-                        </button>
+                        </button> */}
                     </div>
                 </div>
 
