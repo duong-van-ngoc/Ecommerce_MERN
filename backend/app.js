@@ -44,11 +44,11 @@ app.use((req, res, next) => {
     next();
 });
 
-app.get("/", (req, res) => {
-    res.json({
-        success: true,
-        message: "Backend API is running 🚀"
-    });
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Backend is running'
+  });
 });
 
 app.use(express.json());
