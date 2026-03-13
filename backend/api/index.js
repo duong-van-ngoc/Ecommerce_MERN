@@ -1,5 +1,5 @@
-import app from "../backend/app.js";
-import { initializeApp } from "../backend/config/bootstrap.js";
+import app from "../app.js";
+import { initializeApp } from "../config/bootstrap.js";
 
 let isInitialized = false;
 
