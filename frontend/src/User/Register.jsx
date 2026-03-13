@@ -116,12 +116,11 @@ function Register() {
 
                         <div className="register-avatar-copy">
                             <p>Upload Profile Picture</p>
-                            <span>PNG, JPG up to 10MB</span>
                         </div>
                     </div>
 
                     <div className="register-field">
-                        <label htmlFor="register-name">Full Name</label>
+                        <label htmlFor="register-name">Username</label>
                         <div className="register-input-wrap">
                             <span className="register-input-icon" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
