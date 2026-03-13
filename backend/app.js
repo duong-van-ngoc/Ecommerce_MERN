@@ -43,6 +43,13 @@ app.use((req, res, next) => {
     next();
 });
 
+app.get("/", (req, res) => {
+    res.json({
+        success: true,
+        message: "Backend API is running 🚀"
+    });
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
