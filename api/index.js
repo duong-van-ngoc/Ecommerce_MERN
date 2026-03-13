@@ -1,8 +1,13 @@
 import app from "../backend/app.js";
 import { initializeApp } from "../backend/config/bootstrap.js";
 
-// Đảm bảo Database được kết nối trước khi xử lý request
-await initializeApp();
+let isInitialized = false;
 
-export default app;
+export default async function handler(req, res) {
+  if (!isInitialized) {
+    await initializeApp();
+    isInitialized = true;
+  }
 
+  return app(req, res);
+}
