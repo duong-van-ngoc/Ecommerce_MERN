@@ -1,45 +1,42 @@
-import dotenv from 'dotenv';
-dotenv.config({ path: "./backend/config/config.env" });  // sử dụng file config.env để load các biến môi trường
+import app from "./app.js";
+import { initializeApp } from "./config/bootstrap.js";
+import { loadEnvironment } from "./config/loadEnv.js";
 
-import app from './app.js';
-import connectMongoDatabase from './config/db.js';
-import {v2 as cloudinary} from 'cloudinary';
+loadEnvironment();
 
+process.on("uncaughtException", (err) => {
+    console.log(`Loi: ${err.message}`);
+    console.log("May chu dang tat vi loi ngoai le");
+    process.exit(1);
+});
 
+const port = process.env.PORT || 3000;
+let server;
 
-connectMongoDatabase(); // kết nối database
-
-// cấu hình cloudinary
-cloudinary.config({
-    cloud_name:process.env.CLOUNDINARY_NAME || process.env.CLOUDINARY_NAME,
-    api_key:process.env.API_KEY,
-    api_secret:process.env.API_SECRET
-})
-// xử lý các lỗi ngoai le 
-
-process.on('uncaughtException', (err) => {
-    console.log(`Lỗi:  ${err.message}`);
-    console.log(`máy chủ đang tắt vì lỗi ngoại lệ `);
-    process.exit(1); // thoat khoi may chu
-})
-
-
-const port = process.env.PORT || 3000; // nếu không có biến môi trường PORT thì sử dụng cổng 5000
-
-const server = app.listen(port,() => {
-    console.log(`server hoạt động trên máy chủ: ${port}`);
-})
-
-
-
-// xử lý các lỗi không mong muốn để tránh làm sập máy chủ
- process.on("unhandledRejection", (err) => {
-    console.log(`Lỗi: ${err.message}`);
-    console.log(`Máy chủ đang tắt vì lỗi không mong muốn`);
-
-    server.close(() => {
+const startServer = async () => {
+    try {
+        await initializeApp();
+        server = app.listen(port, () => {
+            console.log(`Server hoat dong tren may chu: ${port}`);
+        });
+    } catch (err) {
+        console.log(`Loi: ${err.message}`);
         process.exit(1);
-    })
- })
+    }
+};
 
+startServer();
 
+process.on("unhandledRejection", (err) => {
+    console.log(`Loi: ${err.message}`);
+    console.log("May chu dang tat vi loi khong mong muon");
+
+    if (server) {
+        server.close(() => {
+            process.exit(1);
+        });
+        return;
+    }
+
+    process.exit(1);
+});

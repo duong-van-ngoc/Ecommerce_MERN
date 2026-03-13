@@ -1,5 +1,6 @@
-import dotenv from 'dotenv';
-dotenv.config({ path: "backend/config/config.env" });
+import { loadEnvironment } from "./config/loadEnv.js";
+
+loadEnvironment();
 
 import express from 'express';
 import product from './routes/productRoutes.js';
