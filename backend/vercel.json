@@ -1,15 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "functions": {
-    "api/index.cjs": {
-      "runtime": "@vercel/node@3"
-    }
-  },
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/api/index.cjs"
+      "dest": "/api/index.js"
     }
   ]
 }
