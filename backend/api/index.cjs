@@ -1,7 +1,3 @@
-// This file is a CommonJS wrapper to avoid Vercel's ESM transpilation issues.
-// Since package.json has "type": "module", Vercel sometimes compiles ESM api functions
-// into CommonJS but saves them as .js files, crashing Node.js with "exports is not defined".
-// By explicitly using .cjs and dynamic import(), we bypass this issue.
 
 let appPromise = null;
 let initPromise = null;
