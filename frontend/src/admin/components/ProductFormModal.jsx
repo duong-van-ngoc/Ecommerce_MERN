@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { createProduct, updateProduct } from '../adminSLice/adminSlice';
 import { toast } from 'react-toastify';
+import { getLevel1Categories, getLevel2Categories, getLevel3Categories } from '../../constants/categories';
 import '../styles/ProductFormModal.css';
 
 function ProductFormModal({ product, onClose }) {
@@ -13,7 +14,9 @@ function ProductFormModal({ product, onClose }) {
         price: 0,
         originalPrice: 0,
         stock: 0,
-        category: '', // Changed empty default to force selection or use placeholder if needed
+        categoryLevel1: '',
+        categoryLevel2: '',
+        categoryLevel3: '',
         brand: '',
         material: '',
         description: '',
@@ -34,7 +37,9 @@ function ProductFormModal({ product, onClose }) {
                 price: product.price || 0,
                 originalPrice: product.originalPrice || 0,
                 stock: product.stock || 0,
-                category: product.category || '',
+                categoryLevel1: product.category?.level1 || '',
+                categoryLevel2: product.category?.level2 || '',
+                categoryLevel3: product.category?.level3 || '',
                 brand: product.brand || '',
                 material: product.material || '',
                 description: product.description || '',
@@ -61,7 +66,13 @@ function ProductFormModal({ product, onClose }) {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        if (name === 'categoryLevel1') {
+             setFormData(prev => ({ ...prev, categoryLevel1: value, categoryLevel2: '', categoryLevel3: '' }));
+        } else if (name === 'categoryLevel2') {
+             setFormData(prev => ({ ...prev, categoryLevel2: value, categoryLevel3: '' }));
+        } else {
+             setFormData(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleImageChange = (e) => {
@@ -182,7 +193,11 @@ function ProductFormModal({ product, onClose }) {
         myForm.set('price', formData.price);
         myForm.set('originalPrice', formData.originalPrice);
         myForm.set('stock', formData.stock);
-        myForm.set('category', formData.category);
+        myForm.set('category', JSON.stringify({
+            level1: formData.categoryLevel1,
+            level2: formData.categoryLevel2,
+            level3: formData.categoryLevel3
+        }));
         myForm.set('description', formData.description);
         myForm.set('brand', formData.brand);
         myForm.set('material', formData.material);
@@ -262,22 +277,50 @@ function ProductFormModal({ product, onClose }) {
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label className="form-label required">Danh mục</label>
+                                        <label className="form-label required">Danh mục Cấp 1</label>
                                         <select
-                                            name="category"
+                                            name="categoryLevel1"
                                             className="form-select"
-                                            value={formData.category}
+                                            value={formData.categoryLevel1}
                                             onChange={handleChange}
                                             required
                                         >
-                                            <option value="">Chọn danh mục</option>
-                                            <option value="Quần áo">Quần áo</option>
-                                            <option value="Phụ kiện">Phụ kiện</option>
-                                            <option value="Giày dép">Giày dép</option>
-                                            <option value="Túi xách">Túi xách</option>
-                                            <option value="Đồng hồ">Đồng hồ</option>
-                                            <option value="Mũ">Mũ</option>
-                                            <option value="Khác">Khác</option>
+                                            <option value="">Chọn Cấp 1</option>
+                                            {getLevel1Categories().map(cat => (
+                                                 <option key={cat} value={cat}>{cat}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-group" style={{marginTop: '10px'}}>
+                                        <label className="form-label required">Danh mục Cấp 2</label>
+                                        <select
+                                            name="categoryLevel2"
+                                            className="form-select"
+                                            value={formData.categoryLevel2}
+                                            onChange={handleChange}
+                                            required
+                                            disabled={!formData.categoryLevel1}
+                                        >
+                                            <option value="">Chọn Cấp 2</option>
+                                            {getLevel2Categories(formData.categoryLevel1).map(cat => (
+                                                 <option key={cat} value={cat}>{cat}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-group" style={{marginTop: '10px'}}>
+                                        <label className="form-label required">Danh mục Cấp 3</label>
+                                        <select
+                                            name="categoryLevel3"
+                                            className="form-select"
+                                            value={formData.categoryLevel3}
+                                            onChange={handleChange}
+                                            required
+                                            disabled={!formData.categoryLevel2}
+                                        >
+                                            <option value="">Chọn Cấp 3</option>
+                                            {getLevel3Categories(formData.categoryLevel1, formData.categoryLevel2).map(cat => (
+                                                 <option key={cat} value={cat}>{cat}</option>
+                                            ))}
                                         </select>
                                     </div>
                                     <div className="form-group">

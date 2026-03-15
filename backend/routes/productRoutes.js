@@ -10,6 +10,7 @@ import {
   updateProduct,
   deteteProduct,
   importProducts,
+  updateProductsBulk,
   importStock,
   updateStock,
   searchProducts
@@ -36,6 +37,11 @@ router
 router
   .route("/admin/products/import")
   .post(verifyUserAuth, roleBasedAccess("admin"), importProducts);
+
+// Cập nhật sản phẩm hàng loạt từ Excel/CSV
+router
+  .route("/admin/products/update-bulk")
+  .put(verifyUserAuth, roleBasedAccess("admin"), updateProductsBulk);
 
 // Import tồn kho hàng loạt
 router
