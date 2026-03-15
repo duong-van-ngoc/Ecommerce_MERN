@@ -17,7 +17,7 @@ function ImportProductModal({ onClose, onImportSuccess }) {
     const [fileName, setFileName] = useState('');
     const [validationErrors, setValidationErrors] = useState([]);
 
-    const REQUIRED_FIELDS = ['name', 'description', 'price', 'stock', 'category'];
+    const REQUIRED_FIELDS = ['name', 'description', 'price', 'stock', 'category_level1'];
 
     // Parse file Excel/CSV
     const handleFileChange = (e) => {
@@ -102,16 +102,18 @@ function ImportProductModal({ onClose, onImportSuccess }) {
     const handleDownloadTemplate = () => {
         const template = [
             {
-                name: 'Áo khoác gió', description: 'Áo khoác chống nước, chống gió',
-                price: 350000, originalPrice: 500000, stock: 100,
-                category: 'Áo', brand: 'Nike', material: 'Polyester',
-                sizes: 'S,M,L,XL', colors: 'Đen,Trắng,Xanh'
+                name: 'Áo thun nam basic', description: 'Áo thun cotton mát mẻ',
+                price: 150000, originalPrice: 200000, stock: 100,
+                category_level1: 'NAM', category_level2: 'Áo', category_level3: 'Thun', 
+                brand: 'Coolmate', material: 'Cotton',
+                sizes: 'S,M,L,XL', colors: 'Đen,Trắng,Navy'
             },
             {
-                name: 'Quần jean slim', description: 'Quần jean co giãn 4 chiều',
+                name: 'Túi xách nữ thời trang', description: 'Túi xách da PU cao cấp',
                 price: 450000, originalPrice: 600000, stock: 50,
-                category: 'Quần', brand: 'Levi\'s', material: 'Denim',
-                sizes: '29,30,31,32', colors: 'Xanh đậm,Đen'
+                category_level1: 'PHỤ KIỆN & GIÀY DÉP', category_level2: 'Phụ kiện Nữ', category_level3: 'Túi xách', 
+                brand: 'Juno', material: 'Da PU',
+                sizes: 'Free', colors: 'Đen,Đỏ,Be'
             }
         ];
         const ws = XLSX.utils.json_to_sheet(template);
@@ -174,7 +176,9 @@ function ImportProductModal({ onClose, onImportSuccess }) {
                                         <th>Tên SP</th>
                                         <th>Giá</th>
                                         <th>Kho</th>
-                                        <th>Danh mục</th>
+                                        <th>Danh mục 1</th>
+                                        <th>Danh mục 2</th>
+                                        <th>Danh mục 3</th>
                                         <th>Thương hiệu</th>
                                     </tr>
                                 </thead>
@@ -194,7 +198,9 @@ function ImportProductModal({ onClose, onImportSuccess }) {
                                                 <td>{row.name || <em className="empty-cell">—</em>}</td>
                                                 <td>{row.price ? Number(row.price).toLocaleString('vi-VN') + '₫' : <em className="empty-cell">—</em>}</td>
                                                 <td>{row.stock ?? <em className="empty-cell">—</em>}</td>
-                                                <td>{row.category || <em className="empty-cell">—</em>}</td>
+                                                <td>{row.category_level1 || row['Category Level 1'] || <em className="empty-cell">—</em>}</td>
+                                                <td>{row.category_level2 || row['Category Level 2'] || <em className="empty-cell">—</em>}</td>
+                                                <td>{row.category_level3 || row['Category Level 3'] || <em className="empty-cell">—</em>}</td>
                                                 <td>{row.brand || 'No Brand'}</td>
                                             </tr>
                                         );

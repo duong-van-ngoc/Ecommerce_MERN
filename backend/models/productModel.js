@@ -35,10 +35,19 @@ const productSchema = new mongoose.Schema({ // tạo schema cho sản phẩm
         default: 0
     },
 
-    // --- NHÓM THUỘC TÍNH SẢN PHẨM (Fashion) ---
-    category: { // danh mục (Áo thun, Quần Jean...)
-        type: String,
-        required: [true, "Nhập danh mục sản phẩm"]
+    category: { // danh mục 3 cấp (vd: Nam -> Áo -> Sơ mi)
+        level1: {
+            type: String,
+            required: [true, "Nhập danh mục cấp 1 (Nam/Nữ/Unisex/Phụ kiện...)"]
+        },
+        level2: {
+            type: String,
+            required: [true, "Nhập danh mục cấp 2 (Áo/Quần/Giày...)"]
+        },
+        level3: {
+            type: String,
+            required: [true, "Nhập danh mục cấp 3 (Thun/Sơ mi...)"]
+        }
     },
     brand: { // thương hiệu
         type: String,

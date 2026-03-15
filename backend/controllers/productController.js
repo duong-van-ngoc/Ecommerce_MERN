@@ -56,7 +56,15 @@ export const createProducts = handleAsyncError(async (req, res, next) => {
     req.body.user = req.user.id;
 
 
-
+    if (typeof req.body.category === 'string') {
+        try {
+            req.body.category = JSON.parse(req.body.category);
+        } catch (error) {
+            // Nếu không phải JSON hợp lệ (ví dụ form gửi lên string thường - trường hợp cũ), 
+            // có thể xử lý lỗi hoặc gán tạm giá trị. Ở đây mô hình mới bắt buộc Object.
+            return next(new HandleError("Dữ liệu category không hợp lệ, vui lòng gửi dạng Object {level1, level2, level3}", 400));
+        }
+    }
 
     if (!req.body.sizes) req.body.sizes = [];
     if (!Array.isArray(req.body.sizes)) req.body.sizes = [req.body.sizes];
@@ -147,6 +155,14 @@ export const updateProduct = async (req, res, next) => {
                 public_id: result.public_id,
                 url: result.secure_url,
             });
+        }
+    }
+
+    if (typeof req.body.category === 'string') {
+        try {
+            req.body.category = JSON.parse(req.body.category);
+        } catch (error) {
+            return next(new HandleError("Dữ liệu category không hợp lệ, vui lòng gửi dạng Object {level1, level2, level3}", 400));
         }
     }
 
@@ -282,66 +298,141 @@ export const getAdminProducts = handleAsyncError(async (req, res, next) => {
     })
 })
 
+import * as xlsx from 'xlsx';
+
 // =============================================
 // Admin - Import sản phẩm hàng loạt từ Excel/CSV
 // POST /api/v1/admin/products/import
 // =============================================
 export const importProducts = handleAsyncError(async (req, res, next) => {
-    const { products } = req.body;
+    let products = [];
+    
+    // Check if a file was uploaded
+    if (req.files && req.files.file) {
+        const file = req.files.file;
+        
+        try {
+            // Check file type (optional, but good practice)
+            // const ext = file.name.split('.').pop().toLowerCase();
+            // if (!['xlsx', 'xls', 'csv'].includes(ext)) { ... }
+
+            // Read the file data into a workbook
+            const workbook = xlsx.read(file.data, { type: 'buffer' });
+            
+            // Assuming data is in the first sheet
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            
+            // Convert to JSON array
+            products = xlsx.utils.sheet_to_json(worksheet, { defval: '' }); // defval maps empty cells to empty strings
+            
+        } catch (error) {
+            return next(new HandleError(`Lỗi đọc file: ${error.message}`, 400));
+        }
+    } else if (req.body.products) {
+        // Fallback for direct JSON array
+        try {
+            products = typeof req.body.products === 'string' ? JSON.parse(req.body.products) : req.body.products;
+        } catch (error) {
+           return next(new HandleError("Dữ liệu JSON products không hợp lệ", 400));
+        }
+    }
 
     if (!products || !Array.isArray(products) || products.length === 0) {
-        return next(new HandleError("Danh sách sản phẩm trống", 400));
+        return next(new HandleError("Không tìm thấy dữ liệu sản phẩm trong file hoặc request", 400));
     }
 
     const imported = [];
     const errors = [];
 
     for (let i = 0; i < products.length; i++) {
-        const item = products[i];
+        // Handle variations in column names from Excel/CSV
+        // We will try to map common Vietnamese/English headers to our schema fields
+        const rawItem = products[i];
+        
+        // Define mapping functions to handle potential header variations
+        const getValue = (keys) => {
+            for (const key of keys) {
+                if (rawItem[key] !== undefined && rawItem[key] !== null && rawItem[key] !== '') {
+                    return rawItem[key];
+                }
+            }
+            return null;
+        };
+
+        const item = {
+            name: getValue(['Tên', 'Tên sản phẩm', 'Name', 'name']),
+            description: getValue(['Mô Tả', 'Mô tả', 'Description', 'description']),
+            price: getValue(['Giá Bán', 'Giá bán', 'Price', 'price']),
+            originalPrice: getValue(['Giá Gốc', 'Giá gốc', 'Original Price', 'originalPrice']),
+            stock: getValue(['Tồn Kho', 'Tồn kho', 'Số lượng', 'Stock', 'stock']),
+            categoryLevel1: getValue(['Danh Mục Cấp 1', 'Danh mục cấp 1', 'Category Level 1', 'level1']),
+            categoryLevel2: getValue(['Danh Mục Cấp 2', 'Danh mục cấp 2', 'Category Level 2', 'level2']),
+            categoryLevel3: getValue(['Danh Mục Cấp 3', 'Danh mục cấp 3', 'Category Level 3', 'level3']),
+            brand: getValue(['Thương Hiệu', 'Thương hiệu', 'Brand', 'brand']),
+            material: getValue(['Chất Liệu', 'Chất liệu', 'Material', 'material']),
+            sizes: getValue(['Sizes', 'Cỡ', 'Kích cỡ', 'sizes']),
+            colors: getValue(['Colors', 'Màu sắc', 'colors']),
+        };
+
         try {
             // Validate required fields
-            if (!item.name || !item.name.trim()) {
-                errors.push({ row: i + 1, name: item.name || '', message: 'Thiếu trường name' });
+            if (!item.name || !String(item.name).trim()) {
+                errors.push({ row: i + 2, name: item.name || '', message: 'Thiếu trường Tên (name)' }); // i+2 because row 1 is usually header in Excel
                 continue;
             }
-            if (!item.description || !item.description.trim()) {
-                errors.push({ row: i + 1, name: item.name, message: 'Thiếu trường description' });
+            if (!item.description || !String(item.description).trim()) {
+                errors.push({ row: i + 2, name: item.name, message: 'Thiếu trường Mô tả (description)' });
                 continue;
             }
-            if (item.price === undefined || item.price === null || isNaN(item.price) || Number(item.price) <= 0) {
-                errors.push({ row: i + 1, name: item.name, message: 'Trường price không hợp lệ' });
+            if (item.price === null || isNaN(item.price) || Number(item.price) <= 0) {
+                errors.push({ row: i + 2, name: item.name, message: 'Trường Giá bán (price) không hợp lệ' });
                 continue;
             }
-            if (item.stock === undefined || item.stock === null || isNaN(item.stock) || Number(item.stock) < 0) {
-                errors.push({ row: i + 1, name: item.name, message: 'Trường stock không hợp lệ' });
+            if (item.stock === null || isNaN(item.stock) || Number(item.stock) < 0) {
+                errors.push({ row: i + 2, name: item.name, message: 'Trường Tồn kho (stock) không hợp lệ' });
                 continue;
             }
-            if (!item.category || !item.category.trim()) {
-                errors.push({ row: i + 1, name: item.name, message: 'Thiếu trường category' });
+            if (!item.categoryLevel1 || !item.categoryLevel2 || !item.categoryLevel3) {
+                // Check fallback to old 'category' field if new ones are missing
+                 const oldCategory = getValue(['Danh mục', 'Category', 'category']);
+                 if(oldCategory) {
+                    errors.push({ row: i + 2, name: item.name, message: 'File mẫu cũ. Cần cập nhật sang 3 cột Danh Mục Cấp 1, 2, 3.' });
+                 } else {
+                    errors.push({ row: i + 2, name: item.name, message: 'Thiếu thông tin Danh mục cấp 1/2/3' });
+                 }
                 continue;
             }
 
             // Parse sizes and colors from comma-separated string
             let sizes = item.sizes || [];
-            if (typeof sizes === 'string') {
-                sizes = sizes.split(',').map(s => s.trim()).filter(s => s);
+            if (typeof sizes === 'string' || typeof sizes === 'number') {
+                sizes = String(sizes).split(',').map(s => s.trim()).filter(s => s);
+            } else if (!Array.isArray(sizes)) {
+                sizes = [];
             }
 
             let colors = item.colors || [];
             if (typeof colors === 'string') {
                 colors = colors.split(',').map(c => c.trim()).filter(c => c);
+            } else if (!Array.isArray(colors)) {
+                colors = [];
             }
 
             // Create product with placeholder image
             const productData = {
-                name: item.name.trim(),
-                description: item.description.trim(),
+                name: String(item.name).trim(),
+                description: String(item.description).trim(),
                 price: Number(item.price),
                 originalPrice: Number(item.originalPrice) || 0,
                 stock: Number(item.stock),
-                category: item.category.trim(),
-                brand: item.brand || 'No Brand',
-                material: item.material || '',
+                category: {
+                    level1: String(item.categoryLevel1).trim(),
+                    level2: String(item.categoryLevel2).trim(),
+                    level3: String(item.categoryLevel3).trim(),
+                },
+                brand: item.brand ? String(item.brand).trim() : 'No Brand',
+                material: item.material ? String(item.material).trim() : '',
                 sizes,
                 colors,
                 images: [{
@@ -354,7 +445,7 @@ export const importProducts = handleAsyncError(async (req, res, next) => {
             const product = await Product.create(productData);
             imported.push(product);
         } catch (err) {
-            errors.push({ row: i + 1, name: item.name || '', message: err.message });
+            errors.push({ row: i + 2, name: item.name || '', message: err.message });
         }
     }
 
@@ -364,6 +455,113 @@ export const importProducts = handleAsyncError(async (req, res, next) => {
         failed: errors.length,
         errors,
         products: imported
+    });
+})
+
+// =============================================
+// Admin - Cập nhật sản phẩm hàng loạt từ Excel/CSV
+// PUT /api/v1/admin/products/update-bulk
+// =============================================
+export const updateProductsBulk = handleAsyncError(async (req, res, next) => {
+    let products = [];
+    
+    // Check if a file was uploaded
+    if (req.files && req.files.file) {
+        const file = req.files.file;
+        try {
+            const workbook = xlsx.read(file.data, { type: 'buffer' });
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            products = xlsx.utils.sheet_to_json(worksheet, { defval: '' });
+        } catch (error) {
+            return next(new HandleError(`Lỗi đọc file: ${error.message}`, 400));
+        }
+    } else if (req.body.products) {
+        try {
+            products = typeof req.body.products === 'string' ? JSON.parse(req.body.products) : req.body.products;
+        } catch (error) {
+           return next(new HandleError("Dữ liệu JSON products không hợp lệ", 400));
+        }
+    }
+
+    if (!products || !Array.isArray(products) || products.length === 0) {
+        return next(new HandleError("Không tìm thấy dữ liệu sản phẩm trong file hoặc request", 400));
+    }
+
+    const updated = [];
+    const errors = [];
+
+    for (let i = 0; i < products.length; i++) {
+        const rawItem = products[i];
+        const getValue = (keys) => {
+            for (const key of keys) {
+                if (rawItem[key] !== undefined && rawItem[key] !== null && rawItem[key] !== '') {
+                    return rawItem[key];
+                }
+            }
+            return null;
+        };
+
+        const id = getValue(['Product ID', '_id', 'ID', 'Id', 'id']);
+        const name = getValue(['Tên', 'Tên sản phẩm', 'Name', 'name']);
+
+        if (!id) {
+            errors.push({ row: i + 2, name: name || 'Không rõ', message: 'Thiếu trường ID sản phẩm (Product ID)' });
+            continue;
+        }
+
+        const product = await Product.findById(id);
+        if(!product) {
+            errors.push({ row: i + 2, name: name || id, message: `Không tìm thấy sản phẩm có ID: ${id}` });
+            continue;
+        }
+
+        const updateData = {};
+        
+        const price = getValue(['Giá Bán', 'Giá bán', 'Price', 'price']);
+        if(price !== null && !isNaN(price)) updateData.price = Number(price);
+
+        const originalPrice = getValue(['Giá Gốc', 'Giá gốc', 'Original Price', 'originalPrice']);
+        if(originalPrice !== null && !isNaN(originalPrice)) updateData.originalPrice = Number(originalPrice);
+
+        const stock = getValue(['Tồn Kho', 'Tồn kho', 'Số lượng', 'Stock', 'stock']);
+        if(stock !== null && !isNaN(stock)) updateData.stock = Number(stock);
+
+        const desc = getValue(['Mô Tả', 'Mô tả', 'Description', 'description']);
+        if(desc) updateData.description = String(desc).trim();
+
+        const pName = getValue(['Tên', 'Tên sản phẩm', 'Name', 'name']);
+        if(pName) updateData.name = String(pName).trim();
+
+        const catL1 = getValue(['Danh Mục Cấp 1', 'Danh mục cấp 1', 'Category Level 1', 'level1']);
+        const catL2 = getValue(['Danh Mục Cấp 2', 'Danh mục cấp 2', 'Category Level 2', 'level2']);
+        const catL3 = getValue(['Danh Mục Cấp 3', 'Danh mục cấp 3', 'Category Level 3', 'level3']);
+        
+        if (catL1 || catL2 || catL3) {
+             updateData.category = {
+                 level1: String(catL1 || product.category.level1).trim(),
+                 level2: String(catL2 || product.category.level2).trim(),
+                 level3: String(catL3 || product.category.level3).trim(),
+             }
+        }
+
+        try {
+           const updatedProduct = await Product.findByIdAndUpdate(id, updateData, {
+               new: true,
+               runValidators: true,
+           });
+           updated.push(updatedProduct);
+        } catch (err) {
+            errors.push({ row: i + 2, name: pName || id, message: err.message });
+        }
+    }
+
+    res.status(200).json({
+        success: true,
+        updated: updated.length,
+        failed: errors.length,
+        errors,
+        products: updated
     });
 })
 
