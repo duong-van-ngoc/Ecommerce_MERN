@@ -51,22 +51,41 @@ function ImportProductModal({ onClose, onImportSuccess }) {
                     return;
                 }
 
-                // Validate each row
+                // Map and Validate each row
                 const errors = [];
-                jsonData.forEach((row, idx) => {
-                    const missing = REQUIRED_FIELDS.filter(f => !row[f] && row[f] !== 0);
+                const mappedData = jsonData.map((row, idx) => {
+                    const mappedRow = { ...row };
+                    
+                    // Linh hoạt map tiêu đề cho category
+                    if (!mappedRow.category_level1) {
+                        mappedRow.category_level1 = row['category_level1'] || row['Category Level 1'] || row['Danh mục cấp 1'] || row['Danh mục Cấp 1'] || row['level1'];
+                    }
+                    if (!mappedRow.category_level2) {
+                        mappedRow.category_level2 = row['category_level2'] || row['Category Level 2'] || row['Danh mục cấp 2'] || row['Danh mục Cấp 2'] || row['level2'];
+                    }
+                    if (!mappedRow.category_level3) {
+                        mappedRow.category_level3 = row['category_level3'] || row['Category Level 3'] || row['Danh mục cấp 3'] || row['Danh mục Cấp 3'] || row['level3'];
+                    }
+                    // Thỏa mãn validation cũ nếu file có field 'category' hoặc 'Danh mục'
+                    if (!mappedRow.category_level1) {
+                        const oldCat = row['category'] || row['Category'] || row['Danh mục'];
+                        if (oldCat) mappedRow.category_level1 = oldCat;
+                    }
+
+                    const missing = REQUIRED_FIELDS.filter(f => !mappedRow[f] && mappedRow[f] !== 0);
                     if (missing.length > 0) {
-                        errors.push({ row: idx + 1, name: row.name || '', message: `Thiếu: ${missing.join(', ')}` });
+                        errors.push({ row: idx + 1, name: mappedRow.name || '', message: `Thiếu: ${missing.join(', ')}` });
                     }
-                    if (row.price && (isNaN(row.price) || Number(row.price) <= 0)) {
-                        errors.push({ row: idx + 1, name: row.name || '', message: 'Giá không hợp lệ' });
+                    if (mappedRow.price && (isNaN(mappedRow.price) || Number(mappedRow.price) <= 0)) {
+                        errors.push({ row: idx + 1, name: mappedRow.name || '', message: 'Giá không hợp lệ' });
                     }
-                    if (row.stock !== '' && (isNaN(row.stock) || Number(row.stock) < 0)) {
-                        errors.push({ row: idx + 1, name: row.name || '', message: 'Số lượng không hợp lệ' });
+                    if (mappedRow.stock !== '' && (isNaN(mappedRow.stock) || Number(mappedRow.stock) < 0)) {
+                        errors.push({ row: idx + 1, name: mappedRow.name || '', message: 'Số lượng không hợp lệ' });
                     }
+                    return mappedRow;
                 });
 
-                setPreviewData(jsonData);
+                setPreviewData(mappedData);
                 setValidationErrors(errors);
             } catch (err) {
                 toast.error('Không thể đọc file: ' + err.message);
@@ -130,7 +149,7 @@ function ImportProductModal({ onClose, onImportSuccess }) {
             <div className="import-modal" onClick={e => e.stopPropagation()}>
                 {/* Header */}
                 <div className="import-modal-header">
-                    <h2>📥 Import Sản Phẩm Từ Excel/CSV</h2>
+                    <h2>📥 Import Sản Phẩm Từ Excel/CSV <span style={{fontSize: '12px', color: '#999'}}>(v2.0)</span></h2>
                     <button className="import-modal-close" onClick={onClose}>×</button>
                 </div>
 
