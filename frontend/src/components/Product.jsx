@@ -56,7 +56,11 @@ function Product({ product }) {
                 <div className="product-details">
                     {/* Category */}
                     {product.category && (
-                        <p className="product-card__category">{product.category}</p>
+                        <p className="product-card__category">
+                            {typeof product.category === 'object' 
+                                ? (product.category.level3 || product.category.level2 || product.category.level1) 
+                                : product.category}
+                        </p>
                     )}
 
                     {/* Name */}
