@@ -206,7 +206,11 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess }) {
                             <div className="rc-product-details">
                                 <h3 className="rc-product-name">{product.name}</h3>
                                 {product.category && (
-                                    <span className="rc-product-variant">Phân loại: {product.category}</span>
+                                    <span className="rc-product-variant">
+                                        Phân loại: {typeof product.category === 'object' 
+                                            ? (product.category.level3 || product.category.level2 || product.category.level1) 
+                                            : product.category}
+                                    </span>
                                 )}
                             </div>
                         </div>

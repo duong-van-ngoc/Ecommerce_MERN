@@ -267,7 +267,7 @@ function StockManagement() {
                                             )}
                                             {product.name}
                                         </td>
-                                        <td>{product.category}</td>
+                                        <td>{typeof product.category === 'object' ? product.category?.level1 : product.category}</td>
                                         <td>
                                             <span className={`stock-badge ${product.stock < 10 ? 'low' : ''}`}>
                                                 {product.stock}

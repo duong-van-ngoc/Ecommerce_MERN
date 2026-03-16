@@ -132,7 +132,7 @@ function ProductsManagement() {
                                             </td>
                                             <td className="product-name">{product.name}</td>
                                             <td className="product-price">{Number(product.price).toLocaleString('vi-VN')}₫</td>
-                                            <td>{product.category}</td>
+                                            <td>{typeof product.category === 'object' ? product.category?.level1 : product.category}</td>
                                             <td>
                                                 <span className={`stock-badge ${product.stock < 10 ? 'low' : ''}`}>
                                                     {product.stock}
