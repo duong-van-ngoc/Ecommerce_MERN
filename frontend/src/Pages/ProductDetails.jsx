@@ -22,6 +22,7 @@ function ProductDetails() {
   // State của Redux
   const { loading, error, product } = useSelector((state) => state.product)
   const { loading: cartLoading, error: cartError, success, message } = useSelector((state) => state.cart)
+  const { isAuthenticated, user } = useSelector((state) => state.user)
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -306,7 +307,12 @@ function ProductDetails() {
                     };
                     sessionStorage.setItem("directBuyItem", JSON.stringify(buyNowItem));
                     dispatch(removeErrors()); // Clean up errors if any
-                    navigate('/login?redirect=/shipping');
+                    
+                    if (isAuthenticated) {
+                      navigate('/shipping');
+                    } else {
+                      navigate('/login?redirect=/shipping');
+                    }
                   }}>
                     MUA NGAY
                   </button>

@@ -458,7 +458,7 @@ export const importProducts = handleAsyncError(async (req, res, next) => {
                 colors,
                 images: [{
                     public_id: 'placeholder',
-                    url: 'https://res.cloudinary.com/demo/image/upload/v1/placeholder.png'
+                    url: '/placeholder.png'
                 }],
                 user: req.user.id
             };
