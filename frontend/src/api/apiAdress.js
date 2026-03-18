@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://provinces.open-api.vn/api/v1";
+const API_URL = "/api/v1/address";
 
 const http = axios.create({
   baseURL: API_URL,

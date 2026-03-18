@@ -85,3 +85,23 @@
     writing-mode: vertical-rl;
     text-orientation: mixed;
 }
+
+.coral-gradient {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+}
+
+.gradient-hover:hover {
+    background: linear-gradient(90deg, #ff8787 0%, #ff6b6b 100%);
+    border-color: transparent;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #ff6b6b !important;
+    box-shadow: 0 0 0 1px rgba(255, 107, 107, 0.2);
+}
+
+/* Override primary color if needed for this premium theme */
+:root {
+    --primary-premium: #702e36;
+}

@@ -16,6 +16,8 @@ const orderSchema = new mongoose.Schema({
       price: { type: String, required: true }, // (khuyến nghị đổi sang Number)
       quantity: { type: Number, required: true },
       image: { type: String, required: true },
+      size: { type: String },
+      color: { type: String },
       product: {
         type: mongoose.Schema.ObjectId,
         ref: "product",

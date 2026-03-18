@@ -5,7 +5,7 @@ import { AccountBalance, LibraryAddCheck, LocalShipping } from '@mui/icons-mater
 function CheckoutPath({activePath}) {
     const path = [
         {
-            label: 'Shipping Dettails',
+            label: 'Shipping Details',
             icon: <LocalShipping />
         },
         {

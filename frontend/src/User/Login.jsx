@@ -13,7 +13,10 @@ function Login() {
     const {error, loading, isAuthenticated,success} = useSelector(state=> state.user)
     const location = useLocation();
 
-    const redirect = new URLSearchParams(location.search).get("redirect") || "/"
+    let redirect = new URLSearchParams(location.search).get("redirect") || "/";
+    if (redirect !== "/" && !redirect.startsWith("/")) {
+        redirect = `/${redirect}`;
+    }
     const dispatch = useDispatch();
     const navigate = useNavigate()
     const loginSubmit = (e) => {

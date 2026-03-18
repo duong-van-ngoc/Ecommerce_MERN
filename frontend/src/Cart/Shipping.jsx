@@ -146,108 +146,145 @@ function Shipping() {
 
   return (
     <>
-        <PageTitle  title="Thong tin giao hang"/>
-        <Navbar />
-        <CheckoutPath activePath ={0} />
-        <div className="shipping-form-container">
-            <h1 className="shipping-form-header">Chi tiet giao hang</h1>
-            <form className="shipping-form" onSubmit={shippingInfoSubmit}>
-                <div className="shipping-section">
-                    <div className="shipping-form-group">
-                        <label htmlFor="address">Dia chi</label>
-                        <input type="text" 
-                               id='address' 
-                               name='address' 
-                               placeholder='Nhap dia chi...' 
-                               value={address}
-                               onChange={(e) => setAddress(e.target.value)}
-                        />
-                    </div>
-                    <div className="shipping-form-group">
-                        <label htmlFor="pinCode">pinCode</label>
-                        <input type="number" 
-                               id='pinCode' 
-                               name='pinCode' 
-                               placeholder='Nhap pinCode ...' 
-                               value={pinCode}
-                               onChange={(e) => setPinCode(e.target.value)}
+      <PageTitle title="Thông tin giao hàng" />
+      <Navbar />
+      <CheckoutPath activePath={1} />
 
-                        />
-                    </div>
-                    <div className="shipping-form-group">
-                        <label htmlFor="phoneNumber">Số điện thoại</label>
-                        <input type="tel" 
-                               id='phoneNumber'
-                               name='phoneNumber' 
-                               placeholder='Nhap số điện thoại...' 
-                               value={phoneNumber}
-                               onChange={(e) => setPhoneNumber(e.target.value)}
-                        />
-                    </div>
-                    
-                </div>
-                <div className="shipping-section">
-                      <div className="shipping-form-group">
-              <label htmlFor="province">Tỉnh/Thành</label>
-              <select
-                name="province"
-                id="province"
-                value={provinceCode}
-                onChange={(e) => setProvinceCode(e.target.value)}
-              >
-                <option value="">Chọn Tỉnh/Thành</option>
-                {provinces.map((p) => (
-                  <option key={p.code} value={p.code}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+      <main className="min-h-[calc(100vh-80px)] py-12 px-6">
+        <div className="max-w-3xl mx-auto">
+          {/* Content Area */}
+          <div className="bg-white p-8 md:p-12 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.03)] border border-slate-100">
+            <div className="text-center mb-10">
+              <h2 className="font-serif text-3xl md:text-4xl text-slate-900 mb-4">Chi tiết giao hàng</h2>
+              <p className="text-slate-500 font-light max-w-md mx-auto">
+                Vui lòng nhập thông tin chính xác để chúng tôi có thể gửi tác phẩm nghệ thuật đến tay bạn một cách an toàn nhất.
+              </p>
             </div>
 
-            {/* ✅ Quận/Huyện */}
-            {provinceCode && (
-              <div className="shipping-form-group">
-                <label htmlFor="district">Quận/Huyện</label>
-                <select
-                  name="district"
-                  id="district"
-                  value={districtCode}
-                  onChange={(e) => setDistrictCode(e.target.value)}
+            <form className="space-y-6" onSubmit={shippingInfoSubmit}>
+              <div className="grid grid-cols-1 gap-6">
+                {/* Address */}
+                <div className="space-y-2">
+                  <label className="text-[11px] uppercase tracking-widest font-bold text-slate-500">Địa chỉ</label>
+                  <input
+                    className="w-full bg-slate-50 border-slate-200 rounded-lg py-4 px-5 text-sm transition-all focus:bg-white focus:ring-1 focus:ring-primary/20"
+                    placeholder="Nhập số nhà, tên đường..."
+                    type="text"
+                    required
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                  />
+                </div>
+
+                {/* 3-Column Grid for Locations */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Tỉnh/Thành */}
+                  <div className="space-y-2">
+                    <label className="text-[11px] uppercase tracking-widest font-bold text-slate-500">Tỉnh/Thành</label>
+                    <select
+                      className="w-full bg-slate-50 border-slate-200 rounded-lg py-4 px-5 text-sm focus:bg-white"
+                      value={provinceCode}
+                      onChange={(e) => setProvinceCode(e.target.value)}
+                      required
+                    >
+                      <option value="" disabled>Chọn Tỉnh/Thành</option>
+                      {provinces.map((p) => (
+                        <option key={p.code} value={p.code}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Quận/Huyện */}
+                  <div className="space-y-2">
+                    <label className="text-[11px] uppercase tracking-widest font-bold text-slate-500">Quận/Huyện</label>
+                    <select
+                      className="w-full bg-slate-50 border-slate-200 rounded-lg py-4 px-5 text-sm focus:bg-white"
+                      value={districtCode}
+                      onChange={(e) => setDistrictCode(e.target.value)}
+                      disabled={!provinceCode}
+                      required
+                    >
+                      <option value="" disabled>Chọn Quận/Huyện</option>
+                      {districts.map((d) => (
+                        <option key={d.code} value={d.code}>
+                          {d.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Phường/Xã */}
+                  <div className="space-y-2">
+                    <label className="text-[11px] uppercase tracking-widest font-bold text-slate-500">Phường/Xã</label>
+                    <select
+                      className="w-full bg-slate-50 border-slate-200 rounded-lg py-4 px-5 text-sm focus:bg-white"
+                      value={wardCode}
+                      onChange={(e) => setWardCode(e.target.value)}
+                      disabled={!districtCode}
+                      required
+                    >
+                      <option value="" disabled>Chọn Phường/Xã</option>
+                      {wards.map((w) => (
+                        <option key={w.code} value={w.code}>
+                          {w.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* 2-Column Grid for Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[11px] uppercase tracking-widest font-bold text-slate-500">Mã bưu điện (PinCode)</label>
+                    <input
+                      className="w-full bg-slate-50 border-slate-200 rounded-lg py-4 px-5 text-sm transition-all focus:bg-white"
+                      placeholder="Ví dụ: 70000"
+                      type="number"
+                      value={pinCode}
+                      onChange={(e) => setPinCode(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] uppercase tracking-widest font-bold text-slate-500">Số điện thoại</label>
+                    <input
+                      className="w-full bg-slate-50 border-slate-200 rounded-lg py-4 px-5 text-sm transition-all focus:bg-white"
+                      placeholder="090 XXX XXXX"
+                      type="tel"
+                      required
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-8 flex flex-col items-center gap-6">
+                <button
+                  className="gradient-hover w-full md:w-64 bg-primary text-black py-4 rounded-full font-bold uppercase tracking-widest text-xs shadow-xl shadow-primary/20 transition-all duration-500 hover:scale-[1.02] active:scale-95"
+                  type="submit"
                 >
-                  <option value="">Chọn Quận/Huyện</option>
-                  {districts.map((d) => (
-                    <option key={d.code} value={d.code}>
-                      {d.name}
-                    </option>
-                  ))}
-                </select>
+                  Tiếp tục thanh toán
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/cart')}
+                  className="text-[11px] uppercase tracking-widest font-bold text-slate-400 hover:text-primary transition-colors flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-sm">arrow_back</span>
+                  Quay lại giỏ hàng
+                </button>
               </div>
-            )}
-
-            {/* ✅ Phường/Xã */}
-            {districtCode && (
-              <div className="shipping-form-group">
-                <label htmlFor="ward">Phường/Xã</label>
-                <select name="ward" id="ward" value={wardCode} onChange={(e) => setWardCode(e.target.value)}>
-                  <option value="">Chọn Phường/Xã</option>
-                  {wards.map((w) => (
-                    <option key={w.code} value={w.code}>
-                      {w.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
-                <button className="shipping-submit-btn hover-btn-gradient">Tiếp tục</button>
             </form>
+          </div>
         </div>
+      </main>
 
-        <Footer />
-
+      <Footer />
     </>
-
-)
+  );
 }
 
 export default Shipping

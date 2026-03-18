@@ -300,6 +300,20 @@ export const getAdminProducts = handleAsyncError(async (req, res, next) => {
 
 import * as xlsx from 'xlsx';
 
+// Helper function to find the actual header row
+const findHeaderRow = (rows) => {
+    for (let i = 0; i < Math.min(rows.length, 20); i++) {
+        const row = rows[i];
+        if (Array.isArray(row) && row.some(cell => 
+            typeof cell === 'string' && 
+            (cell.toLowerCase().includes('name') || cell.toLowerCase().includes('tên'))
+        )) {
+            return i;
+        }
+    }
+    return 0; // Default to first row
+};
+
 // =============================================
 // Admin - Import sản phẩm hàng loạt từ Excel/CSV
 // POST /api/v1/admin/products/import
@@ -323,8 +337,15 @@ export const importProducts = handleAsyncError(async (req, res, next) => {
             const sheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[sheetName];
             
-            // Convert to JSON array
-            products = xlsx.utils.sheet_to_json(worksheet, { defval: '' }); // defval maps empty cells to empty strings
+            // Tìm dòng header thực sự để tránh trường hợp file có tiêu đề trang trí ở dòng 1-3
+            const rawRows = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
+            const headerIdx = findHeaderRow(rawRows);
+
+            // Convert to JSON array starting from the identified header row
+            products = xlsx.utils.sheet_to_json(worksheet, { 
+                range: headerIdx,
+                defval: '' 
+            });
             
         } catch (error) {
             return next(new HandleError(`Lỗi đọc file: ${error.message}`, 400));
@@ -366,9 +387,9 @@ export const importProducts = handleAsyncError(async (req, res, next) => {
             price: getValue(['Giá Bán', 'Giá bán', 'Price', 'price']),
             originalPrice: getValue(['Giá Gốc', 'Giá gốc', 'Original Price', 'originalPrice']),
             stock: getValue(['Tồn Kho', 'Tồn kho', 'Số lượng', 'Stock', 'stock']),
-            categoryLevel1: getValue(['Danh Mục Cấp 1', 'Danh mục cấp 1', 'Category Level 1', 'level1', 'category_level1']),
-            categoryLevel2: getValue(['Danh Mục Cấp 2', 'Danh mục cấp 2', 'Category Level 2', 'level2', 'category_level2']),
-            categoryLevel3: getValue(['Danh Mục Cấp 3', 'Danh mục cấp 3', 'Category Level 3', 'level3', 'category_level3']),
+            categoryLevel1: getValue(['Danh Mục Cấp 1', 'Danh mục cấp 1', 'Category Level 1', 'level1', 'category_level1', 'category.level1']),
+            categoryLevel2: getValue(['Danh Mục Cấp 2', 'Danh mục cấp 2', 'Category Level 2', 'level2', 'category_level2', 'category.level2']),
+            categoryLevel3: getValue(['Danh Mục Cấp 3', 'Danh mục cấp 3', 'Category Level 3', 'level3', 'category_level3', 'category.level3']),
             brand: getValue(['Thương Hiệu', 'Thương hiệu', 'Brand', 'brand']),
             material: getValue(['Chất Liệu', 'Chất liệu', 'Material', 'material']),
             sizes: getValue(['Sizes', 'Cỡ', 'Kích cỡ', 'sizes']),
@@ -533,9 +554,9 @@ export const updateProductsBulk = handleAsyncError(async (req, res, next) => {
         const pName = getValue(['Tên', 'Tên sản phẩm', 'Name', 'name']);
         if(pName) updateData.name = String(pName).trim();
 
-        const catL1 = getValue(['Danh Mục Cấp 1', 'Danh mục cấp 1', 'Category Level 1', 'level1', 'category_level1']);
-        const catL2 = getValue(['Danh Mục Cấp 2', 'Danh mục cấp 2', 'Category Level 2', 'level2', 'category_level2']);
-        const catL3 = getValue(['Danh Mục Cấp 3', 'Danh mục cấp 3', 'Category Level 3', 'level3', 'category_level3']);
+        const catL1 = getValue(['Danh Mục Cấp 1', 'Danh mục cấp 1', 'Category Level 1', 'level1', 'category_level1', 'category.level1']);
+        const catL2 = getValue(['Danh Mục Cấp 2', 'Danh mục cấp 2', 'Category Level 2', 'level2', 'category_level2', 'category.level2']);
+        const catL3 = getValue(['Danh Mục Cấp 3', 'Danh mục cấp 3', 'Category Level 3', 'level3', 'category_level3', 'category.level3']);
         
         if (catL1 || catL2 || catL3) {
              updateData.category = {

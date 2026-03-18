@@ -174,6 +174,12 @@ const OrderDetails = () => {
                         <Link to={`/product/${item.product}`} className="text-sm font-bold text-slate-800 hover-link-slide transition-colors">
                             {item.name}
                         </Link>
+                        {(item.size || item.color) && (
+                          <div className="flex gap-2 mt-1 text-xs text-slate-500 uppercase tracking-tight">
+                            {item.size && <span>Size: <span className="font-semibold text-slate-700">{item.size}</span></span>}
+                            {item.color && <span>Màu: <span className="font-semibold text-slate-700">{item.color}</span></span>}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </td>
