@@ -19,14 +19,28 @@ function ImportProductModal({ onClose, onImportSuccess }) {
 
     const REQUIRED_FIELDS = ['name', 'description', 'price', 'stock', 'category_level1'];
 
+    // Hàm tìm dòng chứa Header thực sự
+    const findHeaderRow = (rows) => {
+        for (let i = 0; i < Math.min(rows.length, 20); i++) {
+            const row = rows[i];
+            if (Array.isArray(row) && row.some(cell => 
+                typeof cell === 'string' && 
+                (cell.toLowerCase().includes('name') || cell.toLowerCase().includes('tên'))
+            )) {
+                return i;
+            }
+        }
+        return 0; // Mặc định là dòng đầu nếu không tìm thấy
+    };
+
     // Parse file Excel/CSV
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
         const validTypes = [
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
-            'application/vnd.ms-excel', // xls
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-excel',
             'text/csv',
         ];
 
@@ -44,7 +58,16 @@ function ImportProductModal({ onClose, onImportSuccess }) {
                 const workbook = XLSX.read(data, { type: 'array' });
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
-                const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+                
+                // Đọc thô toàn bộ rows để tìm Header
+                const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                const headerIdx = findHeaderRow(rawRows);
+
+                // Parse lại dữ liệu từ dòng Header đã tìm thấy
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+                    range: headerIdx,
+                    defval: '' 
+                });
 
                 if (jsonData.length === 0) {
                     toast.error('File không chứa dữ liệu');
@@ -56,16 +79,17 @@ function ImportProductModal({ onClose, onImportSuccess }) {
                 const mappedData = jsonData.map((row, idx) => {
                     const mappedRow = { ...row };
                     
-                    // Linh hoạt map tiêu đề cho category
+                    // Linh hoạt map tiêu đề cho category (bao gồm cả định dạng category.level1)
                     if (!mappedRow.category_level1) {
-                        mappedRow.category_level1 = row['category_level1'] || row['Category Level 1'] || row['Danh mục cấp 1'] || row['Danh mục Cấp 1'] || row['level1'];
+                        mappedRow.category_level1 = row['category_level1'] || row['category.level1'] || row['Category Level 1'] || row['Danh mục cấp 1'] || row['Danh mục Cấp 1'] || row['level1'];
                     }
                     if (!mappedRow.category_level2) {
-                        mappedRow.category_level2 = row['category_level2'] || row['Category Level 2'] || row['Danh mục cấp 2'] || row['Danh mục Cấp 2'] || row['level2'];
+                        mappedRow.category_level2 = row['category_level2'] || row['category.level2'] || row['Category Level 2'] || row['Danh mục cấp 2'] || row['Danh mục Cấp 2'] || row['level2'];
                     }
                     if (!mappedRow.category_level3) {
-                        mappedRow.category_level3 = row['category_level3'] || row['Category Level 3'] || row['Danh mục cấp 3'] || row['Danh mục Cấp 3'] || row['level3'];
+                        mappedRow.category_level3 = row['category_level3'] || row['category.level3'] || row['Category Level 3'] || row['Danh mục cấp 3'] || row['Danh mục Cấp 3'] || row['level3'];
                     }
+                    
                     // Thỏa mãn validation cũ nếu file có field 'category' hoặc 'Danh mục'
                     if (!mappedRow.category_level1) {
                         const oldCat = row['category'] || row['Category'] || row['Danh mục'];

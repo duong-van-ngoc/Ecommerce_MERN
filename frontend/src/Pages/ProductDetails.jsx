@@ -6,7 +6,7 @@ import Footer from '../components/Footer'
 import Loader from '../components/Loader'
 import Rating from '../components/Rating';
 import { useDispatch, useSelector } from 'react-redux'
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getProductDetails, removeErrors } from '../features/products/productSlice'
 import { toast } from 'react-toastify'
 import { addItemsToCart, removeMessage } from '../features/cart/cartSlice';
@@ -24,6 +24,7 @@ function ProductDetails() {
   const { loading: cartLoading, error: cartError, success, message } = useSelector((state) => state.cart)
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { id } = useParams();
 
   // Hàm hỗ trợ ánh xạ tên màu sang mã hex (Tạm thời hardcode, sau này có thể lưu trong DB hoặc config)
@@ -305,7 +306,7 @@ function ProductDetails() {
                     };
                     sessionStorage.setItem("directBuyItem", JSON.stringify(buyNowItem));
                     dispatch(removeErrors()); // Clean up errors if any
-                    navigate('/login?redirect=shipping');
+                    navigate('/login?redirect=/shipping');
                   }}>
                     MUA NGAY
                   </button>

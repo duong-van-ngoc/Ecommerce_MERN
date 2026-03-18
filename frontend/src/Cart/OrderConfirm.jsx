@@ -98,6 +98,8 @@ function OrderConfirm() {
         price: item.price,
         quantity: item.quantity,
         image: item.image || item.images?.[0]?.url || item.images?.[0],
+        size: item.size,
+        color: item.color,
         product: item.product
       })),
       paymentInfo: {
@@ -153,290 +155,163 @@ function OrderConfirm() {
 
   return (
     <>
-      <PageTitle title="Order Confirmation" />
+      <PageTitle title="Xác nhận đơn hàng" />
       <Navbar />
-      <CheckoutPath activePath={1} />
 
-      <div className="confirm-page">
-        <div className="confirm-container">
-          <h1 className="confirm-header">🛒 Xác nhận đơn hàng</h1>
+      <div className="relative flex min-h-screen flex-col bg-background-light font-display">
+        {/* Main Content */}
+        <main className="mx-auto w-full max-w-7xl flex-grow px-6 py-12">
+          {/* Progress Tracker / Breadcrumbs */}
+          <nav className="mb-12 flex items-center gap-2 text-sm">
+            <button 
+              onClick={() => navigate('/cart')}
+              className="font-medium text-slate-500 hover:text-slate-800"
+            >
+              Giỏ hàng
+            </button>
+            <span className="material-symbols-outlined text-sm text-slate-300">chevron_right</span>
+            <span className="font-bold text-slate-900">Xác nhận thanh toán</span>
+            <span className="material-symbols-outlined text-sm text-slate-300">chevron_right</span>
+            <span className="font-medium text-slate-400">Hoàn tất</span>
+          </nav>
 
-          <div className="confirm-content">
-            <div className="main-section">
+          <div className="mb-10">
+            <h2 className="font-serif text-5xl font-bold italic tracking-tight text-slate-900">Xác nhận đơn hàng</h2>
+            <p className="mt-4 text-lg font-light text-slate-500">Kiểm tra thông tin đơn hàng của bạn trước khi chúng tôi bắt đầu đóng gói.</p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-16 lg:grid-cols-12">
+            {/* Left Column */}
+            <div className="lg:col-span-8">
               {/* Customer Information */}
-              <div className="section-card">
-                <div className="section-header">
-                  <h2 className="section-title">
-                    <svg
-                      className="icon"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z"
-                        stroke="#667eea"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    Thông tin khách hàng
-                  </h2>
-                </div>
-
-                <div className="section-body">
-                  <div className="info-grid">
-                    <div className="info-item">
-                      <div className="info-label">Họ và tên</div>
-                      <div className="info-value">{user?.name || '—'}</div>
-                    </div>
-
-                    <div className="info-item">
-                      <div className="info-label">Số điện thoại</div>
-                      <div className="info-value">
-                        {shippingInfo?.phoneNumber || shippingInfo?.phoneNo || '—'}
-                      </div>
-                    </div>
-
-                    <div className="info-item info-item--full">
-                      <div className="info-label">Địa chỉ giao hàng</div>
-                      <div className="info-value">{fullAddress || '—'}</div>
-                    </div>
+              <section className="mb-16">
+                <h3 className="mb-6 flex items-center gap-3 border-b border-slate-200 pb-4 font-serif text-2xl font-semibold text-slate-900">
+                  <span className="material-symbols-outlined text-[#702e36]">person</span>
+                  Thông tin khách hàng
+                </h3>
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                  <div className="space-y-1">
+                    <p className="text-xs uppercase tracking-widest text-slate-400 font-bold">Họ và tên</p>
+                    <p className="text-lg font-medium">{user?.name || '—'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs uppercase tracking-widest text-slate-400 font-bold">Số điện thoại</p>
+                    <p className="text-lg font-medium">{shippingInfo?.phoneNumber || shippingInfo?.phoneNo || '—'}</p>
+                  </div>
+                  <div className="col-span-full space-y-1">
+                    <p className="text-xs uppercase tracking-widest text-slate-400 font-bold">Địa chỉ nhận hàng</p>
+                    <p className="text-lg font-medium leading-relaxed">{fullAddress || '—'}</p>
                   </div>
                 </div>
-              </div>
+              </section>
 
-              {/* Product List */}
-              <div className="section-card">
-                <div className="section-header">
-                  <h2 className="section-title">
-                    <svg
-                      className="icon"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M3 3H5L5.4 5M7 13H17L21 5H5.4M7 13L5.4 5M7 13L4.707 15.293C4.077 15.923 4.523 17 5.414 17H17M17 17C15.8954 17 15 17.8954 15 19C15 20.1046 15.8954 21 17 21C18.1046 21 19 20.1046 19 19C19 17.8954 18.1046 17 17 17ZM9 19C9 20.1046 8.10457 21 7 21C5.89543 21 5 20.1046 5 19C5 17.8954 5.89543 17 7 17C8.10457 17 9 17.8954 9 19Z"
-                        stroke="#667eea"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    Sản phẩm đã đặt
-                  </h2>
-                </div>
-
-                <div className="section-body section-body--flush">
+              {/* Order Items */}
+              <section>
+                <h3 className="mb-6 flex items-center gap-3 border-b border-slate-200 pb-4 font-serif text-2xl font-semibold text-slate-900">
+                  <span className="material-symbols-outlined text-[#702e36]">inventory_2</span>
+                  Sản phẩm đã đặt
+                </h3>
+                <div className="space-y-8">
                   {cartItems.length > 0 ? (
-                    cartItems.map((item) => {
-                      const lineTotal = Number(item.price) * Number(item.quantity)
-                      return (
-                        <div
-                          className="product-item"
-                          key={item.product || item._id || item.name}
-                        >
-                          <div className="product-image-wrapper">
-                            {getItemImage(item) ? (
-                              <img
-                                className="product-image"
-                                src={getItemImage(item)}
-                                alt={item.name}
-                              />
-                            ) : (
-                              <div className="product-image-placeholder" />
-                            )}
+                    cartItems.map((item) => (
+                      <div key={item.product || item._id || item.name} className="flex items-center gap-6">
+                        <div className="h-32 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100 shadow-sm">
+                          <img
+                            alt={item.name}
+                            className="h-full w-full object-cover"
+                            src={getItemImage(item)}
+                          />
+                        </div>
+                        <div className="flex flex-grow flex-col justify-between py-2">
+                          <div>
+                            <h4 className="text-lg font-bold uppercase tracking-tight text-slate-900">{item.name}</h4>
+                            <p className="mt-1 text-sm text-slate-500 italic">Premium Collection</p>
                           </div>
-
-                          <div className="product-details">
-                            <h3 className="product-name">{item.name}</h3>
-                            <div className="product-meta">
-                              <span>
-                                Đơn giá: <strong>{formatVND(item.price)}</strong>
-                              </span>
-                              <span>
-                                Số lượng: <strong>x{item.quantity}</strong>
-                              </span>
+                          <div className="mt-4 flex items-center justify-between">
+                            <div className="flex flex-col gap-1">
+                              <p className="font-bold text-[#702e36] text-lg">{formatVND(item.price)}</p>
+                              {(item.size || item.color) && (
+                                <div className="flex gap-3 text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                  {item.size && <span>Size: <span className="text-slate-900">{item.size}</span></span>}
+                                  {item.color && <span>Màu: <span className="text-slate-900">{item.color}</span></span>}
+                                </div>
+                              )}
                             </div>
-                          </div>
-
-                          <div className="product-price-total">
-                            <div className="product-total">{formatVND(lineTotal)}</div>
+                            <p className="text-sm font-medium">Số lượng: <span className="text-lg font-bold">0{item.quantity}</span></p>
                           </div>
                         </div>
-                      )
-                    })
+                      </div>
+                    ))
                   ) : (
-                    <div className="empty-cart">Không có sản phẩm trong giỏ hàng</div>
+                    <p className="text-slate-500 italic">Không có sản phẩm trong đơn hàng.</p>
                   )}
                 </div>
-              </div>
+              </section>
             </div>
 
-            <div className="sidebar-section">
-              <div className="section-card">
-                <div className="section-header">
-                  <h2 className="section-title">
-                    <svg
-                      className="icon"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M3 10H21M7 15H8M12 15H13M6 19H18C19.1046 19 20 18.1046 20 17V7C20 5.89543 19.1046 5 18 5H6C4.89543 5 4 5.89543 4 7V17C4 18.1046 4.89543 19 6 19Z"
-                        stroke="#667eea"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    Phương thức thanh toán
-                  </h2>
-                </div>
-
-                <div className="section-body">
-                  <div className="payment-methods">
-                    <label className="payment-option">
-                      <input
-                        type="radio"
-                        name="payment"
-                        value="cod"
-                        checked={paymentMethod === 'cod'}
-                        onChange={(e) => setPaymentMethod(e.target.value)}
-                      />
-                      <div className="payment-content">
-                        <div className="payment-icon">💵</div>
-                        <div className="payment-info">
-                          <div className="payment-name">Thanh toán khi nhận hàng</div>
-
-                        </div>
-                      </div>
-                    </label>
-
-                    {/* <label className="payment-option">
-                      <input
-                        type="radio"
-                        name="payment"
-                        value="bank"
-                        checked={paymentMethod === 'bank'}
-                        onChange={(e) => setPaymentMethod(e.target.value)}
-                      />
-                      <div className="payment-content">
-                        <div className="payment-icon">🏦</div>
-                        <div className="payment-info">
-                          <div className="payment-name">Chuyển khoản ngân hàng</div>
-                          <div className="payment-desc">
-                            Chuyển khoản qua ATM/Internet Banking
-                          </div>
-                        </div>
-                      </div>
-                    </label>
-
-                    <label className="payment-option">
-                      <input
-                        type="radio"
-                        name="payment"
-                        value="momo"
-                        checked={paymentMethod === 'momo'}
-                        onChange={(e) => setPaymentMethod(e.target.value)}
-                      />
-                      <div className="payment-content">
-                        <div className="payment-icon">💳</div>
-                        <div className="payment-info">
-                          <div className="payment-name">Ví MoMo</div>
-                          <div className="payment-desc">
-                            Thanh toán qua ví điện tử MoMo
-                          </div>
-                        </div>
-                      </div>
-                    </label>
-
-                    <label className="payment-option">
-                      <input
-                        type="radio"
-                        name="payment"
-                        value="vnpay"
-                        checked={paymentMethod === 'vnpay'}
-                        onChange={(e) => setPaymentMethod(e.target.value)}
-                      />
-                      <div className="payment-content">
-                        <div className="payment-icon">💰</div>
-                        <div className="payment-info">
-                          <div className="payment-name">VNPay</div>
-                          <div className="payment-desc">Thanh toán qua cổng VNPay</div>
-                        </div>
-                      </div>
-                    </label> */}
-                  </div>
-                </div>
-              </div>
-
-              {/* Summary */}
-              <div className="section-card">
-                <div className="section-header">
-                  <h2 className="section-title">
-                    <svg
-                      className="icon"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5M12 12H15M12 16H15M9 12H9.01M9 16H9.01"
-                        stroke="#667eea"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    Tóm tắt đơn hàng
-                  </h2>
-                </div>
-
-                <div className="section-body">
-                  <div className="summary-row">
-                    <span className="summary-label">Tạm tính</span>
-                    <span className="summary-value">{formatVND(subtotal)}</span>
-                  </div>
-                  <div className="summary-row">
-                    <span className="summary-label">Phí giao hàng</span>
-                    <span className="summary-value">{formatVND(shippingCharges)}</span>
-                  </div>
-                  <div className="summary-row">
-                    <span className="summary-label">Thuế VAT (10%)</span>
-                    <span className="summary-value">{formatVND(tax)}</span>
-                  </div>
-                  <div className="summary-row summary-row--total">
-                    <span className="summary-label">Tổng cộng</span>
-                    <span className="summary-value">{formatVND(total)}</span>
+            {/* Right Column (Sidebar) */}
+            <div className="lg:col-span-4">
+              <div className="sticky top-28 space-y-8">
+                {/* Payment Method */}
+                <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+                  <h3 className="mb-6 font-serif text-xl font-bold italic text-slate-900">Phương thức thanh toán</h3>
+                  <div className="flex items-center gap-4 rounded-lg border-2 border-[#702e36] bg-[#702e36]/5 p-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#702e36] text-white">
+                      <span className="material-symbols-outlined">payments</span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold">Thanh toán khi nhận hàng (COD)</p>
+                      <p className="text-xs text-slate-500">Thanh toán bằng tiền mặt khi giao hàng</p>
+                    </div>
+                    <span className="material-symbols-outlined ml-auto text-[#702e36]">check_circle</span>
                   </div>
                 </div>
 
-                <div className="button-container">
-                  <button
-                    className="proceed-button"
+                {/* Order Summary */}
+                <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+                  <h3 className="mb-6 font-serif text-xl font-bold italic text-slate-900">Tóm tắt đơn hàng</h3>
+                  <div className="space-y-4">
+                    <div className="flex justify-between text-slate-600">
+                      <span>Tạm tính</span>
+                      <span className="font-medium text-slate-900">{formatVND(subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between text-slate-600">
+                      <span>Phí vận chuyển</span>
+                      <span className={`font-medium ${shippingCharges === 0 ? 'text-green-600' : 'text-slate-900'}`}>
+                        {shippingCharges === 0 ? 'Miễn phí' : formatVND(shippingCharges)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-slate-600">
+                      <span>Thuế VAT (10%)</span>
+                      <span className="font-medium text-slate-900">{formatVND(tax)}</span>
+                    </div>
+                    <div className="my-4 border-t border-dashed border-slate-200 pt-4">
+                      <div className="flex items-baseline justify-between">
+                        <span className="font-bold uppercase tracking-wide text-slate-900">Tổng cộng</span>
+                        <span className="text-3xl font-black text-slate-900">{formatVND(total)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button 
                     onClick={proceesToPayment}
                     disabled={cartItems.length === 0}
-                    title={cartItems.length === 0 ? 'Giỏ hàng đang trống' : ''}
+                    className="coral-gradient mt-8 w-full rounded-full py-4 text-center font-bold uppercase tracking-widest text-white shadow-lg transition-transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Xác nhận đặt hàng
                   </button>
+                  <p className="mt-4 text-center text-[10px] uppercase tracking-tighter text-slate-400">
+                    Bằng cách nhấn nút, bạn đồng ý với các điều khoản của Tobi Shop
+                  </p>
                 </div>
               </div>
-
-              {/* (tùy chọn) hiển thị phương thức đang chọn để debug */}
-              {/* <div style={{ marginTop: 10, color: "#666" }}>Method: {paymentMethod}</div> */}
             </div>
           </div>
-        </div>
+        </main>
       </div>
 
       <Footer />
 
-      {/* Success Popup - Hiện khi đặt hàng thành công */}
+      {/* Success Popup */}
       {showSuccessPopup && (
         <OrderSuccess
           orderId={createdOrderId}
@@ -447,7 +322,7 @@ function OrderConfirm() {
         />
       )}
     </>
-  )
+  );
 }
 
 export default OrderConfirm
