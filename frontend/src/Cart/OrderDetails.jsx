@@ -163,7 +163,7 @@ const OrderDetails = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {orderDetails.orderItems && orderDetails.orderItems.map((item) => (
+              {orderDetails.orderItems?.map((item) => (
                 <tr key={item.product}>
                   <td className="px-6 py-4">
                     <div className="flex items-center">
