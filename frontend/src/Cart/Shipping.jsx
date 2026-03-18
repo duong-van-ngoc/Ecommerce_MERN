@@ -18,17 +18,17 @@ function Shipping() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const [address, setAddress] = useState(shippingInfo.address || "")
-    const [pinCode, setPinCode] = useState(shippingInfo.pinCode || "")
-    const [phoneNumber, setPhoneNumber] = useState(shippingInfo.phoneNumber || "")
+    const [address, setAddress] = useState(shippingInfo?.address || "")
+    const [pinCode, setPinCode] = useState(shippingInfo?.pinCode || "")
+    const [phoneNumber, setPhoneNumber] = useState(shippingInfo?.phoneNumber || "")
 
     const [provinces, setProvinces] = useState([]);
     const [districts, setDistrictsList] = useState([]);
     const [wards, setWardsList] = useState([]);
 
-    const [provinceCode, setProvinceCode] = useState(shippingInfo.provinceCode || "");
-    const [districtCode, setDistrictCode] = useState(shippingInfo.districtCode || "");
-    const [wardCode, setWardCode] = useState(shippingInfo.wardCode || "");
+    const [provinceCode, setProvinceCode] = useState(shippingInfo?.provinceCode || "");
+    const [districtCode, setDistrictCode] = useState(shippingInfo?.districtCode || "");
+    const [wardCode, setWardCode] = useState(shippingInfo?.wardCode || "");
 
     // const [country, setCountry] = useState(shippingInfo.country || "")
     // const [province, setState] = useState(shippingInfo.province || "")

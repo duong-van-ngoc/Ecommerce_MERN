@@ -93,7 +93,7 @@ function OrderConfirm() {
     // Chuẩn bị order data
     const orderData = {
       shippingInfo: mappedShippingInfo,
-      orderItems: cartItems.map(item => ({
+      orderItems: Array.isArray(cartItems) ? cartItems.map(item => ({
         name: item.name,
         price: item.price,
         quantity: item.quantity,
@@ -101,7 +101,7 @@ function OrderConfirm() {
         size: item.size,
         color: item.color,
         product: item.product
-      })),
+      })) : [],
       paymentInfo: {
         method: paymentMethod,
         status: paymentMethod === 'cod' ? 'Chưa thanh toán' : 'Đã thanh toán'

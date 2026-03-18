@@ -168,17 +168,17 @@ function Cart() {
 
 
                 <div className="cart-items-list">
-                  {cartItems.map((item, index) => {
+                  {Array.isArray(cartItems) && cartItems.map((item, index) => {
 
                     const mockOriginalPrice = Math.round(item.price * 1.3)
                     const discountPercent = Math.round((1 - item.price / mockOriginalPrice) * 100)
 
                     return (
-                      <div key={item.product} className="cart-item" style={{ animationDelay: `${index * 0.05}s` }}>
+                      <div key={getItemKey(item)} className="cart-item" style={{ animationDelay: `${index * 0.05}s` }}>
                         <input
                           type="checkbox"
                           className="cart-checkbox"
-                          checked={selectedItems[item.product] || false}
+                          checked={selectedItems[getItemKey(item)] || false}
                           onChange={() => toggleItem(item)}
                         />
 
