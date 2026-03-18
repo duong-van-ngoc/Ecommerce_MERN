@@ -188,7 +188,7 @@ function Shipping() {
                       required
                     >
                       <option value="" disabled>Chọn Tỉnh/Thành</option>
-                      {provinces.map((p) => (
+                      {Array.isArray(provinces) && provinces.map((p) => (
                         <option key={p.code} value={p.code}>
                           {p.name}
                         </option>
@@ -207,7 +207,7 @@ function Shipping() {
                       required
                     >
                       <option value="" disabled>Chọn Quận/Huyện</option>
-                      {districts.map((d) => (
+                      {Array.isArray(districts) && districts.map((d) => (
                         <option key={d.code} value={d.code}>
                           {d.name}
                         </option>
@@ -226,7 +226,7 @@ function Shipping() {
                       required
                     >
                       <option value="" disabled>Chọn Phường/Xã</option>
-                      {wards.map((w) => (
+                      {Array.isArray(wards) && wards.map((w) => (
                         <option key={w.code} value={w.code}>
                           {w.name}
                         </option>

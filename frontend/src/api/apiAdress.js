@@ -17,7 +17,7 @@ const getErrorMessage = (error) => {
 export const getProvinces = async () => {
   try {
     const res = await http.get("/p/");
-    return res.data || [];
+    return Array.isArray(res.data) ? res.data : [];
   } catch (error) {
     throw new Error(`getProvinces: ${getErrorMessage(error)}`);
   }
@@ -50,7 +50,7 @@ export const searchProvinces = async (q) => {
   if (!q?.trim()) return [];
   try {
     const res = await http.get("/p/search/", { params: { q } });
-    return res.data || [];
+    return Array.isArray(res.data) ? res.data : [];
   } catch (error) {
     throw new Error(`searchProvinces: ${getErrorMessage(error)}`);
   }
@@ -60,7 +60,7 @@ export const searchDistricts = async (q) => {
   if (!q?.trim()) return [];
   try {
     const res = await http.get("/d/search/", { params: { q } });
-    return res.data || [];
+    return Array.isArray(res.data) ? res.data : [];
   } catch (error) {
     throw new Error(`searchDistricts: ${getErrorMessage(error)}`);
   }
@@ -70,7 +70,7 @@ export const searchWards = async (q) => {
   if (!q?.trim()) return [];
   try {
     const res = await http.get("/w/search/", { params: { q } });
-    return res.data || [];
+    return Array.isArray(res.data) ? res.data : [];
   } catch (error) {
     throw new Error(`searchWards: ${getErrorMessage(error)}`);
   }
