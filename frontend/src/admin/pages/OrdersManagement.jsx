@@ -1,3 +1,51 @@
+/**
+ * ============================================================================
+ * COMPONENT: OrdersManagement
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Trang quản lý toàn bộ Đơn hàng của Admin. Cung cấp tính năng xem danh sách, lọc, tìm kiếm, cập nhật trạng thái đơn (chờ, đang giao, đã giao, hủy) và xóa đơn hàng.
+ * 
+ * 2. Props: 
+ *    - Không Props. Lấy dữ liệu 100% từ Redux adminSlice.
+ * 
+ * 3. State:
+ *    - Local State: 
+ *      + `searchTerm`: Chuỗi text Keyword tìm kiếm theo mã đơn / Tên KH.
+ *      + `statusFilter`: Dropdown giá trị Màng Lọc Status (mặc định 'all').
+ *    - Global State (useSelector): `orders` (Mảng List Đơn Hàng API) , `loading`, `error`.
+ * 
+ * 4. Render lại khi nào:
+ *    - Khi nhập ô Search/ Chọn select box Dropdown Status.
+ *    - Redux Store sync dữ liệu sau khi Load / Update Tình Trạng / Xoá Đơn Hàng.
+ * 
+ * 5. Event handling:
+ *    - `onChange` trên Ô Search và Select box.
+ *    - `handleStatusChange`: Gọi Thunk Update status DB theo value người chọn. Kèm báo Toast báo ok/error.
+ *    - `handleDelete`: Fire alert window Confirm trước khi Dispatch hành động Delete Order backend. 
+ * 
+ * 6. Conditional rendering:
+ *    - Return Loading Screen khi call initial Fetch API `if (loading)`.
+ *    - Mảng filter rỗng thì render thẻ `<tr>` Thông báo "Không tìm thấy". Có list thì map table.
+ * 
+ * 7. List rendering:
+ *    - JS xử filter Logic `filteredOrders` trước -> Gọi Map `filteredOrders.map()` render list. 
+ *    - Nested Map: Bóc mảng list items/quantity nhỏ bên trong 1 Đơn lớn `order.orderItems.map()`.
+ * 
+ * 8. Controlled input:
+ *    - Khung Search `searchTerm` và Select Bộ Lọc `statusFilter` 2 chiều React.
+ *    - Dynamic Select value trên Từng Row table: thẻ Select trạng thái bị map bởi `order.orderStatus`.
+ * 
+ * 9. Lifting state up:
+ *    - Gọi Fetch data `fetchAllOrders` , Update `updateOrderStatus` , Delete `deleteOrder` qua Redux Admin actions.
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) User truy cập URL orders admin -> Component Mount gọi dispatch fetch all Order.
+ *    - (2) Nhận Payload list orders -> Component pass qua biến computed `filteredOrders` (dựa theo Input Search Textbox).
+ *    - (3) Render Mảng list Array HTML Table.
+ *    - (4) Tương tác Action Update Trạng thái -> Call Thunk Update Backend. Update xong Backend tự Dispatch re-sync Component Render lại Row.
+ *    - (5) Tương tác Xóa Order -> Hỏi confirm UI Native -> Xóa Redux State -> Render mất row bị xóa khỏi View.
+ * ============================================================================
+ */
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';

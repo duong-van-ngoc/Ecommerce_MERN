@@ -1,3 +1,46 @@
+/**
+ * ============================================================================
+ * COMPONENT: Login
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Component màn hình Đăng nhập Authentication.
+ * 
+ * 2. Props: 
+ *    - Không nhận props từ component cha.
+ * 
+ * 3. State:
+ *    - Local State (useState):
+ *      + `loginEmail`: (string) Email đăng nhập nhập từ form.
+ *      + `loginPassword`: (string) Mật khẩu đăng nhập nhập từ form.
+ *    - Global State (useSelector): Lấy từ store `state.user` (error, loading, isAuthenticated, success).
+ * 
+ * 4. Render lại khi nào:
+ *    - Khi gõ phím vào input email/password (Local state).
+ *    - Khi `isAuthenticated`, `error`, `loading`, `success` thay đổi (do store Redux thay đổi).
+ * 
+ * 5. Event handling:
+ *    - `loginSubmit(e)`: Xử lý submit gởi dữ liệu API đăng nhập `dispatch(login)`.
+ *    - `onChange` ở input email/password để cập nhật state đồng bộ 2 form fields.
+ * 
+ * 6. Conditional rendering:
+ *    - Tùy vào giá trị `loading` trên Redux: `disabled={loading}` và class loading cho button, đổi Text thành "Processing...".
+ * 
+ * 7. List rendering:
+ *    - Không dùng mảng `.map()`.
+ * 
+ * 8. Controlled input:
+ *    - Cả Email và Password input đều là Controlled Component gắn chặt `value` với React local state.
+ * 
+ * 9. Lifting state up:
+ *    - Sử dụng global store dispatch (`login()`) truyền thông tin User đi để cập nhật UI toàn app khi đăng nhập thành công.
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) User nhập thông tin form email/password -> `useState` React bắt data.
+ *    - (2) Click "Sign In" -> Hàm `loginSubmit` gọi Redux Action `login()`.
+ *    - (3) Redux tiến hành POST API, nếu lỗi Error Redux trả về -> `useEffect` báo lỗi qua `Toast` -> Clean Error.
+ *    - (4) Nếu API thành công -> Store `success=true`, `isAuthenticated=true` -> navigate user về `redirect URL` hoặc Trang chủ `/`.
+ * ============================================================================
+ */
 import React, { useEffect, useState } from 'react'
 import '../UserStyles/Login.css'
 import { Link, useLocation, useNavigate } from 'react-router-dom'

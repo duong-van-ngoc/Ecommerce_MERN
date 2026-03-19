@@ -1,3 +1,40 @@
+/**
+ * ============================================================================
+ * COMPONENT: Profile
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Màn hình Thông tin cá nhân của người dùng (Profile Main View).
+ * 
+ * 2. Props: 
+ *    - Không có props từ component cha.
+ * 
+ * 3. State:
+ *    - Global State (useSelector): Kéo data `user`, `loading`, `isAuthenticated` từ Redux.
+ * 
+ * 4. Render lại khi nào:
+ *    - Khi thông tin `user` thay đổi hoặc trạng thái `loading` từ Redux cập nhật.
+ * 
+ * 5. Event handling:
+ *    - Không có xử lý Event form (chỉ đơn thuần redirect).
+ * 
+ * 6. Conditional rendering:
+ *    - `loading ? <Loader/> : <div className="profile-page">...</div>`.
+ * 
+ * 7. List rendering:
+ *    - Render layout tĩnh, không có mapping Array ở root class.
+ * 
+ * 8. Controlled input:
+ *    - Không chứa input field.
+ * 
+ * 9. Lifting state up:
+ *    - Không có thao tác lifting state up (Data đọc 1 chiều từ Context/Redux store).
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) Mở trang, `useEffect` check `isAuthenticated`. Nếu `false`, redirect ngay về `/login` bảo vệ route.
+ *    - (2) Nếu hợp lệ, load component layout, gắn component `<AccountSidebar />` phía trái.
+ *    - (3) Show thông tin chi tiết: Name, Email, Mã ngày tạo acc, Links thay đổi Mật khẩu/Đơn hàng.
+ * ============================================================================
+ */
 import React, { useEffect } from 'react'
 import '../UserStyles/Profile.css'
 import { Link, useNavigate } from 'react-router-dom'

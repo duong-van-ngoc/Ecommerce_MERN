@@ -1,3 +1,50 @@
+/**
+ * ============================================================================
+ * COMPONENT: StockManagement
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Màn hình quản lý Cập nhật Tồn kho/Nhập hàng trong Admin. Có 2 luồng: Import Bulk qua Excel, và Update Quick tìm Product thủ công bằng Text.
+ * 
+ * 2. Props: 
+ *    - Không Props.
+ * 
+ * 3. State:
+ *    - Local State (useState):
+ *      + `stockPreview`: Mảng dữ liệu chuẩn bị Import khi Parse Excel.
+ *      + `stockFileName`, `importResult`: Theo dõi tên file và JSON Report từ Server trả về sau khi up.
+ *      + `searchQuery`: Chuỗi Search keyword tay.
+ *      + `stockInputs`: Object Map lưu quantity edit của ID productId (Vd: `{ "id1": 50 }`).
+ *    - Global State (useSelector): API `loading` var & list array `searchResults` từ adminStore.
+ * 
+ * 4. Render lại khi nào:
+ *    - Trạng thái Parse xong Excel hiện Preview Table. State List Search trả về. Trigger Gõ chữ Edit Quantity.
+ * 
+ * 5. Event handling:
+ *    - Import file Excel (Tương tự ImportProduct dùng FileReader + sheetJS).
+ *    - Submit Array data lên API bulk Stock.
+ *    - `handleSearch`: Dispatch tìm Sản Phẩm match Keyword. `handleUpdateStock` lưu tay 1 con.
+ * 
+ * 6. Conditional rendering:
+ *    - Hiện Report box Import (Số lg Update, Báo Lỗi ko tồn tại).
+ *    - Hide / Show Bảng search & Preview Array.
+ * 
+ * 7. List rendering:
+ *    - `stockPreview.map`, `importResult.details.map`, `searchResults.map` render tr (row) bảng dữ liệu.
+ * 
+ * 8. Controlled input:
+ *    - List Input số lượng Tồn kho Map Array dựa vào object local State `stockInputs[id]`.
+ *    - Input File ẩn, `searchQuery` Textbox.
+ * 
+ * 9. Lifting state up:
+ *    - Gởi API bulk Import Tồn kho / Single Update Tồn kho thông qua `adminSlice.js` (Thunk).
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) User có 2 Lựa Chọn Giao Diện chính.
+ *    - (2) Lựa chọn A (Excel): Chọn File XLS -> Parse ra Array list -> Gởi Redux bulk API -> Hiện Box Detail Update.
+ *    - (3) Lựa chọn B (Tay): Search Textbar -> API Request trả List Sản Phẩm -> Lưu kết quả vô `searchResults`.
+ *    - (4) Flow (B): Thao tác gõ Box cộng trừ thêm tồn kho, bấm Tick Update 1 sản phẩm 1 lúc đẩy lên API Mongoose Update. 
+ * ============================================================================
+ */
 import React, { useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { importStock, searchAdminProducts, updateSingleStock } from '../adminSLice/adminSlice';

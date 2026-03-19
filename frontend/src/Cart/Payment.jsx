@@ -1,3 +1,46 @@
+/**
+ * ============================================================================
+ * COMPONENT: Payment
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Màn hình xử lý Thanh toán (Bước cuối tùy chỉnh độc lập). Submit giỏ hàng COD lên Backend.
+ * 
+ * 2. Props: 
+ *    - Component độc lập Route. Không prop parent.
+ * 
+ * 3. State:
+ *    - Local State (useState):
+ *      + `loading` (boolean): Trạng thái xoay hiển thị nút Submit.
+ *      + `error` (string): Text string báo lỗi bắt validate response từ Server.
+ *    - Global State (useSelector/Session): Load `shippingInfo`, `cartItems` và `orderInfo` (Tổng tiền trên session cache).
+ * 
+ * 4. Render lại khi nào:
+ *    - Bật tắt bool `loading` sẽ re-render `<button>`. Set chuỗi `error` sẽ toggle thẻ `<p>` báo lỗi.
+ * 
+ * 5. Event handling:
+ *    - `placeOrderCOD()`: Bắt Click button [Thanh Toán] call Axios gởi POST payload.
+ * 
+ * 6. Conditional rendering:
+ *    - Chữ hiển thị Button toggle qua lại giữa Default Text / Loading... (Dựa vào boolean state loading).
+ *    - Alert paragraph báo Error chỉ xuất hiện khi biến string `error` có tồn tại.
+ * 
+ * 7. List rendering:
+ *    - Lồng vòng qua `cartItems.map()` để generate Item schema trước khi API Payload đóng gói, không đẩy lên DOM để render List.
+ * 
+ * 8. Controlled input:
+ *    - Bỏ qua, không chứa label form/công cụ edit.
+ * 
+ * 9. Lifting state up:
+ *    - Gọi Axios POST đẩy sang Controller `/api/v1/order/new` backend.
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) Component mount, tổng hợp Memo hook `totals` tính (Tiền khoản, VAT, Ship, Total) phòng khi F5 làm văng params session.
+ *    - (2) User click Nút xác nhận thanh toán `placeOrderCOD`. Cờ Status đổi sang pending tải API.
+ *    - (3) Component map Object Payload format chuẩn yêu cầu từ Backend (dạng OrderSchema object) -> API tạo đơn Order Document Mongoose.
+ *    - (4) Khi Result Axios OK -> LocalStorage/SessionStorage giỏ hàng bị delete (để trống Carts).
+ *    - (5) Điều hướng (navigate) Router Push sang trang success với params link chứa `?orderId=...`.
+ * ============================================================================
+ */
 import React, { useMemo, useState } from "react";
 import "../CartStyles/Payment.css";
 import PageTitle from "../components/PageTitle";

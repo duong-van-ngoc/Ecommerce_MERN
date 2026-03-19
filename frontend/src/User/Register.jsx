@@ -1,3 +1,49 @@
+/**
+ * ============================================================================
+ * COMPONENT: Register
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Màn hình Đăng ký User Account có chứa upload hình ảnh Avatar người dùng.
+ * 
+ * 2. Props: 
+ *    - Component điều hướng URL không thao tác Props cha.
+ * 
+ * 3. State:
+ *    - Local State (useState):
+ *      + `user` (Object: name, email, password): quản lí thông tin đăng ký cơ bản.
+ *      + `avatar` (Blob/File String Base64): Ảnh upload từ local.
+ *      + `avatarPreview` (string Base64): Ảnh preview avatar hiển thị.
+ *      + `showPassword` (boolean): Trạng thái hiển thị mật khẩu bằng mắt.
+ *    - Global State (useSelector): 
+ *      + `success`, `loading`, `error` lấy từ `state.user` store.
+ * 
+ * 4. Render lại khi nào:
+ *    - Khi input gõ phím, khi load xong File Ảnh -> cập nhật Image preview UI.
+ *    - Khi status (loading) đổi từ Store để show/hide text trạng thái button Submit.
+ * 
+ * 5. Event handling:
+ *    - `registerDataChange(e)`: Lắng nghe Image Selection File Input (nếu target = 'avatar') HOẶC Text Input để set Local State.
+ *    - `registerSubmit(e)`: Gom FormData và Validation (null check), gọi action `register(myForm)`.
+ * 
+ * 6. Conditional rendering:
+ *    - Dùng Ternary `loading ? 'Registering...' : 'Register Now'` để hiện trạng thái đang tải dữ liệu.
+ * 
+ * 7. List rendering:
+ *    - Không sử dụng list render array.
+ * 
+ * 8. Controlled input:
+ *    - Dùng Pattern truyền thống cho Username, Email, Password gắn với state nội tại của Object `user`.
+ * 
+ * 9. Lifting state up:
+ *    - Component tự gánh vác xử lý file Base64 cho đến khi `dispatch` lên Redux.
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) User điền Input Name/Email/Password -> State `user` thay đổi.
+ *    - (2) User điền File Avatar Image -> Local File Reader converts thành Base64 -> Cập nhật hiển thị lên UI `avatarPreview`.
+ *    - (3) Nhấn Submit -> Gói vào Class `FormData` vì có chứa File Ảnh/Base64 để form body Backend Multi-part xử lý -> `dispatch(register(FormData))`.
+ *    - (4) `useEffect` lắng nghe thành công -> Show Toast -> Chuyển về màn `/login`.
+ * ============================================================================
+ */
 import React, { useState , useEffect} from 'react'
 import '../UserStyles/Register.css'
 import {Link, useNavigate} from "react-router-dom"

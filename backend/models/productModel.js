@@ -105,7 +105,13 @@ const productSchema = new mongoose.Schema({ // tạo schema cho sản phẩm
             comment: { // bình luận đánh giá
                 type: String,
                 required: true
-            }
+            },
+            images: [
+                {
+                    public_id: { type: String, required: true },
+                    url: { type: String, required: true }
+                }
+            ]
         }
     ],
     user: {

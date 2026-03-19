@@ -1,3 +1,47 @@
+/**
+ * ============================================================================
+ * COMPONENT: OrderConfirm
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Màn hình Xác nhận Đơn hàng (Bước 2 Checkout). Tóm tắt các mặt hàng, địa chỉ, tổng tiền, phương thức thành toán.
+ * 
+ * 2. Props: 
+ *    - Component Route. Không props.
+ * 
+ * 3. State:
+ *    - Local State (useState):
+ *      + `showSuccessPopup`: Cờ hiển thị popup `OrderSuccess` sau khi đặt thành công.
+ *      + `createdOrderId`: Lưu giữ ID đơn tạo thành công đẩy cho popup.
+ *      + `paymentMethod`: Enum 'cod' hoặc thẻ (được gọi từ sessionStorage).
+ *    - Global State (useSelector): Pull `shippingInfo`, `cartItems`, `user`.
+ * 
+ * 4. Render lại khi nào:
+ *    - Redux đổi cart item/shipping.
+ *    - Trạng thái `showSuccessPopup` bật tắt. Mở Modal đè lên layout.
+ * 
+ * 5. Event handling:
+ *    - `proceesToPayment()`: Click [Xác nhận đặt hàng]. Parse obj -> Gởi HTTP/Dispatch -> Lưu SessionStorage -> Show Popup.
+ * 
+ * 6. Conditional rendering:
+ *    - Nếu `showSuccessPopup` == true thì render form Modal `<OrderSuccess />`.
+ *    - Rỗng `cartItems`: In text thông báo "Không có sản phẩm trong đơn hàng".
+ * 
+ * 7. List rendering:
+ *    - `.map` qua mảng `cartItems` xuất ra list Card UI (Tên, Image, Size, Color, Giá, Số lượng). 
+ * 
+ * 8. Controlled input:
+ *    - Không xài Input/Select box form. Chủ yếu hiển thị tĩnh.
+ * 
+ * 9. Lifting state up:
+ *    - Tổng tiền/Sản phẩm gởi qua API `dispatch(createOrder)`. Nếu request thành công chạy `removeOrderedItems` lên Redux.
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) Router mount Component -> Lấy Redux + SessionStorage.
+ *    - (2) Check nếu BuyNow (`directBuyItem` trong session) đổi cấu trúc Data rỗng của `cartItems`. (Hỗ trợ luồng Mua ngay bỏ qua Cart gốc).
+ *    - (3) Click [Xác nhận] -> Map thông tin JSON đẩy xuống CSDL thông qua tính năng Thunk `createOrder()`.
+ *    - (4) Nếu API ok -> Dọn dẹp Array khỏi giỏ Redux, Mở Popup Success chứa `orderId`. Ngược lại Toast báo thất bại.
+ * ============================================================================
+ */
 import React, { useEffect, useState } from 'react'
 import '../CartStyles/OrderConfirm.css'
 import PageTitle from '../components/PageTitle'

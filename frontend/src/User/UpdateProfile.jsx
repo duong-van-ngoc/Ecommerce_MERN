@@ -1,3 +1,48 @@
+/**
+ * ============================================================================
+ * COMPONENT: UpdateProfile
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Màn hình Cập nhật thông tin Hồ sơ người dùng (Name, Email, Ảnh đại diện).
+ * 
+ * 2. Props: 
+ *    - Không nhận trực tiếp props truyền từ cha.
+ * 
+ * 3. State:
+ *    - Local State (useState):
+ *      + `name` (string): Tên user nhập vào.
+ *      + `email` (string): Email user nhập vào.
+ *      + `avatar` (Base64 String): Nội dung file ảnh đại diện upload lên.
+ *      + `avatarPreview` (string URL/Base64): Đường dẫn hiển thị preview ảnh đại diện.
+ *    - Global State (useSelector): Lấy từ `state.user` (`user`, `error`, `success`, `message`, `loading`).
+ * 
+ * 4. Render lại khi nào:
+ *    - Khi người dùng gõ thay đổi `name`, `email` hoặc upload `avatar`.
+ *    - Khi Global State (loading, success) thay đổi để render Loader hoặc Redirect.
+ * 
+ * 5. Event handling:
+ *    - `profileImageUpdate(e)`: Xử lý file input, fetch ra FileReader đổi về chuỗi Base64 gán vào `avatar`.
+ *    - `updateSubmit(e)`: Bọc Form Submit vào object `FormData`, gọi action `dispatch(updateProfile)`.
+ * 
+ * 6. Conditional rendering:
+ *    - Render loading skeleton/spinner `<Loader />` hoặc Form UI phụ thuộc vào trạng thái `loading` từ Redux.
+ * 
+ * 7. List rendering:
+ *    - Không mảng dữ liệu.
+ * 
+ * 8. Controlled input:
+ *    - Name, Email được bound chặt qua `value={state}` và `onChange={setState}`.
+ * 
+ * 9. Lifting state up:
+ *    - `updateProfile` Action đẩy FormData lên Redux Global xử lý call network.
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) Component render -> `useEffect` điền thông tin `user` đang đăng nhập (nếu có) vào các `useState` input tương ứng (tự động load Name/Email/Avatar cũ).
+ *    - (2) Người dùng sửa fields -> Local state React cập nhật lập tức -> UI Preview thay đổi (đặc biệt Image file input).
+ *    - (3) Click Update -> Form Trigger action cập nhật trên BE thông qua Redux `updateProfile`.
+ *    - (4) `useEffect` trigger khi `success=true` -> Toast báo mực thành công, clear state, Redirect quay về `/profile`.
+ * ============================================================================
+ */
 import React, { useEffect, useState } from 'react'
 import '../UserStyles/UpdateProfile.css'
 import Navbar from '../components/Navbar'

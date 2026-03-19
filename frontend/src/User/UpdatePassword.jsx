@@ -1,3 +1,45 @@
+/**
+ * ============================================================================
+ * COMPONENT: UpdatePassword
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Màn hình Đổi mật khẩu cho người dùng ĐÃ đăng nhập (Bắt buộc cung cấp mk cũ, mk mới).
+ * 
+ * 2. Props: 
+ *    - Không nhận trực tiếp props.
+ * 
+ * 3. State:
+ *    - Local State (useState):
+ *      + `oldPassword` (string): Mật khẩu hiện tại (verify).
+ *      + `newPassword` (string): Mật khẩu mong muốn.
+ *      + `confirmPassword` (string): Nhập lại Mật khẩu mong muốn.
+ *    - Global State (useSelector): Pull state `user` (`error`, `loading`, `success`).
+ * 
+ * 4. Render lại khi nào:
+ *    - Local State 3 trường mật khẩu thay đổi.
+ *    - Trạng thái Request (Redux `loading`) cập nhật đẩy thành Spinner UI.
+ * 
+ * 5. Event handling:
+ *    - `updatePasswordSubmit(e)`: Gói 3 mật khẩu vào Data/FormData và call API đổi pass.
+ * 
+ * 6. Conditional rendering:
+ *    - `loading ? <Loader /> : Component Content`.
+ * 
+ * 7. List rendering:
+ *    - Không sử dụng array map.
+ * 
+ * 8. Controlled input:
+ *    - Form input mật khẩu map chặc vào local state hook để validate (thông qua React).
+ * 
+ * 9. Lifting state up:
+ *    - Call action `updatePassword` update State store phía Redux.
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) User nhập 3 trường mật khẩu.
+ *    - (2) Nhấn Submit -> `updatePasswordSubmit` tạo FormData (BE đang require FormData, hoặc body raw) -> bắn tới store `updatePassword(myForm)`.
+ *    - (3) API response Error/Success -> `useEffect` đón lấy trả Message Toast. -> Chuyển về Home Profile nếu thành công.
+ * ============================================================================
+ */
 import React, { useEffect, useState } from 'react'
 import '../UserStyles/Form.css'
 import Footer from '../components/Footer'

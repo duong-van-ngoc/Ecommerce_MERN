@@ -1,3 +1,52 @@
+/**
+ * ============================================================================
+ * COMPONENT: ProductsManagement
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Giao diện Admin quản lý Sản phẩm chính, bao gồm: Danh sách Sản phẩm, Tab Nhập Hàng (Stock) và các nút thao tác Thêm/Sửa/Xóa, Import.
+ * 
+ * 2. Props: 
+ *    - Không nhận Props từ cha.
+ * 
+ * 3. State:
+ *    - Local State: 
+ *      + `showModal`, `showImportModal`: Boolean bật/tắt các Popup Modal.
+ *      + `selectedProduct`: Lưu Object SP đang chọn để bind vào Form khi bấm Sửa.
+ *      + `activeTab`: String ('list' | 'stock') quản lý đang ở Tab Danh sách hay Tab Kho.
+ *    - Global State: `products`, `loading`, `error` từ `adminSlice`.
+ * 
+ * 4. Render lại khi nào:
+ *    - Khi chuyển đổi Tab, bật/tắt hộp thoại (Modal).
+ *    - Khi Call API (Fetch list sp, add/edit/delete thành công).
+ * 
+ * 5. Event handling:
+ *    - `handleDelete`: Click -> Confirm window -> Dispatch xóa SP khỏi backend -> Báo Alert toast.
+ *    - `handleEdit`, `handleAddNew`: Set state `selectedProduct` và bật popup Form.
+ *    - `handleImportSuccess`: Callback sau khi upload file Excel thành công -> Tải lại Redux list Products.
+ * 
+ * 6. Conditional rendering:
+ *    - `activeTab === 'list'`: Hiển thị Table các Sản phẩm, ngược lại mount Component `<StockManagement>`.
+ *    - Check logic Show Modal: `showModal && <ProductFormModal...>` 
+ *    - Table render dòng rỗng nếu `products.length === 0`.
+ * 
+ * 7. List rendering:
+ *    - Duyệt `products.map()` tạo các `<tr>` với hình ảnh, tên, giá, số lượng tồn kho...
+ * 
+ * 8. Controlled input:
+ *    - Tab navigation (`activeTab`) giống behavior Radio Button quản lý qua onClick setter.
+ * 
+ * 9. Lifting state up:
+ *    - Quản lý Dispatch API qua Admin Redux Slice (Lấy danh sách, Xóa).
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) Mount Component -> Redux gọi API fetchAllProducts. Trạng thái Loading spinner hiện.
+ *    - (2) API trả Data -> Rendering Tab mặc định 'list'. Hiển thị Table SP.
+ *    - (3) End-user thao tác:
+ *        + Click Sửa/Thêm -> Bật File components Modal `ProductFormModal`, truyền Props.
+ *        + Click Import -> Bật Component `ImportProductModal`.
+ *        + Chuyển Tab "Nhập Hàng" -> Hide Table list, unmount/mount Element `StockManagement`.
+ * ============================================================================
+ */
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';

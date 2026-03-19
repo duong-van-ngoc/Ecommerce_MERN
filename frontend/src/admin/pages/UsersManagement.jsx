@@ -1,8 +1,57 @@
+/**
+ * ============================================================================
+ * COMPONENT: UsersManagement
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - View theo dõi Thông tin, Tìm Kiếm, Chỉnh sửa Quyền hạn (Role User/Admin) hoặc Xóa Accounts người dùng.
+ * 
+ * 2. Props: 
+ *    - Component Route Root. Không Props.
+ * 
+ * 3. State:
+ *    - Local State: 
+ *      + `searchTerm`: Giá trị chuỗi String text search Account box.
+ *      + `roleFilter`: Lọc theo Role 'all' | 'user' | 'admin'.
+ *    - Global State: List Arrays Accounts `users`, trạng thái Fetch API `loading`.
+ * 
+ * 4. Render lại khi nào:
+ *    - Nhập Text tìm kiếm, thay select Box Filtering.
+ *    - Cập nhật Data Database thành công (Load, Sửa Role, Xóa).
+ * 
+ * 5. Event handling:
+ *    - `handleRoleChange`: Thay Quyền User sang Admin (Hoặc ngược lại). Gửi Thunk API trực tiếp Value Select Box.
+ *    - `handleDelete`: Fire Dialog Native confirm ròi Call Action Xóa Backend.
+ * 
+ * 6. Conditional rendering:
+ *    - Render `loading-spinner` lúc fetch List.
+ *    - List Filter Data rỗng -> In Row thẻ Empty Error Msg.
+ *    - Hiện Placeholder text ký tự đầu Tên khi User rỗng avatar (`user.avatar?.url` null).
+ * 
+ * 7. List rendering:
+ *    - Component sử dụng Javascript Map render danh sách List account qua variable `filteredUsers.map`.
+ * 
+ * 8. Controlled input:
+ *    - Hai Filter control `searchTerm` / `roleFilter`.
+ *    - Select box Inline Role Dropdown cho Từng người dùng (giá trị binding trực tiếp theo record).
+ * 
+ * 9. Lifting state up:
+ *    - Connect Redux Thunk qua adminSlice cho toàn bộ hành động Load / Edit Role / Delete.
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) Vừa Mount Trang -> Gọi Dispatch lấy Array `users` data (Thunk).
+ *    - (2) Lọc `filteredUsers` từ keyword đang có (Mặc định All).
+ *    - (3) Data Flow Render Từng Dòng Table HTML (Kiểm tra từng Avatar có hình hay k để show custom placeholder UI).
+ *    - (4) Cập nhật Role inline -> User select Option trên Row, bắn Action API đằng sau mặt UI ngay tức khắc. Báo Toast Done.
+ *    - (5) Thao tác Delete (Tương Tự Admin Manage Orders / Products).
+ * ============================================================================
+ */
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { fetchAllUsers, updateUserRole, deleteUser } from '../adminSLice/adminSlice';
+import UserDetailModal from '../components/UserDetailModal';
 import '../styles/UsersManagement.css';
+
 
 /**
  * UsersManagement - Trang quản lý người dùng
@@ -12,6 +61,9 @@ function UsersManagement() {
     const { users, loading, error } = useSelector(state => state.admin);
     const [searchTerm, setSearchTerm] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
 
     // Fetch users khi component mount
     useEffect(() => {
@@ -46,6 +98,13 @@ function UsersManagement() {
             }
         }
     };
+
+    // Mở modal chi tiết
+    const handleViewDetail = (user) => {
+        setSelectedUser(user);
+        setIsModalOpen(true);
+    };
+
 
     // Filter users
     const filteredUsers = users?.filter(user => {
@@ -144,6 +203,13 @@ function UsersManagement() {
                                     <td>
                                         <div className="action-buttons">
                                             <button
+                                                className="btn-view"
+                                                onClick={() => handleViewDetail(user)}
+                                                title="Xem chi tiết"
+                                            >
+                                                👁️
+                                            </button>
+                                            <button
                                                 className="btn-delete"
                                                 onClick={() => handleDelete(user._id)}
                                                 title="Xóa"
@@ -152,6 +218,7 @@ function UsersManagement() {
                                             </button>
                                         </div>
                                     </td>
+
                                 </tr>
                             ))
                         ) : (
@@ -164,6 +231,13 @@ function UsersManagement() {
                     </tbody>
                 </table>
             </div>
+
+            {/* Modal chi tiết người dùng */}
+            <UserDetailModal 
+                user={selectedUser} 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+            />
         </div>
     );
 }

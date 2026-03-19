@@ -1,3 +1,44 @@
+/**
+ * ============================================================================
+ * COMPONENT: AccountSidebar (Bảng Điều Hướng Cá Nhân)
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Bảng danh mục menu cố định bên tay trái của Phân hệ tài khoản `/profile/*`.
+ *    - Hiện Profile Card thu nhỏ (Tên + Avatar) và đường Link nhanh quản trị.
+ * 
+ * 2. Props: 
+ *    - Tự trị (Không nhận Props).
+ * 
+ * 3. State:
+ *    - Global State: Extract giá trị `user` object từ Slice `user` thông qua `useSelector` Redux.
+ *    - Hook URL: Lấy Path Route qua `useLocation`.
+ * 
+ * 4. Render lại khi nào:
+ *    - Re-render mỗi khi Object Local User từ mẹ bị đánh dấu cập nhật do Login/Logout/Edit.
+ *    - Re-render class `active` css khi Path URL thay đổi Route.
+ * 
+ * 5. Event handling:
+ *    - Các item Click trực tiếp Link Navigation Router DOM nên bỏ qua onClick thủ công.
+ * 
+ * 6. Conditional rendering:
+ *    - Nếu có giá trị Auth User có `avatar?.url` -> Render thẻ <img> từ AWS/Cloudinary. Còn không rơi fallback đổ `<div placeholder>` Icon bốc chữ cái đầu `user?.name?.charAt(0)`.
+ *    - Cắm class động màu xanh (`active`) nếu địa chỉ URI trang hiện tại trùng với URI tĩnh của vòng lặp Link.
+ *    - Kiểm tra có Sub-items con thả xuống (`Cập nhật Đơn Hàng`, `Khuyến mãi`) để expand Box.
+ * 
+ * 7. List rendering:
+ *    - Map nguyên khối Configuration Array cố định của App Cấp 1 Menu `menuItems`. List map trong (Lồng) luôn Array `subItems`.
+ * 
+ * 8. Controlled input:
+ *    - Không có.
+ * 
+ * 9. Lifting state up:
+ *    - Không.
+ * 
+ * 10. Luồng hoạt động:
+ *    - Layout Sidebar này được render Song song với component Ruột (Giống Master Page).
+ *    - User click Tab `Tài khoản của tôi` -> Địa chỉ bật sang `/profile` -> Sidebar highlight tab 1 và Layout render form kế bên.
+ * ============================================================================
+ */
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";

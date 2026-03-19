@@ -1,3 +1,43 @@
+/**
+ * ============================================================================
+ * COMPONENT: ReviewComment
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Đảm nhiệm vai trò hiển thị và xử lý logic cho vùng phần tử `ReviewComment` trong ứng dụng.
+ * 
+ * 2. Props: 
+ *    - Nhận các props: isOpen, onClose, product, orderId, onSuccess
+ * 
+ * 3. State:
+ *    - Local State (quản lý nội bộ qua useState).
+ *      + Global State (lấy từ Redux qua useSelector).
+ * 
+ * 4. Render lại khi nào:
+ *    - Khi Local State thay đổi.
+ *    - Khi Global State (Redux) cập nhật.
+ *    - Khi Props từ cha truyền xuống thay đổi.
+ * 
+ * 5. Event handling:
+ *    - Có tương tác sự kiện (onClick, onChange, onSubmit...).
+ * 
+ * 6. Conditional rendering:
+ *    - Sử dụng toán tử 3 ngôi (? :) hoặc `&&` để ẩn/hiện element hoặc component.
+ * 
+ * 7. List rendering:
+ *    - Sử dụng `.map()` để render danh sách elements.
+ * 
+ * 8. Controlled input:
+ *    - Có form input elements (có thể bị controlled bởi state).
+ * 
+ * 9. Lifting state up:
+ *    - Dữ liệu được quản lý cục bộ hoặc đẩy lên Redux store toàn cục.
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) Component Mount -> Chỉ mount giao diện thuần và nhận Props.
+ *    - (2) Nhận State/Props và render UI ban đầu.
+ *    - (3) End-User tương tác trên component -> Cập nhật State -> Re-render màn hình.
+ * ============================================================================
+ */
 import React, { useState, useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
@@ -41,6 +81,8 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess }) {
     const [showUsername, setShowUsername] = useState(true);
     const [sellerRating, setSellerRating] = useState(5);
     const [shippingRating, setShippingRating] = useState(5);
+    const [images, setImages] = useState([]);
+    const [imagePreviews, setImagePreviews] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
@@ -71,6 +113,33 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess }) {
         );
     }, []);
 
+    const handleImageChange = useCallback((e) => {
+        const files = Array.from(e.target.files);
+        
+        // Giới hạn số lượng ảnh (ví dụ: tối đa 5 ảnh)
+        if (images.length + files.length > 5) {
+            setError("Chỉ được tải lên tối đa 5 ảnh/video");
+            return;
+        }
+
+        // Cập nhật file object
+        setImages((prev) => [...prev, ...files]);
+        
+        // Tạo URL xem trước
+        const previews = files.map(file => URL.createObjectURL(file));
+        setImagePreviews((prev) => [...prev, ...previews]);
+    }, [images]);
+
+    const handleRemoveImage = useCallback((index) => {
+        setImages((prev) => prev.filter((_, i) => i !== index));
+        setImagePreviews((prev) => {
+            const newPreviews = [...prev];
+            URL.revokeObjectURL(newPreviews[index]); // Giải phóng bộ nhớ
+            newPreviews.splice(index, 1);
+            return newPreviews;
+        });
+    }, []);
+
     const handleSubmit = useCallback(async () => {
         if (!product?._id) return;
         if (rating === 0) {
@@ -85,11 +154,18 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess }) {
             const tagText = selectedTags.length > 0 ? selectedTags.join(", ") + ". " : "";
             const finalComment = (tagText + comment).trim() || RATING_LABELS[rating];
 
-            await axios.put("/api/v1/review", {
-                rating: Number(rating),
-                comment: finalComment,
-                productId: product._id,
+            const formData = new FormData();
+            formData.append("rating", Number(rating));
+            formData.append("comment", finalComment);
+            formData.append("productId", product._id);
+            
+            images.forEach((img) => {
+                formData.append("images", img);
             });
+
+            const config = { headers: { "Content-Type": "multipart/form-data" } };
+
+            await axios.put("/api/v1/review", formData, config);
 
             setSuccess(true);
             onSuccess?.();
@@ -99,7 +175,7 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess }) {
         } finally {
             setLoading(false);
         }
-    }, [product, rating, comment, selectedTags, onSuccess]);
+    }, [product, rating, comment, selectedTags, images, onSuccess]);
 
     const handleClose = useCallback(() => {
         setRating(5);
@@ -109,6 +185,8 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess }) {
         setShowUsername(true);
         setSellerRating(5);
         setShippingRating(5);
+        setImages([]);
+        setImagePreviews([]);
         setError("");
         setSuccess(false);
         onClose?.();
@@ -252,22 +330,44 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess }) {
                             <span className="rc-textarea-counter">{comment.length}/500</span>
                         </div>
 
+                        {/* Media Preview */}
+                        {imagePreviews.length > 0 && (
+                            <div className="rc-media-previews" style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "12px" }}>
+                                {imagePreviews.map((preview, index) => {
+                                    const file = images[index];
+                                    const isVideo = file && file.type.startsWith('video/');
+                                    return (
+                                        <div key={index} className="rc-media-preview-item" style={{ position: "relative", width: "80px", height: "80px" }}>
+                                            {isVideo ? (
+                                                <video src={preview} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px", border: "1px solid #e2e8f0" }} />
+                                            ) : (
+                                                <img src={preview} alt="preview" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px", border: "1px solid #e2e8f0" }} />
+                                            )}
+                                            <button 
+                                                type="button" 
+                                                onClick={() => handleRemoveImage(index)}
+                                                style={{ position: "absolute", top: "-8px", right: "-8px", background: "rgba(0,0,0,0.6)", color: "white", border: "none", borderRadius: "50%", width: "22px", height: "22px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: "bold" }}>
+                                                ×
+                                            </button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+
                         {/* Media Buttons */}
                         <div className="rc-media-row">
-                            <button className="rc-media-btn" type="button">
-                                <FiCamera size={24} color="#ec5b13" />
-                                <span className="rc-media-label">Thêm hình ảnh</span>
-                            </button>
-                            <button className="rc-media-btn" type="button">
-                                <FiVideo size={24} color="#ec5b13" />
-                                <span className="rc-media-label">Thêm Video</span>
-                            </button>
+                            <label className="rc-media-btn" style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", padding: "10px 15px", border: "1px dashed #ec5b13", borderRadius: "4px", color: "#ec5b13" }}>
+                                <input type="file" multiple accept="image/*,video/*" style={{ display: "none" }} onChange={handleImageChange} />
+                                <FiCamera size={24} />
+                                <span className="rc-media-label">Thêm hình ảnh/Video</span>
+                            </label>
                         </div>
 
                         {/* Coin Hint */}
                         <div className="rc-coin-hint">
                             <FiInfo size={16} color="#94a3b8" />
-                            <p>Thêm 50 ký tự và 1 hình ảnh và 1 video để nhận 200 xu</p>
+                            <p>Tải lên tối đa 5 ảnh/video để mô tả sản phẩm chi tiết hơn.</p>
                         </div>
 
                         {/* Error */}

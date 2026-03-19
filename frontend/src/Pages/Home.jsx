@@ -1,3 +1,43 @@
+/**
+ * ============================================================================
+ * COMPONENT: Home
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Đảm nhiệm vai trò hiển thị và xử lý logic cho trang chủ (`Home`).
+ *    - Gom nhóm các component UI (Hero, CategoryGrid, NewArrivals) ghép lại thành giao diện trang chủ chính.
+ * 
+ * 2. Props: 
+ *    - Không nhận trực tiếp props từ cha.
+ * 
+ * 3. State:
+ *    - Không có Local State.
+ *    - Quản lý Global State từ Redux qua useSelector (kéo state `product` gồm `loading`, `error`, `products`).
+ * 
+ * 4. Render lại khi nào:
+ *    - Khi Global State `product` thay đổi (đang tải API, có lỗi, có danh sách sản phẩm mới trả về).
+ * 
+ * 5. Event handling:
+ *    - Chạy tự động `dispatch(getProduct(keyword))` qua `useEffect` khi mount.
+ *    - Hiển thị Toast Error khi có error từ Global State.
+ * 
+ * 6. Conditional rendering:
+ *    - Chưa có điều kiện ẩn hiện phức tạp trên component layout này (đẩy logic loader xuống <NewArrivals />).
+ * 
+ * 7. List rendering:
+ *    - Không sử dụng list render trực tiếp (đẩy products qua property của component con để loop array).
+ * 
+ * 8. Controlled input:
+ *    - Không có Input UI elements.
+ * 
+ * 9. Lifting state up:
+ *    - Phân chia lấy data list `products` từ Redux và đẩy mảng đó xuống props cho `<NewArrivals products={products}/>`.
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) Component mount -> `useEffect` gọi dispatch action fetch List Sản phẩm (getProduct "Tất Cả").
+ *    - (2) Nhận mảng `products` từ Redux -> tự động truyền qua các Section bên dưới.
+ *    - (3) Dựng các thẻ cơ bản và Section Layout `<HeroSection />`, `<CategoryGrid />`, `<NewArrivals />` vào DOM.
+ * ============================================================================
+ */
 import React, { useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';

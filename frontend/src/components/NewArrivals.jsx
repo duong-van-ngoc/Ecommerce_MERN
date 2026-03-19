@@ -1,3 +1,44 @@
+/**
+ * ============================================================================
+ * COMPONENT: NewArrivals (Sản phẩm mới)
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Khu vực hiển thị ngang (Horizontal Scroll Block) các sản phẩm "Hàng Mới Về" ở Trang Chủ.
+ *    - Đi kèm các nút điều hướng Tới / Lui bằng tương tác DOM Reference.
+ * 
+ * 2. Props: 
+ *    - `products` (array): Mảng cấu trúc dữ liệu các Item vừa mới lên kệ (Lấy theo Sort).
+ *    - `loading` (boolean): Check xem cha có đang chờ API không.
+ * 
+ * 3. State:
+ *    - Không sử dụng State Local/Global. Quản lý DOM Element Scroll bằng Hook `useRef()`.
+ * 
+ * 4. Render lại khi nào:
+ *    - Khi component Cha ném xuống tín hiệu thay đổi Boolean Loading hoặc Object Products.
+ * 
+ * 5. Event handling:
+ *    - Khởi tạo hàm scroll(left / right) móc vào sự kiện onClick trên hai Component Nút mũi tên.
+ * 
+ * 6. Conditional rendering:
+ *    - Dùng Ternary Operator bao quát cấp 1: `if(loading)` thì quăng ra xương Skeletons placeholder tĩnh để chống giật UI.
+ *    - Bao quát cấp 2: Nếu API phản hồi nhưng list `(products.length > 0)` => Vòng lặp list. Ngược lại in "Không có sản phẩm nào".
+ * 
+ * 7. List rendering:
+ *    - Lặp ảo 4 khối `na-skeleton` báo Loading chờ.
+ *    - Lặp mảng `products.map` gọi ra danh sách chi nhánh thẻ `<Product />`.
+ * 
+ * 8. Controlled input:
+ *    - Trống trơn.
+ * 
+ * 9. Lifting state up:
+ *    - Data Down-flow hoàn toàn.
+ * 
+ * 10. Luồng hoạt động:
+ *    - Cha (Home) quăng mảng Products mới tinh vào đây.
+ *    - Map List gắn mảng vào Layout ngang `display: flex; overflow-x: auto;`.
+ *    - Do Container có thanh cuộn ngang ẩn, khi hàm `scroll()` kích hoạt, nó sờ trực tiếp vào node ảo của Javascript (ref) và bảo API BOM Browser Cuộn `scrollBy` thanh slide trượt đi 300px cộng trừ thay đổi mượt mà.
+ * ============================================================================
+ */
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Product from './Product';
