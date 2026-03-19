@@ -1,3 +1,52 @@
+/**
+ * ============================================================================
+ * COMPONENT: Cart
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Trang Giỏ hàng hiển thị danh sách sản phẩm người dùng đã chọn mua,
+ *      quản lý thao tác đổi số lượng, xóa sản phẩm, và tính toán số tiền.
+ * 
+ * 2. Props: 
+ *    - Không sử dụng Props truyền từ component cha.
+ * 
+ * 3. State:
+ *    - Global State (Redux): Các state như `cartItems`, `loading`, `success`, `error` lấy từ store `cart`.
+ *    - Local State: 
+ *      + `selectedItems` (Object): Lưu trạng thái true/false của mỗi checkbox theo ID/bản thể.
+ * 
+ * 4. Render lại khi nào:
+ *    - Khi Global State `cartItems` thay đổi (do thêm, xóa, cập nhật số lượng).
+ *    - Khi người dùng tick chọn checkbox -> Local state `selectedItems` Update.
+ * 
+ * 5. Event handling:
+ *    - `increaseQuantity` / `decreaseQuantity`: Tăng giảm số lượng sản phẩm, gọi API cập nhật.
+ *    - `deleteCartItems`: Xóa hẳn sản phẩm khỏi giỏ hàng.
+ *    - `toggleSelectAll` / `handleCheckboxChange`: Bật/tắt trạng thái checkbox.
+ *    - `checkoutHandler`: Xử lý định tuyến (navigate) khi bấm "Mua hàng".
+ * 
+ * 6. Conditional rendering:
+ *    - Nếu `cartItems.length === 0` -> Xuất hiện UI rỗng (`<NoItems>`).
+ *    - Điều kiện enabled/disabled của nút Checkout phụ thuộc vào số sản phẩm đang được tick chọn.
+ * 
+ * 7. List rendering:
+ *    - Lặp qua mảng `cartItems.map()` -> Render ra chuỗi các phần tử (Sản phẩm) trong giỏ hàng.
+ * 
+ * 8. Controlled input:
+ *    - Checkbox tổng "Chọn Tất Cả" bị kiểm soát hoàn toàn bởi logic state array.
+ *    - `<input>` hiển thị số lượng đối với từng sản phẩm bị khóa lại ở readOnly và thao tác qua nút.
+ * 
+ * 9. Lifting state up:
+ *    - Dữ liệu `cartItems` đã được "Lift" vào Redux (Global Store) cũng như LocalStorage để chia sẻ 
+ *      data cho các màn hình khác (Ví dụ: Menu có đếm badge số sản phẩm).
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) Khởi tạo trang (Mount) -> Đọc danh sách Data (gồm cả biến thể Màu/Size) từ Redux.
+ *    - (2) Default: Bỏ trống (false) toàn bộ checkbox của `selectedItems`.
+ *    - (3) User Checkbox chọn sản phẩm muốn thanh toán -> Hàm tính toán Tạm tính, Khuyến mãi, Phí vận chuyển được gọi ngay lập tức.
+ *    - (4) User thay đổi số lượng hiển thị UI đồng thời Dispatch Update thông qua Redux.
+ *    - (5) Bấm Mua hàng -> App chuyển hướng (navigate) sang luồng URL kết hợp redirect shipping.
+ * ============================================================================
+ */
 import React, { useState, useEffect } from 'react'
 import '../CartStyles/Cart.css'
 import PageTitle from '../components/PageTitle'

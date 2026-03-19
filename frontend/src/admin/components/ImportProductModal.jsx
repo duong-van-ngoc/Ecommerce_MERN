@@ -1,3 +1,53 @@
+/**
+ * ============================================================================
+ * COMPONENT: ImportProductModal
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Hộp Modal Popup chứa logic để load, parse, validate file Excel hoặc CSV để Import hàng loạt Sản phẩm.
+ * 
+ * 2. Props: 
+ *    - `onClose` (function): Trigger đóng Modal trên parent UI.
+ *    - `onImportSuccess` (function): Callback gọi lại cho trang Cha khi import xong để trigger fetch list mới.
+ * 
+ * 3. State:
+ *    - Local State (useState):
+ *      + `previewData`: Array JSON parser preview từ Excel.
+ *      + `fileName`: Tên file gốc đang xử lý.
+ *      + `validationErrors`: Array obj chỉ rõ các lỗi parse sheet (sai category, ko có giá v.v.).
+ *    - Global State (useSelector/useDispatch): Handle cờ `loading` của AdminSlice để disable Button.
+ * 
+ * 4. Render lại khi nào:
+ *    - Read file xong list table/error xuất hiện. Đổi valid array/thêm array error.
+ *    - Global State `loading` API.
+ * 
+ * 5. Event handling:
+ *    - `handleFileChange`: Chọn file đẩy vào luồng FileReader + XLSX sheet_to_json().
+ *    - `handleImport`: Filter bỏ row lỗi, Map danh sách hợp lệ và `dispatch(importProducts)`.
+ *    - `handleDownloadTemplate`: Parse Array Template mẫu JSON ra dạng Book của XLSX -> Tải file mẫu xuống client duyệt.
+ * 
+ * 6. Conditional rendering:
+ *    - Thay label hiển thị drop file (Trống / Có chứa Tên file tải lên).
+ *    - Thẻ Bảng / Thẻ Báo lỗi validation ẩn hiện dựa vào lengh Data mảng state chứa row.
+ * 
+ * 7. List rendering:
+ *    - `previewData.slice(0, 50).map`: Hiển thị 50 dòng Preview từ dữ liệu Import vào Table UI.
+ *    - `validationErrors.slice(0, 10).map`: Hiển thị top 10 dòng Error cần sửa.
+ * 
+ * 8. Controlled input:
+ *    - Ref thẻ nhập ảo `<input type='file'>` dạng hidden, click by `fileInputRef`.
+ * 
+ * 9. Lifting state up:
+ *    - Hàm `importProducts()` thunk đẩy Array Items Valid lên Endpoint Database Bulk POST Backend.
+ *    - Callback `onImportSuccess()` trigger chọc Cha fetch list.
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) User mở Modal. Chọn File Button / Input hidden trigger click.
+ *    - (2) `handleFileChange`: FileReader đọc Text bin -> SheetJS parser Array Buffer -> Extract JSON.
+ *    - (3) Hàm `findHeaderRow` quét tìm Header Line (Row nào chứa Keyword Header). Validate Required Fields -> Lưu row lỗi array riêng, save preview object array tổng.
+ *    - (4) UI Preview re-render có dòng Xanh (Tick), dòng Đỏ (error list message) bôi đen.
+ *    - (5) User click [Import n Sản Phẩm]. File list đi Filter bỏ lỗi -> Đẩy API Thunk. Nếu Success -> Update Redux store, hiện Toaster success. Trigger `onClose`.
+ * ============================================================================
+ */
 import React, { useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { importProducts } from '../adminSLice/adminSlice';

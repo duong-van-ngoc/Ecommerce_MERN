@@ -1,3 +1,53 @@
+/**
+ * ============================================================================
+ * COMPONENT: Navbar
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Thanh điều hướng chính (Header bar) cho toàn bộ ứng dụng. 
+ *    - Chứa Logo, các menu chuyển trang, thanh tìm kiếm sản phẩm, biểu tượng giỏ hàng,
+ *      và logic reponsive cho menu trên thiết bị di động (Mobile Drawer).
+ * 
+ * 2. Props: 
+ *    - Không nhận trực tiếp props từ component cha.
+ * 
+ * 3. State:
+ *    - Local State: 
+ *      + `isMobileMenuOpen` (boolean): Trạng thái đóng/mở sidebar menu trên Mobile.
+ *      + `searchQuery` (string): Lưu giá trị người dùng đang gõ vào ô tìm kiếm.
+ *    - Global State (Redux): 
+ *      + Lấy `isAuthenticated` từ store `user` (để quyết định hiển thị nút Login/Tài khoản).
+ *      + Lấy `cartItems` từ store `cart` (để đếm số và hiện badge giỏ hàng).
+ *    - URL hook: Xác định current path bằng `useLocation`.
+ * 
+ * 4. Render lại khi nào:
+ *    - Khi Local State thay đổi (gõ phím, click menu).
+ *    - Khi Global State (Auth, Cart) thay đổi.
+ *    - Khi chuyển trang (Url Location đổi) thì re-render để reset trạng thái (đóng mobile menu).
+ * 
+ * 5. Event handling:
+ *    - `handleSearchSubmit`: Ngăn chặn hành vi reset trình duyệt khi submit form, chuyển hướng người dùng sang trang `/products` với query string.
+ *    - `toggleMobileMenu` / `closeMobileMenu`: Xử lý click đóng mở mobile menu.
+ * 
+ * 6. Conditional rendering:
+ *    - Dựa vào `isActive(path)` để cấp class thẻ `active` tự động sáng lên ở trang hiện tại.
+ *    - Nút (Icon Đăng ký) chỉ hiện khi `!isAuthenticated`.
+ *    - Hamburger Icon biến đổi thành Close Icon nếu `isMobileMenuOpen` là true.
+ * 
+ * 7. List rendering:
+ *    - Component này code tĩnh HTML thay vì dùng Map, để kiểm soát class chính xác cho từng thẻ <li>.
+ * 
+ * 8. Controlled input:
+ *    - `<input type="text">` của Thanh search bị kiểm soát thông qua biến `searchQuery` và onCahnge.
+ * 
+ * 9. Lifting state up:
+ *    - Lấy thông tin Badge số trực tiếp từ Redux thay vì phải Lifting từ cha -> Con.
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) User nhập chữ "Áo khoác" vào thanh search -> Nhấn Enter
+ *    - (2) Gọi `handleSearchSubmit` -> Điều hướng URL sang `/products?keyword=Áo%20khoác`.
+ *    - (3) Nếu ở Mobile: click Hamburger Icon -> State bật lên true -> CSS Sidebar trượt vào -> Nút cuộn (body scroll) bị khoá lại nhờ useEffect chặn Scroll event.
+ * ============================================================================
+ */
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import '../componentStyles/Navbar.css';

@@ -1,5 +1,5 @@
-
 import Product from '../models/productModel.js';
+import Order from '../models/orderModel.js';
 import HandleError from '../utils/handleError.js';
 import handleAsyncError from '../middleware/handleAsyncError.js';
 import APIFunctionality from '../utils/apiFunctionality.js';
@@ -208,11 +208,64 @@ export const getSingleProduct = handleAsyncError(async (req, res, next) => {
 // tạo và cập nhật đánh giá san phẩm 
 export const createReviewProduct = handleAsyncError(async (req, res, next) => {
     const { rating, comment, productId } = req.body;
+
+    // Kiểm tra xem người dùng đã mua sản phẩm này và đơn hàng đã được giao chưa
+    const orders = await Order.find({
+        user: req.user._id,
+        "orderItems.product": productId,
+        orderStatus: "Đã giao"
+    });
+
+    if (orders.length === 0) {
+        return next(new HandleError("Bạn chỉ có thể đánh giá sản phẩm sau khi đã mua và nhận hàng thành công.", 400));
+    }
+
+    // Xử lý upload ảnh mới cho đánh giá
+    let imagesLinks = [];
+    
+    // Nếu có giữ lại ảnh cũ
+    if (req.body.oldImages) {
+        try {
+            const oldImages = JSON.parse(req.body.oldImages);
+            if (Array.isArray(oldImages)) {
+                imagesLinks = [...oldImages];
+            }
+        } catch (e) {
+            console.error("Error parsing oldImages", e);
+        }
+    }
+
+    if (req.files && req.files.images) {
+        const files = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
+
+        for (let i = 0; i < files.length; i++) {
+            const result = await new Promise((resolve, reject) => {
+                const uploadStream = cloudinary.uploader.upload_stream(
+                    { 
+                        folder: "reviews",
+                        resource_type: "auto"
+                    },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result);
+                    }
+                );
+                uploadStream.end(files[i].data);
+            });
+
+            imagesLinks.push({
+                public_id: result.public_id,
+                url: result.secure_url,
+            });
+        }
+    }
+
     const review = {
         user: req.user._id,
         name: req.user.name,
         rating: Number(rating),
-        comment
+        comment,
+        images: imagesLinks
     }
     const product = await Product.findById(productId)
     // console.log(product);
@@ -221,8 +274,9 @@ export const createReviewProduct = handleAsyncError(async (req, res, next) => {
     if (reviewExist) {
         product.reviews.forEach(review => {
             if (review.user.toString() === req.user._id.toString()) {
-                review.rating = rating,
-                    review.comment = comment
+                review.rating = rating;
+                review.comment = comment;
+                review.images = imagesLinks;
             }
         })
     } else {

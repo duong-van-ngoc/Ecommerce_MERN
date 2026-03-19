@@ -1,3 +1,59 @@
+/**
+ * ============================================================================
+ * COMPONENT: ProductDetails
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Trang hiển thị chi tiết của một sản phẩm, cho phép người dùng xem thông tin,
+ *      đánh giá, chọn các biến thể (Màu sắc, Kích thước), số lượng và thêm vào giỏ hàng.
+ * 
+ * 2. Props: 
+ *    - Không nhận trực tiếp props từ cha, lấy `id` sản phẩm từ params của react-router-dom.
+ * 
+ * 3. State:
+ *    - Local State: 
+ *      + `quantity` (number): Số lượng sản phẩm muốn mua.
+ *      + `activeTab` (number): Quản lý tab đang mở (Mô tả, Thông số, Đánh giá).
+ *      + `selectedImage` (number): Index của ảnh đang được focus hiển thị.
+ *      + `selectedColor` (number | null): Index của màu sắc đang chọn.
+ *      + `selectedSize` (number | null): Index của kích thước đang chọn.
+ *      + `selectionError` (boolean): Cờ báo lỗi khi người dùng chưa chọn phân loại (size/color).
+ *    - Global State (Redux): Lấy từ `product` slice và `cart` slice.
+ * 
+ * 4. Render lại khi nào:
+ *    - Khi Redux fetch xong dữ liệu `productDetails` (loading -> success/error).
+ *    - Khi Local State thay đổi (người dùng click chọn size, màu, đổi số lượng, chuyển tab ảnh).
+ * 
+ * 5. Event handling:
+ *    - `increaseQuantity` / `decreaseQuantity`: Nút (+)/(-) thay đổi số lượng.
+ *    - `addToCart`: Nút "Thêm vào giỏ hàng", kiểm tra điều kiện rồi dispatch action.
+ *    - `handleBuyNow`: Xử lý click nút Mua Ngay.
+ * 
+ * 6. Conditional rendering:
+ *    - Nếu `loading` là true -> Hiển thị `<Loader />`.
+ *    - Nếu % giảm giá > 0 -> Hiển thị badge giảm giá.
+ *    - Ẩn/hiện khối cảnh báo thiếu màu/size phụ thuộc biến `selectionError`.
+ * 
+ * 7. List rendering:
+ *    - Dùng `.map()` lặp `productImages` -> Hiển thị list ảnh thumbnail.
+ *    - Dùng `.map()` lặp `productColors` -> Hiển thị danh sách các ô màu sắc.
+ *    - Dùng `.map()` lặp `productSizes` -> Hiển thị danh sách nút chọn kích thước.
+ *    - Dùng `.map()` lặp `product.reviews` -> Hiển thị comment của người dùng.
+ * 
+ * 8. Controlled input:
+ *    - `<input>` hiển thị số lượng (readOnly) bị kiểm soát bởi state `quantity`.
+ * 
+ * 9. Lifting state up:
+ *    - Việc quản lý dữ liệu giỏ hàng được đẩy thẳng qua Redux (Global Store) 
+ *      thay vì đẩy state ngược lên Header để chia sẻ số lượng sản phẩm.
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) Component Mount -> Dùng useEffect gọi API `getProductDetails(id)`.
+ *    - (2) Lấy dữ liệu thành công -> Tự động ánh xạ mã màu (hex) từ array string.
+ *    - (3) Render UI -> Người dùng xem chi tiết, tuỳ chọn màu và size.
+ *    - (4) Click "Thêm vào giỏ" -> Nếu thiếu biến thể bắt buộc: Bật cảnh báo lỗi đỏ (`selectionError = true`).
+ *    - (5) Nếu đủ -> Gọi Dispatch action `addItemsToCart(id, qty, size, color)`.
+ * ============================================================================
+ */
 import React, { useEffect, useState } from 'react'
 import '../pageStyles/ProductDetails.css';
 import PageTitle from '../components/PageTitle';
@@ -16,8 +72,9 @@ function ProductDetails() {
   const [quantity, setQuantity] = useState(1)
   const [activeTab, setActiveTab] = useState(0)
   const [selectedImage, setSelectedImage] = useState(0)
-  const [selectedColor, setSelectedColor] = useState(0)
-  const [selectedSize, setSelectedSize] = useState(0) // Default to first size
+  const [selectedColor, setSelectedColor] = useState(null)
+  const [selectedSize, setSelectedSize] = useState(null)
+  const [selectionError, setSelectionError] = useState(false)
 
   // State của Redux
   const { loading, error, product } = useSelector((state) => state.product)
@@ -50,11 +107,17 @@ function ProductDetails() {
 
   // Dữ liệu thực từ API (có fallback nếu thiếu)
   const productColors = product?.colors?.length > 0
-    ? product.colors.map(c => ({ name: c, code: colorMap[c] || '#cccccc' }))
+    ? product.colors.map(c => {
+        const cleanColor = typeof c === 'string' ? c.replace(/[\[\]"'\\]/g, "").trim() : String(c);
+        return { name: cleanColor, code: colorMap[cleanColor] || '#cccccc' };
+      })
     : [];
 
   const productSizes = product?.sizes?.length > 0
-    ? product.sizes.map(s => ({ name: s, available: true }))
+    ? product.sizes.map(s => {
+        const cleanSize = typeof s === 'string' ? s.replace(/[\[\]"'\\]/g, "").trim() : String(s);
+        return { name: cleanSize, available: true };
+      })
     : [];
 
   // Giá & Giảm giá
@@ -142,9 +205,43 @@ function ProductDetails() {
   }
 
   const addToCart = () => {
-    const color = productColors[selectedColor]?.name || '';
-    const size = productSizes[selectedSize]?.name || '';
+    if ((productColors.length > 0 && selectedColor === null) || 
+        (productSizes.length > 0 && selectedSize === null)) {
+      setSelectionError(true);
+      return;
+    }
+    setSelectionError(false);
+    const color = selectedColor !== null ? productColors[selectedColor]?.name : '';
+    const size = selectedSize !== null ? productSizes[selectedSize]?.name : '';
     dispatch(addItemsToCart({ id, quantity, size, color }))
+  }
+
+  const handleBuyNow = () => {
+    if ((productColors.length > 0 && selectedColor === null) || 
+        (productSizes.length > 0 && selectedSize === null)) {
+      setSelectionError(true);
+      return;
+    }
+    setSelectionError(false);
+
+    const buyNowItem = {
+      product: product._id,
+      name: product.name,
+      price: product.price,
+      image: product.images?.[0]?.url,
+      stock: product.stock,
+      quantity: quantity,
+      size: selectedSize !== null ? productSizes[selectedSize]?.name : '',
+      color: selectedColor !== null ? productColors[selectedColor]?.name : ''
+    };
+    sessionStorage.setItem("directBuyItem", JSON.stringify(buyNowItem));
+    dispatch(removeErrors()); 
+    
+    if (isAuthenticated) {
+      navigate('/shipping');
+    } else {
+      navigate('/login?redirect=/shipping');
+    }
   }
 
   const formatPrice = (price) => {
@@ -229,63 +326,83 @@ function ProductDetails() {
                 )}
               </div>
 
-              {/* Color Selection */}
-              {productColors.length > 0 && (
-                <div className="selection-group">
-                  <div className="selection-label">
-                    Màu sắc <span>{productColors[selectedColor]?.name}</span>
+              <div style={{
+                backgroundColor: selectionError ? '#fff5f5' : 'transparent',
+                padding: selectionError ? '15px' : '0',
+                margin: selectionError ? '15px -15px' : '0',
+                borderRadius: '4px',
+                transition: 'all 0.3s ease'
+              }}>
+                {/* Color Selection */}
+                {productColors.length > 0 && (
+                  <div className="selection-group">
+                    <div className="selection-label">
+                      Màu sắc {selectedColor !== null && <span>{productColors[selectedColor]?.name}</span>}
+                    </div>
+                    <div className="color-options">
+                      {productColors.map((color, index) => (
+                        <div
+                          key={index}
+                          className={`color-swatch ${selectedColor === index ? 'active' : ''}`}
+                          style={{ backgroundColor: color.code }}
+                          onClick={() => {
+                            setSelectedColor(index);
+                            setSelectionError(false);
+                            // Tự động chuyển ảnh theo màu (nếu có ảnh tương ứng)
+                            if (index < productImages.length) {
+                              setSelectedImage(index);
+                            }
+                          }}
+                          title={color.name}
+                        />
+                      ))}
+                    </div>
                   </div>
-                  <div className="color-options">
-                    {productColors.map((color, index) => (
-                      <div
-                        key={index}
-                        className={`color-swatch ${selectedColor === index ? 'active' : ''}`}
-                        style={{ backgroundColor: color.code }}
-                        onClick={() => {
-                          setSelectedColor(index);
-                          // Tự động chuyển ảnh theo màu (nếu có ảnh tương ứng)
-                          if (index < productImages.length) {
-                            setSelectedImage(index);
-                          }
-                        }}
-                        title={color.name}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
+                )}
 
-              {/* Size Selection */}
-              {productSizes.length > 0 && (
-                <div className="selection-group">
-                  <div className="selection-label">
-                    Kích thước
-                    <button className="size-guide">Hướng dẫn chọn size</button>
+                {/* Size Selection */}
+                {productSizes.length > 0 && (
+                  <div className="selection-group">
+                    <div className="selection-label">
+                      Kích thước
+                      <button className="size-guide">Hướng dẫn chọn size</button>
+                    </div>
+                    <div className="size-options">
+                      {productSizes.map((size, index) => (
+                        <button
+                          key={index}
+                          className={`size-btn ${selectedSize === index ? 'active' : ''} ${!size.available ? 'disabled' : ''}`}
+                          onClick={() => {
+                            if (size.available) {
+                              setSelectedSize(index);
+                              setSelectionError(false);
+                            }
+                          }}
+                          disabled={!size.available}
+                        >
+                          {size.name}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <div className="size-options">
-                    {productSizes.map((size, index) => (
-                      <button
-                        key={index}
-                        className={`size-btn ${selectedSize === index ? 'active' : ''} ${!size.available ? 'disabled' : ''}`}
-                        onClick={() => size.available && setSelectedSize(index)}
-                        disabled={!size.available}
-                      >
-                        {size.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+                )}
 
-              {/* Quantity */}
-              <div className="quantity-section">
-                <span className="quantity-label">Số lượng</span>
-                <div className="quantity-controls">
-                  <button className="qty-btn" onClick={decreaseQuantity} disabled={quantity <= 1}>−</button>
-                  <input type="text" className="qty-input" value={quantity} readOnly />
-                  <button className="qty-btn" onClick={increaseQuantity} disabled={quantity >= product.stock}>+</button>
+                {/* Quantity */}
+                <div className="quantity-section">
+                  <span className="quantity-label">Số lượng</span>
+                  <div className="quantity-controls">
+                    <button className="qty-btn" onClick={decreaseQuantity} disabled={quantity <= 1}>−</button>
+                    <input type="text" className="qty-input" value={quantity} readOnly />
+                    <button className="qty-btn" onClick={increaseQuantity} disabled={quantity >= product.stock}>+</button>
+                  </div>
+                  <span className="stock-info">Còn {product.stock} sản phẩm</span>
                 </div>
-                <span className="stock-info">Còn {product.stock} sản phẩm</span>
+
+                {selectionError && (
+                  <div style={{ color: '#ee4d2d', fontSize: '13px', marginTop: '15px', paddingLeft: '4px' }}>
+                    Vui lòng chọn Phân loại hàng
+                  </div>
+                )}
               </div>
 
               {/* Các nút hành động (CTA) */}
@@ -294,26 +411,7 @@ function ProductDetails() {
                   <button className="add-to-cart-btn" onClick={addToCart} disabled={cartLoading}>
                     🛒 {cartLoading ? "Đang thêm..." : "THÊM VÀO GIỎ HÀNG"}
                   </button>
-                  <button className="buy-now-btn" onClick={() => {
-                    const buyNowItem = {
-                      product: product._id,
-                      name: product.name,
-                      price: product.price,
-                      image: product.images?.[0]?.url,
-                      stock: product.stock,
-                      quantity: quantity,
-                      size: productSizes[selectedSize]?.name || '',
-                      color: productColors[selectedColor]?.name || ''
-                    };
-                    sessionStorage.setItem("directBuyItem", JSON.stringify(buyNowItem));
-                    dispatch(removeErrors()); // Clean up errors if any
-                    
-                    if (isAuthenticated) {
-                      navigate('/shipping');
-                    } else {
-                      navigate('/login?redirect=/shipping');
-                    }
-                  }}>
+                  <button className="buy-now-btn" onClick={handleBuyNow}>
                     MUA NGAY
                   </button>
                 </div>
@@ -450,7 +548,32 @@ function ProductDetails() {
                             </div>
                           </div>
                           <div className="review-content">{review.comment}</div>
-                          {/* TODO: Add review.images from API */}
+                          {review.images && review.images.length > 0 && (
+                            <div className="review-images">
+                              {review.images.map((img, i) => {
+                                const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(img.url);
+                                if (isVideo) {
+                                  return (
+                                    <video 
+                                      key={i} 
+                                      src={img.url} 
+                                      controls 
+                                      className="review-video" 
+                                      style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '4px' }}
+                                    />
+                                  );
+                                }
+                                return (
+                                  <img 
+                                    key={i}
+                                    src={img.url} 
+                                    alt={`review-${i}`} 
+                                    onClick={() => window.open(img.url, '_blank')}
+                                  />
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -503,7 +626,7 @@ function ProductDetails() {
           <button className="add-to-cart-btn" onClick={addToCart} disabled={cartLoading}>
             🛒 THÊM VÀO GIỎ
           </button>
-          <button className="buy-now-btn">MUA NGAY</button>
+          <button className="buy-now-btn" onClick={handleBuyNow}>MUA NGAY</button>
         </div>
       )}
 

@@ -1,3 +1,42 @@
+/**
+ * ============================================================================
+ * COMPONENT: CategoryGrid
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Vùng "Bento Layout" trên trang chủ hiển thị lưới các danh mục sản phẩm 
+ *      nổi bật nhất (Quần áo, Phụ kiện, Túi xách, Đồng hồ) để người dùng có thể nhấp vào.
+ * 
+ * 2. Props: 
+ *    - Không nhận trực tiếp props nào. Dùng Hardcode tĩnh.
+ * 
+ * 3. State:
+ *    - Stateless Component. Tối ưu performance.
+ * 
+ * 4. Render lại khi nào:
+ *    - Rất hiếm khi re-render vì bản thân nó cấu tạo hoàn toàn từ cấu trúc HTML cố định.
+ * 
+ * 5. Event handling:
+ *    - Bọc bởi các thẻ `<Link>`, việc click sẽ trigger chuyển đổi route URL.
+ * 
+ * 6. Conditional rendering:
+ *    - Tĩnh 100%, không theo điều kiện data.
+ * 
+ * 7. List rendering:
+ *    - Mặc dù bản chất là một Lưới Danh mục, nhưng dev đã chia tay việc dùng `.map()` để dễ dàng 
+ *      tuỳ biến khung grid phức tạp và class riêng cho từng vùng (Ví dụ khối wide và khối tall).
+ * 
+ * 8. Controlled input:
+ *    - Không có input form fields.
+ * 
+ * 9. Lifting state up:
+ *    - Không xử lý Logic State.
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) Render trực tiếp ở giữa Trang Home.
+ *    - (2) Nếu click vào ô "Quần Áo", `<Link>` kích hoạt router đẩy sang đường dẫn `/products?category=Quần áo`.
+ *    - (3) Trang Sản phẩm (`/products`) sẽ bắt đọc Query Parameter này và tự động Lọc lưới API.
+ * ============================================================================
+ */
 import React from 'react';
 import { Link } from 'react-router-dom';
 import '../componentStyles/CategoryGrid.css';

@@ -1,3 +1,52 @@
+/**
+ * ============================================================================
+ * COMPONENT: Products
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Trang Danh sách sản phẩm (Shop/Products page).
+ *    - Hỗ trợ các tính năng Lọc (Filter), Sắp xếp (Sort) và Phân trang (Pagination).
+ * 
+ * 2. Props: 
+ *    - Không nhận trực tiếp props từ component cha (Sử dụng URL Params để lấy keyword/category/page).
+ * 
+ * 3. State:
+ *    - Local State (useState):
+ *      + `currentPage`: Trang hiện tại.
+ *      + `selectedCategories`, `priceRange`, `appliedPrice`, `selectedRating`, `sortBy`: Trạng thái các filter.
+ *      + `isMobileDrawerOpen`: Trạng thái đóng/mở sidebar bộ lọc trên Mobile.
+ *    - Global State (useSelector): Pull state `product` (loading, error, products, productCount) từ Redux.
+ * 
+ * 4. Render lại khi nào:
+ *    - Khi bất kỳ filter nào thay đổi (giá, categories, rating, sort...).
+ *    - Khi URL Params thay đổi.
+ *    - Khi Redux fetch xong danh sách products.
+ * 
+ * 5. Event handling:
+ *    - Lắng nghe click filter: `handleCategoryToggle`, `handleApplyPrice`, `handleSortChange`, `handleClearAll`.
+ *    - `handlePageChange` khi người dùng bấm qua trang khác.
+ * 
+ * 6. Conditional rendering:
+ *    - Hiển thị Skeleton Loader nếu `loading = true`.
+ *    - Hiển thị Empty State nhắc nhở nếu `products.length === 0`.
+ *    - Ẩn/hiện Drawer filter trên Mobile dựa trên `isMobileDrawerOpen`.
+ * 
+ * 7. List rendering:
+ *    - Render List Sản phẩm bằng `products.map(product => <Product .../>)`.
+ *    - Render danh sách `pricePresets`, `ratings`.
+ * 
+ * 8. Controlled input:
+ *    - Input khoảng giá (priceRange min/max), các Checkbox ratings đều là controlled component.
+ * 
+ * 9. Lifting state up:
+ *    - Quản lý tất cả Filter State tại component này, và truyền xuống Component `Pagination` (props `currentPage`, `onPageChange`).
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) Component mount -> Lấy query param trên URL (`keyword`, `category`, `page`) khởi tạo Local State.
+ *    - (2) `useEffect` trigger khi Dependencies (các filters/page) thay đổi -> `dispatch(getProduct({ params }))`.
+ *    - (3) Cập nhật URL `?category=...&page=...` tương ứng với hành động click Filter.
+ *    - (4) UI render danh sách sản phẩm, nếu danh sách rỗng show empty template.
+ * ============================================================================
+ */
 import React, { useEffect, useState } from 'react';
 import '../pageStyles/Products.css';
 import PageTitle from '../components/PageTitle';

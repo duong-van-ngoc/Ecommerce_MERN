@@ -1,3 +1,42 @@
+/**
+ * ============================================================================
+ * COMPONENT: AdminLayout
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Là HOC Layout Wrapper dành cho các luồng Dashboard của Admin, chứa Sidebar và Outlet cho các component con mount vào vùng thân giao diện.
+ * 
+ * 2. Props: 
+ *    - Không Props.
+ * 
+ * 3. State:
+ *    - Global State (useSelector): Lấy trạng thái `isAuthenticated` và schema `user` để phân quyền truy cập.
+ * 
+ * 4. Render lại khi nào:
+ *    - Khi URL Route đổi -> Sidebar Navlink active state đổi.
+ *    - Re-render khi Global Redux update user credential (VD: user log out).
+ * 
+ * 5. Event handling:
+ *    - Click vào các thẻ `NavLink` điều khiển thay đổi đường dẫn Frontend.
+ * 
+ * 6. Conditional rendering:
+ *    - Validate quyền (`!isAuthenticated` hoặc `role !== 'admin'`) -> Returns Redirect Element `<Navigate />`.
+ * 
+ * 7. List rendering:
+ *    - Không có. (Tạo menu tĩnh).
+ * 
+ * 8. Controlled input:
+ *    - Không chứa input.
+ * 
+ * 9. Lifting state up:
+ *    - Outlet pass qua Router tree.
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) Router điều hướng sang Route Auth `/admin/*`.
+ *    - (2) Mount Layout -> Check Authenticated & check user.role. Giữ chân nếu ko có quyền và chuyển hướng.
+ *    - (3) Render sidebar tĩnh và khung Content.
+ *    - (4) Trỏ thư mục con / Router con render inject vào thông qua thẻ `<Outlet />`.
+ * ============================================================================
+ */
 import React from 'react';
 import { NavLink, Outlet, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';

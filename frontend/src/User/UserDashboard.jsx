@@ -1,3 +1,43 @@
+/**
+ * ============================================================================
+ * COMPONENT: UserDashboard
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Đảm nhiệm vai trò hiển thị và xử lý logic cho vùng phần tử `UserDashboard` trong ứng dụng.
+ * 
+ * 2. Props: 
+ *    - Nhận các props: user
+ * 
+ * 3. State:
+ *    - Local State (quản lý nội bộ qua useState).
+ *      + Global State (lấy từ Redux qua useSelector).
+ * 
+ * 4. Render lại khi nào:
+ *    - Khi Local State thay đổi.
+ *    - Khi Global State (Redux) cập nhật.
+ *    - Khi Props từ cha truyền xuống thay đổi.
+ * 
+ * 5. Event handling:
+ *    - Có tương tác sự kiện (onClick, onChange, onSubmit...).
+ * 
+ * 6. Conditional rendering:
+ *    - Sử dụng toán tử 3 ngôi (? :) hoặc `&&` để ẩn/hiện element hoặc component.
+ * 
+ * 7. List rendering:
+ *    - Sử dụng `.map()` để render danh sách elements.
+ * 
+ * 8. Controlled input:
+ *    - Không chứa form controls.
+ * 
+ * 9. Lifting state up:
+ *    - Dữ liệu được quản lý cục bộ hoặc đẩy lên Redux store toàn cục.
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) Component Mount -> Chỉ mount giao diện thuần và nhận Props.
+ *    - (2) Nhận State/Props và render UI ban đầu.
+ *    - (3) End-User tương tác trên component -> Cập nhật State -> Re-render màn hình.
+ * ============================================================================
+ */
 import React, { useState } from 'react'
 import '../UserStyles/UserDashboard.css'
 import { useNavigate } from 'react-router-dom'

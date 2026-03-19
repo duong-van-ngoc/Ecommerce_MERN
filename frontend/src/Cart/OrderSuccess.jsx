@@ -1,3 +1,42 @@
+/**
+ * ============================================================================
+ * COMPONENT: OrderSuccess
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Hộp báo Modal (Popup) chứa icon Checkmark thông báo đặt hàng thành công. Kèm mã Order trả về.
+ * 
+ * 2. Props: 
+ *    - `orderId`: String - Mã ID hiển thị của đơn từ Backend gửi ra.
+ *    - `onClose`: Function - Callback cho onClick tắt Modal.
+ * 
+ * 3. State:
+ *    - Stateless component thuần tý, không dùng `useState`.
+ * 
+ * 4. Render lại khi nào:
+ *    - Khi props render đổi (orderId khác).
+ * 
+ * 5. Event handling:
+ *    - `goToOrders()`: Nút Redirect điều hướng User về trang `/orders/user`. (Và trigger tắt pop up).
+ *    - `handleBackdropClick(e)`: Tắt overlay xám bên ngoài để close Modal.
+ * 
+ * 6. Conditional rendering:
+ *    - In `orderId` nếu valid, ngược lại fallback string "Xem tại trang Đơn hàng".
+ * 
+ * 7. List rendering:
+ *    - Không.
+ * 
+ * 8. Controlled input:
+ *    - Không.
+ * 
+ * 9. Lifting state up:
+ *    - Gọi ngược hàm `onClose` từ Parent Modal.
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) Được Inject vào DOM với css `position: fixed`.
+ *    - (2) Nhận focus. Người dùng có thể xem mã.
+ *    - (3) Nếu click Nút BackDrop Background xung quanh / Nút [x] Đóng / Hoặc "Đi tới Orders" -> `onClose` trigger báo lên Component cha hủy show.
+ * ============================================================================
+ */
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../CartStyles/OrderSuccess.css";

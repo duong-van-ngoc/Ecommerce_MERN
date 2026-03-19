@@ -191,6 +191,21 @@
     transform: scale(1.1);
 }
 
+.btn-view {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.btn-view:hover {
+    background: rgba(59, 130, 246, 0.2);
+    transform: scale(1.1);
+}
+
 /* No Users */
 .no-users {
     text-align: center;

@@ -1,3 +1,53 @@
+/**
+ * ============================================================================
+ * COMPONENT: ProductFormModal
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Hộp Modal Popup chứa Form chỉnh sửa / thêm mới Thông tin chi tiết một Sản phẩm. Hỗ trợ edit nhiều options (Màu, Size, Hình ảnh..).
+ * 
+ * 2. Props: 
+ *    - `product`: Object sản phẩm hiện tại (nếu đang Edit). Dùng làm điều kiện `isEditMode`.
+ *    - `onClose`: Function đóng Modal do Cha truyền.
+ * 
+ * 3. State:
+ *    - Local State (useState):
+ *      + `formData`: Payload chuẩn bị Post (name, price, stock, category..).
+ *      + `imagesPreview`: Mảng String Base64 / URL local preview ảnh trước khi tải.
+ *      + `tempTag`: Cache lưu String 1 Size / 1 Color đang gõ dở trên ô Input.
+ *      + `discountPercent`: % giảm giá tự tính toán được giữa price và originalPrice.
+ * 
+ * 4. Render lại khi nào:
+ *    - Điền Form, Gõ Textbox, Chọn select -> trigger setState `handleChange`.
+ *    - Khi tính % Discount trong `useEffect`.
+ * 
+ * 5. Event handling:
+ *    - `handleChange`: Thay đổi Text Input. Reset Category Con khi đổi Category Cha.
+ *    - `handleImageChange`, `handleDrop`: Chuyển path file Hình ảnh sang Base64 đổ ra list preview.
+ *    - `removeImage`, `addTag`, `removeTag`: Thay đổi Array data local.
+ *    - `handleSubmit`: Khởi tạo formData HTML chuẩn, gói JSON category/oldImages, trigger Edit/Delete action của Redux.
+ * 
+ * 6. Conditional rendering:
+ *    - Tùy chỉnh Tiêu đề (Thêm Mới / Cập nhật) dựa vào boolean var `isEditMode`.
+ *    - Nút disabled / Label select phụ thuộc Cấp trên.
+ * 
+ * 7. List rendering:
+ *    - Render List Thẻ `<option>` Danh mục theo config `categories.js`.
+ *    - List array Tag Size, Màu Sắc và List Hình ảnh (`imagesPreview.map()`).
+ * 
+ * 8. Controlled input:
+ *    - Tất cả Input (name, price, select Box) đều có val=`formData.[props]`.
+ * 
+ * 9. Lifting state up:
+ *    - Trigger API Create / Update của Thunk gửi JSON String data lên Backend (`dispatch(updateProduct/createProduct)`).
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) Component mount, Kiểm tra props `product`. Nếu có Data -> Gắn state `formData` ban đầu để pre-fill input form.
+ *    - (2) User điền Input, tương tác Drag and Drop hình ảnh -> Hàm `handleImageChange` sync UI.
+ *    - (3) Thao tác Tagging (Màu/Size) tạo Mảng String đẩy vào Array form.
+ *    - (4) Khi Submit form -> Gói `new FormData()`, xử object logic array oldImages/newImages. Dispatch Action API.
+ *    - (5) Toast báo thành công và gọi Callback `onClose()` tắt giao diện form cha.
+ * ============================================================================
+ */
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { createProduct, updateProduct } from '../adminSLice/adminSlice';

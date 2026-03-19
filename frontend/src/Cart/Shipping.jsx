@@ -1,3 +1,46 @@
+/**
+ * ============================================================================
+ * COMPONENT: Shipping
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Màn hình nhập Thông tin Giao hàng (Bước 1/3 luồng Checkout thanh toán).
+ * 
+ * 2. Props: 
+ *    - Không.
+ * 
+ * 3. State:
+ *    - Local State (useState):
+ *      + `address`, `pinCode`, `phoneNumber`: các state lưu text thông tin cá nhân.
+ *      + `provinces`, `districts`, `wards`: mảng dữ liệu hành chính gọi từ API.
+ *      + `provinceCode`, `districtCode`, `wardCode`: mã code Tỉnh, Huyện, Phường hiện tại.
+ *    - Global State (useSelector): Lấy `shippingInfo` từ Redux Store (nếu người dùng đã nhập trước đó).
+ * 
+ * 4. Render lại khi nào:
+ *    - Khi input textbox/select list bị User chọn thay đổi.
+ *    - Khi API trả về dữ liệu các dropdown địa chính.
+ * 
+ * 5. Event handling:
+ *    - Hàm `shippingInfoSubmit(e)`: Xử lý Click "Tiếp tục", dispatch thông tin và Navigate tới bước 2.
+ * 
+ * 6. Conditional rendering:
+ *    - Các thẻ `<select>` Quận/Phường bị disable nếu chưa chọn cấp cao hơn thông qua biến điều kiện.
+ * 
+ * 7. List rendering:
+ *    - Mảng list Provinces, Districts, Wards được `.map` để render ra các `<option>`.
+ * 
+ * 8. Controlled input:
+ *    - Mọi form box/select list đều binding từ `value={state}` và `onChange={setState}`.
+ * 
+ * 9. Lifting state up:
+ *    - Phân quyền dữ liệu ở mức Redux Global -> Gọi action `saveShippingInfo` pass data vào đó.
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) Vừa Mount `useEffect` -> Fetch API lấy Tỉnh, điền form dựa trên Cache Redux.
+ *    - (2) Nếu chọn provinceCode -> Chạy `useEffect` fetch API Huyện. Thao tác tương tự kéo theo Phường.
+ *    - (3) Nhấn Tiếp tục -> Validate SDT, Đầy đủ fields -> Áp dụng `saveShippingInfo` gởi gói Object (bao gồm cả name string) vào Redux.
+ *    - (4) Điều hướng Router đẩy sang `/order/confirm` (Bước 2/3).
+ * ============================================================================
+ */
 import React, { useEffect, useState } from 'react'
 import '../CartStyles/Shipping.css'
 import PageTitle from '../components/PageTitle'

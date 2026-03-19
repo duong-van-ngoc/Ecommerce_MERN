@@ -1,3 +1,43 @@
+/**
+ * ============================================================================
+ * COMPONENT: ForgotPassword
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Màn hình Quên Mật khẩu dành cho người dùng vãng lai (nhập email để server gởi link Đặt lại qua token).
+ * 
+ * 2. Props: 
+ *    - Component Route page cấp độ Root.
+ * 
+ * 3. State:
+ *    - Local State (useState):
+ *      + `email` (string): Trạng thái control input email.
+ *    - Global State (useSelector): Lấy `user` store chứa error, success message.
+ * 
+ * 4. Render lại khi nào:
+ *    - Gõ email text; Redux trạng thái thay đổi.
+ * 
+ * 5. Event handling:
+ *    - `ForgotPasswordEmail(e)`: Xử lý nút Click submit Email quên mật khẩu `dispatch(forgotPassword)`.
+ * 
+ * 6. Conditional rendering:
+ *    - Conditional Spinner `<Loader />`.
+ * 
+ * 7. List rendering:
+ *    - Không render array.
+ * 
+ * 8. Controlled input:
+ *    - Cột Input Email Form.
+ * 
+ * 9. Lifting state up:
+ *    - Cập nhật Redux store (forgotPassword logic).
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) User input mail phục vụ reset pass.
+ *    - (2) Click Gửi yêu cầu -> `ForgotPasswordEmail` action bắn đi.
+ *    - (3) BE check mail nếu đúng gởi mail SMTP chứa Reset Token, trả về Redux Success.
+ *    - (4) UI show "Đã gởi email thành công" qua Toast, `useEffect(success)` dọn dẹp biến success rồi điều hướng quay về trang Login.
+ * ============================================================================
+ */
 import React, { useEffect, useState } from 'react'
 import '../UserStyles/ForgotPassword.css'
 import PageTitle from '../components/PageTitle'

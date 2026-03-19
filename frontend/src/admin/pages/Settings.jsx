@@ -1,3 +1,45 @@
+/**
+ * ============================================================================
+ * COMPONENT: Settings
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Màn hình Cài đặt Hệ thống của Admin. Quản lý thông tin Shop và Tùy chỉnh Các cấu hình Nhận thông báo.
+ * 
+ * 2. Props: 
+ *    - Không có Props truyền từ cha.
+ * 
+ * 3. State:
+ *    - Local State (`useState`): `formData` chứa các field: `adminName`, `email`, `companyName`, `address`, `notifications` (Object con checkboxes).
+ *    - Global State (`useSelector`): Lấy dữ liệu Settings gốc đã load được qua `adminSlice`.
+ * 
+ * 4. Render lại khi nào:
+ *    - Gõ input text, check ô Checkbox -> state `formData` thay đổi -> UI Input update real-time.
+ *    - Nhận Data mới từ API.
+ * 
+ * 5. Event handling:
+ *    - `handleInputChange`: Bắt sự kiện gõ phím cập nhật object layer ngoài của formData.
+ *    - `handleCheckboxChange`: Nested setState cho object `notifications` bên trong formData.
+ *    - `handleSave`: Bắt event Submit form, khóa re-load trang và dispatch gọi Thunk API lưu.
+ * 
+ * 6. Conditional rendering:
+ *    - Render màn hình Skeleton Box loading khi `loading && !settings`.
+ * 
+ * 7. List rendering:
+ *    - Render tĩnh tĩnh các form block, ko map mảng Array.
+ * 
+ * 8. Controlled input:
+ *    - TẤT CẢ form input, textarea, checkbox đều Controlled (liên kết cứng value = formData.xyz + onChange Handler).
+ * 
+ * 9. Lifting state up:
+ *    - Đẩy config Settings thông tin cấu hình lên API Thunk (`updateSettings`).
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) Component mount -> dispatch `fetchSettings` API.
+ *    - (2) Nhận dữ liệu `settings` từ Server -> trigger useEffect số 2 -> fill data đè lên local `formData` state ban đầu để hiện ra các input.
+ *    - (3) User Gõ / Cập nhật form -> Thay đổi data Form local React Component.
+ *    - (4) Bấm submit "Lưu thay đổi" -> trigger `handleSave`. Dispatch `updateSettings` gửi JS Object JSON lên Server Mongoose. Toast Báo Done.
+ * ============================================================================
+ */
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';

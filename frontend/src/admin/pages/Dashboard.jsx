@@ -1,3 +1,47 @@
+/**
+ * ============================================================================
+ * COMPONENT: Dashboard
+ * ============================================================================
+ * 1. Component là gì: 
+ *    - Trang chủ Bảng điều khiển (Dashboard) của Admin, hiển thị các thống kê tổng quan (Doanh thu, Đơn hàng, Người dùng) và danh sách Đơn hàng mới nhất.
+ * 
+ * 2. Props: 
+ *    - Không Props. Nhận data từ Store Redux.
+ * 
+ * 3. State:
+ *    - Global State (useSelector): 
+ *      + `user`, `isAuthenticated` từ userSlice (Để check Role Admin).
+ *      + `stats` (Tổng quan 4 card Thống kê), `recentOrders` (Mảng 5 đơn hàng gần nhất), `loading`, `error` từ adminSlice.
+ * 
+ * 4. Render lại khi nào:
+ *    - Khi lấy xong dữ liệu API Thống kê và Redux Store cập nhật các state `stats`, `recentOrders`, `loading`.
+ * 
+ * 5. Event handling:
+ *    - `useEffect` trigger Call API khi vào trang.
+ *    - Catch `error` hiển thị Toast popup.
+ * 
+ * 6. Conditional rendering:
+ *    - Chặn quyền: Dùng `Navigate` đá văng về `/login` nếu ko Auth, đá về `/` nếu Role khác Admin.
+ *    - Rendering giao diện Loading Spinner khi fetch dữ liệu chậm `if (loading)`.
+ *    - Render List card thống kê `if (stats)` có tồn tại.
+ *    - Bảng danh sách đơn hàng `recentOrders.length > 0` hiển thị Bảng, ngược lại hiển thị Text Trống.
+ * 
+ * 7. List rendering:
+ *    - Map List mảng `recentOrders.map` đổ ra từng dòng `<tr>` cho Table Đơn hàng gần đây.
+ * 
+ * 8. Controlled input:
+ *    - Component thuần View tĩnh, không có Input form.
+ * 
+ * 9. Lifting state up:
+ *    - Fetch API qua Action Thunk của Redux: `fetchDashboardStats` và `fetchRecentOrders`. Store tự lo việc lưu State.
+ * 
+ * 10. Luồng hoạt động:
+ *    - (1) Router điều hướng vào Dashboard, Render vòng 1 -> Kiểm tra Authenticate, không phải Admin thì Redirect.
+ *    - (2) Dispatch 2 Action gọi 2 API (lấy data Thống kê, lấy 5 đơn hàng mới nhất). Component ở trạng thái Loading.
+ *    - (3) API trả về thành công -> Store Redux lưu data vào thẻ `admin` reducer.
+ *    - (4) Dashboard nhận trigger State re-render giao diện các thông số tổng (`stats`) và bóc mảng array (`recentOrders`) rải ra Table. 
+ * ============================================================================
+ */
 import React, { useEffect } from 'react';
 import { NavLink, Navigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
