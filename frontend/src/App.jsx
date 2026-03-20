@@ -37,21 +37,24 @@
  */
 
 import React, { useEffect } from 'react'
-import Home from './Pages/Home.jsx'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+
+import Home from './Pages/Home.jsx'
 import ProductDetails from './Pages/ProductDetails.jsx'
 import Products from './Pages/Products.jsx'
 import Register from './User/Register'
 import Login from './User/Login'
-import { useDispatch, useSelector } from 'react-redux'
-import { loaderUser } from './features/user/userSlice'
-import UserDashboard from './User/UserDashboard'
+import LoginSuccess from './User/LoginSuccess'
 import Profile from './User/Profile'
 import ProtectedRoute from './components/ProtectedRoute'
 import UpdateProfile from './User/UpdateProfile'
 import UpdatePassword from './User/UpdatePassword'
 import ForgotPassword from './User/ForgotPassword'
 import ResetPassword from './User/ResetPassword'
+import { loaderUser } from './features/user/userSlice'
+import UserDashboard from './User/UserDashboard'
+
 import Cart from './Cart/Cart'
 import Shipping from './Cart/Shipping'
 import OrderConfirm from './Cart/OrderConfirm'
@@ -70,19 +73,14 @@ import OrdersManagement from './admin/pages/OrdersManagement';
 import UsersManagement from './admin/pages/UsersManagement';
 import Settings from './admin/pages/Settings';
 
-
-
 function App() {
-
   const { isAuthenticated, user } = useSelector(state => state.user)
-
   const dispatch = useDispatch();
 
   useEffect(() => {
     if (!isAuthenticated) {
       dispatch(loaderUser());
     }
-
   }, [dispatch, isAuthenticated]);
 
   return (
@@ -94,6 +92,8 @@ function App() {
         <Route path="/products/:keyword" element={<Products />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/login/success" element={<LoginSuccess />} />
+        
         <Route path="/profile"
           element={<ProtectedRoute element={<Profile />} />}
         />
@@ -104,8 +104,8 @@ function App() {
           element={<ProtectedRoute element={<UpdatePassword />} />}
         />
         <Route path="/password/forgot" element={<ForgotPassword />} />
-        {/* <Route path ="/reset/:token" element={<ResetPassword />} /> */}
         <Route path="/password/reset/:token" element={<ResetPassword />} />
+        
         <Route path="/cart" element={<Cart />} />
         <Route path="/shipping"
           element={<ProtectedRoute element={<Shipping />} />}
@@ -124,7 +124,6 @@ function App() {
           path="/order/:id"
           element={<ProtectedRoute element={<OrderDetails />} />}
         />
-
         <Route
           path="/order/success"
           element={<ProtectedRoute element={<OrderSuccess />} />}
@@ -138,17 +137,14 @@ function App() {
 
         <Route path="/vouchers" element={<ProtectedRoute element={<Vouchers />} />} />
 
-        {/* Admin Routes */}
-        <Route path="/admin/dashboard" element={<Dashboard />} />
-
         {/* Admin Routes với Layout */}
         <Route path="/admin" element={<AdminLayout />}>
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="products" element={<ProductsManagement />} />
           <Route path="orders" element={<OrdersManagement />} />
           <Route path="users" element={<UsersManagement />} />
           <Route path="settings" element={<Settings />} />
         </Route>
-
       </Routes>
 
       {isAuthenticated && <UserDashboard user={user} />}

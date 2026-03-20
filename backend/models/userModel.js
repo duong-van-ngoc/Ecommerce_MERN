@@ -37,6 +37,16 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: "user"
     },
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
+    facebookId: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
     resetPasswordToken: String, 
     resetPasswordExpire: Date // thời gian hết hạn token
 },{timestamps:true})

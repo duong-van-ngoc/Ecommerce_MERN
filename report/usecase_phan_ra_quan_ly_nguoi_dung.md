@@ -79,3 +79,19 @@ SaveRole --> System
 ### 3. Các đặc điểm bảo mật
 - **Admin không thể tự xóa chính mình**: Để tránh mất quyền quản trị cao nhất của hệ thống.
 - **Xác thực JWT**: Mọi hành động Quản trị đều được kiểm tra Token và `role: "admin"` tại Middleware.
+
+---
+
+## Phân rã Use Case: Đăng nhập
+
+### Bảng 2.1: Mô tả usecase đăng nhập
+
+| Thuộc tính | Mô tả |
+| :--- | :--- |
+| **Tác nhânTác nhân** | Người dùng |
+| **Mô tả** | Người dùng có thể đăng nhập vào hệ thống bằng hai cách:<br>1. Đăng nhập bằng cách nhập thông tin tài khoản (email/mật khẩu).<br>2. Đăng nhập qua nhà cung cấp danh tính (Google/Facebook). |
+| **Tiền điều kiện** | - Hệ thống hoạt động bình thường.<br>- Người dùng đã có tài khoản hợp lệ.<br>- Dịch vụ bên thứ ba (Google/Facebook) đã sẵn sàng. |
+| **Hậu điều kiện** | - Tạo phiên đăng nhập hợp lệ.<br>- Điều hướng tới trang chủ. |
+| **Kịch bản** | **Trường hợp 1: Đăng nhập bằng cách nhập thông tin tài khoản**<br>1. Người dùng mở màn hình Đăng nhập.<br>2. Hệ thống hiển thị form đăng nhập (email, mật khẩu).<br>3. Người dùng nhập thông tin, sau đó bấm nút “Đăng nhập”.<br>4. Hệ thống kiểm tra thông tin.<br>5. Đăng nhập thành công và chuyển hướng đến trang chủ.<br>6. Kết thúc usecase.<br><br>**Trường hợp 2: Đăng nhập bằng tài khoản Google/Facebook**<br>1. Người dùng lựa chọn “Đăng nhập với tài khoản …”.<br>2. Hệ thống chuyển đến màn hình xác thực của nhà cung cấp.<br>3. Người dùng lựa chọn và xác thực.<br>4. Hệ thống nhận token, tạo hoặc ghép tài khoản với hồ sơ nội bộ.<br>5. Đăng nhập thành công và chuyển hướng đến trang chủ.<br>6. Kết thúc usecase. |
+| **Kịch bản thay thế và ngoại lệ** | **Trường hợp 1: Đăng nhập bằng cách nhập thông tin tài khoản**<br>- *Nếu nhập sai thông tin*: Hệ thống hiển thị thông báo “Đăng nhập thất bại, vui lòng kiểm tra tài khoản và mật khẩu”. Người dùng quay lại bước nhập thông tin.<br>- *Nếu thiếu trường thông tin*: Hệ thống hiển thị thông báo lỗi “Email hoặc mật khẩu không hợp lệ”. Người dùng quay lại bước nhập thông tin.<br><br>**Trường hợp 2: Đăng nhập bằng tài khoản Google/Facebook**<br>- *Nếu liên kết tài khoản thất bại*: Hệ thống báo lỗi. Quay lại bước chọn phương thức đăng nhập. |
+
