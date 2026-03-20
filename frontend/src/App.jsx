@@ -53,6 +53,7 @@ import UpdatePassword from './User/UpdatePassword'
 import ForgotPassword from './User/ForgotPassword'
 import ResetPassword from './User/ResetPassword'
 import { loaderUser } from './features/user/userSlice'
+import { syncCartWithUser } from './features/cart/cartSlice'
 import UserDashboard from './User/UserDashboard'
 
 import Cart from './Cart/Cart'
@@ -82,6 +83,12 @@ function App() {
       dispatch(loaderUser());
     }
   }, [dispatch, isAuthenticated]);
+
+  // Đồng bộ giỏ hàng theo User ID
+  useEffect(() => {
+    const userId = user ? user._id : null;
+    dispatch(syncCartWithUser(userId));
+  }, [dispatch, user]);
 
   return (
     <Router>
