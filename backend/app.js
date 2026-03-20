@@ -12,8 +12,13 @@ import address from './routes/addressRoute.js';
 import errorHandleMiddleware from './middleware/error.js';
 import cookieParser from 'cookie-parser';
 import fileUpload from 'express-fileupload';
+import passport from 'passport';
+import { configurePassport } from './config/passportConfig.js';
 
 const app = express();
+
+configurePassport();
+app.use(passport.initialize());
 
 app.set('query parser', 'extended');
 
