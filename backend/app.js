@@ -14,12 +14,12 @@ import cookieParser from 'cookie-parser';
 import fileUpload from 'express-fileupload';
 import passport from 'passport';
 import { configurePassport } from './config/passportConfig.js';
-
 const app = express();
 
 configurePassport();
 app.use(passport.initialize());
 
+app.set('trust proxy', 1);
 app.set('query parser', 'extended');
 
 const allowedOrigins = [
