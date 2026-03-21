@@ -37,7 +37,13 @@
  */
 import axios from "axios";
 
-const API_URL = "/api/v1/address";
+const rawApiUrl = import.meta.env.VITE_API_URL?.trim().replace(/\/$/, "");
+const normalizedApiUrl = rawApiUrl?.endsWith("/api/v1")
+  ? rawApiUrl.slice(0, -7)
+  : rawApiUrl;
+
+const API_BASE_URL = normalizedApiUrl || "";
+const API_URL = `${API_BASE_URL}/api/v1/address`;
 
 const http = axios.create({
   baseURL: API_URL,
