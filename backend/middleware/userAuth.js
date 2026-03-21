@@ -5,7 +5,12 @@ import HandleError from "../utils/handleError.js";
 
 
 export const verifyUserAuth = handleAsyncError(async (req, res, next) => {
-    const { token } = req.cookies;
+    let token = req.cookies.token;
+
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+        token = req.headers.authorization.split(" ")[1];
+    }
+
     if (!token) {
         return next(new HandleError("Xác thực thất bại! Vui lòng đăng nhập để tiếp tục", 401));
     }

@@ -36,16 +36,19 @@
  * ============================================================================
  */
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import axios from 'axios'
+import axios from '../../api/http.js'
 
 const getErrorPayload = (error, fallbackMessage) => ({
     message: error.response?.data?.message || fallbackMessage,
     statusCode: error.response?.status || 500
 })
 
-const persistAuthState = (user, isAuthenticated) => {
+const persistAuthState = (user, isAuthenticated, token) => {
     localStorage.setItem('user', JSON.stringify(user))
     localStorage.setItem('isAuthenticated', JSON.stringify(isAuthenticated))
+    if (token) {
+        localStorage.setItem('token', token)
+    }
 }
 
 const clearAuthState = () => {
@@ -194,7 +197,7 @@ const userSlice = createSlice({
                 state.success = action.payload?.success || false
                 state.user = action.payload?.user || null
                 state.isAuthenticated = Boolean(action.payload?.user)
-                persistAuthState(state.user, state.isAuthenticated)
+                persistAuthState(state.user, state.isAuthenticated, action.payload?.token)
             })
             .addCase(register.rejected, (state, action) => {
                 state.loading = false
@@ -213,7 +216,7 @@ const userSlice = createSlice({
                 state.success = action.payload?.success || false
                 state.user = action.payload?.user || null
                 state.isAuthenticated = Boolean(action.payload?.user)
-                persistAuthState(state.user, state.isAuthenticated)
+                persistAuthState(state.user, state.isAuthenticated, action.payload?.token)
             })
             .addCase(login.rejected, (state, action) => {
                 state.loading = false

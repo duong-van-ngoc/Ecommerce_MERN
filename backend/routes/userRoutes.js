@@ -21,12 +21,12 @@ router.get("/auth/google/callback", passport.authenticate("google", { session: f
     const isProduction = process.env.NODE_ENV === "production";
 
     const options = {
-        expires: new Date(Date.now() + Number(process.env.EXPIRE_COOKIE) * 24 * 60 * 60 * 1000),
+        expires: new Date(Date.now() + Number(process.env.EXPIRE_COOKIE || 5) * 24 * 60 * 60 * 1000),
         httpOnly: true,
         secure: isProduction,
         sameSite: isProduction ? "none" : "lax"
     };
-    res.status(200).cookie("token", token, options).redirect(`${process.env.FRONTEND_URL}/login/success`);
+    res.status(200).cookie("token", token, options).redirect(`${process.env.FRONTEND_URL}/login/success?token=${token}`);
 });
 
 // Facebook OAuth
@@ -39,12 +39,12 @@ router.get("/auth/facebook/callback", passport.authenticate("facebook", { sessio
     const isProduction = process.env.NODE_ENV === "production";
 
     const options = {
-        expires: new Date(Date.now() + Number(process.env.EXPIRE_COOKIE) * 24 * 60 * 60 * 1000),
+        expires: new Date(Date.now() + Number(process.env.EXPIRE_COOKIE || 5) * 24 * 60 * 60 * 1000),
         httpOnly: true,
         secure: isProduction,
         sameSite: isProduction ? "none" : "lax"
     };
-    res.status(200).cookie("token", token, options).redirect(`${process.env.FRONTEND_URL}/login/success`);
+    res.status(200).cookie("token", token, options).redirect(`${process.env.FRONTEND_URL}/login/success?token=${token}`);
 });
 
 

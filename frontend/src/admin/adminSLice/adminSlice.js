@@ -36,7 +36,7 @@
  * ============================================================================
  */
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axios from '../../api/http.js';
 
 /**
  * Async Thunk - Lấy thống kê dashboard

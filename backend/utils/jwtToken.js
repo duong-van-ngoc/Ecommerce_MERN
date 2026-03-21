@@ -3,7 +3,7 @@ export const sendToken = (user, statusCode, res) => {
     const isProduction = process.env.NODE_ENV === "production";
 
     const options = {
-        expires: new Date(Date.now() + process.env.EXPIRE_COOKIE * 24 * 60 * 60 * 1000),
+        expires: new Date(Date.now() + Number(process.env.EXPIRE_COOKIE || 5) * 24 * 60 * 60 * 1000),
         httpOnly: true,
         secure: isProduction,
         sameSite: isProduction ? "none" : "lax"
