@@ -18,11 +18,13 @@ router.get("/auth/google/callback", passport.authenticate("google", { session: f
     if (!user) return res.redirect(`${process.env.FRONTEND_URL}/login`);
 
     const token = user.getJWTToken();
+    const isProduction = process.env.NODE_ENV === "production";
+
     const options = {
         expires: new Date(Date.now() + Number(process.env.EXPIRE_COOKIE) * 24 * 60 * 60 * 1000),
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax"
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax"
     };
     res.status(200).cookie("token", token, options).redirect(`${process.env.FRONTEND_URL}/login/success`);
 });
@@ -34,11 +36,13 @@ router.get("/auth/facebook/callback", passport.authenticate("facebook", { sessio
     if (!user) return res.redirect(`${process.env.FRONTEND_URL}/login`);
 
     const token = user.getJWTToken();
+    const isProduction = process.env.NODE_ENV === "production";
+
     const options = {
         expires: new Date(Date.now() + Number(process.env.EXPIRE_COOKIE) * 24 * 60 * 60 * 1000),
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax"
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax"
     };
     res.status(200).cookie("token", token, options).redirect(`${process.env.FRONTEND_URL}/login/success`);
 });
