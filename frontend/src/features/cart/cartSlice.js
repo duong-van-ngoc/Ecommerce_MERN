@@ -20,7 +20,7 @@
  * ============================================================================
  */
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
+import axios from "../../api/http.js";
 
 // Hàm hỗ trợ lấy Key LocalStorage động dựa trên ID người dùng
 // Điều này giúp tách biệt dữ liệu giữa các tài khoản khác nhau trên cùng 1 trình duyệt
