@@ -12,7 +12,7 @@
   --color-background: #FAFAFA;
   --color-surface: #FFFFFF;
   --color-text: #1F1F1F;
-  --color-primary: #D4AF37;
+  --color-primary: #ee5a6f;
   --color-secondary: #6B7280;
 }
 
@@ -373,7 +373,7 @@
 }
 
 .preset-chip.active {
-  background-color: #FEF3C7;
+  background-color: #fff0f2;
   border-color: var(--color-primary);
   color: var(--color-primary);
   font-weight: 500;
@@ -532,7 +532,7 @@
   border-radius: 20px;
   font-size: 13px;
   font-weight: 500;
-  background-color: #FEF3C7;
+  background-color: #fff0f2;
   border: 1px solid var(--color-primary);
   color: var(--color-text);
   animation: chipSlideIn 0.25s ease-out;

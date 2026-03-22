@@ -144,7 +144,7 @@ function App() {
 
         <Route path="/vouchers" element={<ProtectedRoute element={<Vouchers />} />} />
 
-        {/* Admin Routes với Layout */}
+        {/* Admin Routes với Layout Premium */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="products" element={<ProductsManagement />} />
