@@ -61,7 +61,7 @@ import StockManagement from '../components/StockManagement';
  */
 function ProductsManagement() {
     const dispatch = useDispatch();
-    const { products, loading, error } = useSelector(state => state.admin);
+    const { products, loading, error, globalSearchQuery } = useSelector(state => state.admin);
     const [showModal, setShowModal] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
@@ -117,13 +117,32 @@ function ProductsManagement() {
         );
     }
 
+    // Filter products based on global search query
+    const filteredProducts = products.filter(product => {
+        if (!globalSearchQuery) return true;
+        const searchLower = globalSearchQuery.toLowerCase();
+        
+        // Cố gắng lấy chuỗi danh mục an toàn
+        let categoryStr = '';
+        if (typeof product.category === 'string') {
+            categoryStr = product.category;
+        } else if (product.category && typeof product.category === 'object') {
+            categoryStr = product.category.level1 || '';
+        }
+
+        return (
+            (product.name && product.name.toLowerCase().includes(searchLower)) ||
+            categoryStr.toLowerCase().includes(searchLower)
+        );
+    });
+
     return (
         <div className="products-page-content">
             {/* Header */}
             <div className="products-header">
                 <div>
                     <h2 className="products-page-title">Quản Lý Sản Phẩm</h2>
-                    <p className="products-subtitle">Tổng cộng {products?.length || 0} sản phẩm</p>
+                    <p className="products-subtitle">Hiển thị {filteredProducts?.length || 0} / Tổng số {products?.length || 0} sản phẩm</p>
                 </div>
                 <div className="products-header-actions">
                     <button className="btn-import-product" onClick={() => setShowImportModal(true)}>
@@ -169,15 +188,25 @@ function ProductsManagement() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {products && products.length > 0 ? (
-                                    products.map((product) => (
+                                {filteredProducts && filteredProducts.length > 0 ? (
+                                    filteredProducts.map((product) => (
                                         <tr key={product._id}>
                                             <td>
-                                                <img
-                                                    src={product.images && product.images[0]?.url}
-                                                    alt={product.name}
-                                                    className="product-thumbnail"
-                                                />
+                                                {(() => {
+                                                    const imgUrl = product.images?.[0]?.url;
+                                                    const placeholder = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><rect fill="%23f4f4f2" width="60" height="60" rx="8"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%23a8a29e" font-size="12" font-family="sans-serif">No img</text></svg>';
+                                                    return (
+                                                        <img
+                                                            src={imgUrl && imgUrl.startsWith('http') ? imgUrl : placeholder}
+                                                            alt={product.name}
+                                                            className="product-thumbnail"
+                                                            onError={(e) => {
+                                                                e.target.onerror = null;
+                                                                e.target.src = placeholder;
+                                                            }}
+                                                        />
+                                                    );
+                                                })()}
                                             </td>
                                             <td className="product-name">{product.name}</td>
                                             <td className="product-price">{Number(product.price).toLocaleString('vi-VN')}₫</td>
@@ -215,7 +244,9 @@ function ProductsManagement() {
                                 ) : (
                                     <tr>
                                         <td colSpan="7" className="no-products">
-                                            Chưa có sản phẩm nào
+                                            {globalSearchQuery 
+                                                ? `Không tìm thấy sản phẩm nào khớp với "${globalSearchQuery}"` 
+                                                : "Chưa có sản phẩm nào"}
                                         </td>
                                     </tr>
                                 )}

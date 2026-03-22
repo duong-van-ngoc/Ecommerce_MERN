@@ -433,7 +433,8 @@ const adminSlice = createSlice({
         orders: [],
         users: [],
         settings: null,
-        searchResults: [],    // Kết quả tìm kiếm sản phẩm
+        globalSearchQuery: '', // Từ khóa tìm kiếm toàn cục từ Header
+        searchResults: [],    // Kết quả tìm kiếm sản phẩm API
         importResult: null,   // Kết quả import
         loading: false,
         error: null
@@ -442,6 +443,9 @@ const adminSlice = createSlice({
         // Có thể thêm reducers khác nếu cần
         clearError: (state) => {
             state.error = null;
+        },
+        setGlobalSearchQuery: (state, action) => {
+            state.globalSearchQuery = action.payload;
         }
     },
     extraReducers: (builder) => {
@@ -782,5 +786,5 @@ const adminSlice = createSlice({
     }
 });
 
-export const { clearError } = adminSlice.actions;
+export const { clearError, setGlobalSearchQuery } = adminSlice.actions;
 export default adminSlice.reducer;

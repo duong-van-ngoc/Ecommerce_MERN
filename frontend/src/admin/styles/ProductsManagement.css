@@ -23,7 +23,7 @@
 
 .btn-add-product {
     padding: 12px 24px;
-    background: var(--admin-primary);
+    background: rgb(0, 74, 235);
     color: white;
     border: none;
     border-radius: 8px;

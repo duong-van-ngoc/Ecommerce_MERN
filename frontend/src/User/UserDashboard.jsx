@@ -40,7 +40,7 @@
  */
 import React, { useState } from 'react'
 import '../UserStyles/UserDashboard.css'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { logout, removeErrors } from '../features/user/userSlice'
 import { toast } from 'react-toastify'
@@ -50,8 +50,14 @@ function UserDashboard({ user }) {
     const { cartItems } = useSelector(state => state.cart)
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const location = useLocation();
 
+    // ALL HOOKS must be called BEFORE any conditional return (Rules of Hooks)
     const [menuVisible, setMenuVisible] = useState(false);
+
+    // Guard: hide UserDashboard on admin pages (AFTER all hooks)
+    if (location.pathname.startsWith('/admin')) return null;
+
     function toggleMennu() {
         setMenuVisible(!menuVisible);
     }
