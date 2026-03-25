@@ -55,6 +55,7 @@ import Footer from '../components/Footer'
 import { useSelector, useDispatch } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
 import { addItemsToCart, removeItemFromCart, removeMessage, removeErrors, removeOrderedItems } from '../features/cart/cartSlice'
+import { formatVND } from '../utils/formatCurrency'
 import { toast } from 'react-toastify'
 
 function Cart() {
@@ -102,7 +103,6 @@ function Cart() {
   const shippingCharges = subtotal >= 500000 ? 0 : 30000
   const total = subtotal - discount + shippingCharges
 
-  const formatPrice = (price) => '₫' + price.toLocaleString('vi-VN')
 
   const toggleSelectAll = (checked) => {
     const newSelected = {}
@@ -247,8 +247,8 @@ function Cart() {
                           </div>
 
                           <div className="item-price-row">
-                            <span className="current-price">{formatPrice(item.price)}</span>
-                            <span className="original-price">{formatPrice(mockOriginalPrice)}</span>
+                            <span className="current-price">{formatVND(item.price)}</span>
+                            <span className="original-price">{formatVND(mockOriginalPrice)}</span>
                             <span className="discount-badge">-{discountPercent}%</span>
                           </div>
                         </div>
@@ -285,18 +285,18 @@ function Cart() {
 
                 <div className="summary-row">
                   <span>Tạm tính ({selectedCartItems.length} sản phẩm)</span>
-                  <span className="summary-value">{formatPrice(subtotal)}</span>
+                  <span className="summary-value">{formatVND(subtotal)}</span>
                 </div>
 
                 <div className="summary-row">
                   <span>Giảm giá</span>
-                  <span className="summary-value discount">-{formatPrice(discount)}</span>
+                  <span className="summary-value discount">-{formatVND(discount)}</span>
                 </div>
 
                 <div className="summary-row">
                   <span>Phí vận chuyển</span>
                   <span className={`summary-value ${shippingCharges === 0 ? 'free' : ''}`}>
-                    {shippingCharges === 0 ? 'Miễn phí' : formatPrice(shippingCharges)}
+                    {shippingCharges === 0 ? 'Miễn phí' : formatVND(shippingCharges)}
                   </span>
                 </div>
 
@@ -307,7 +307,7 @@ function Cart() {
                 <div className="summary-total">
                   <span>Tổng tiền</span>
                   <div className="total-value-wrapper">
-                    <span className="total-value">{formatPrice(total)}</span>
+                    <span className="total-value">{formatVND(total)}</span>
                     <span className="vat-note">(Đã bao gồm VAT)</span>
                   </div>
                 </div>
@@ -348,7 +348,7 @@ function Cart() {
           <div className="mobile-checkout-content">
             <div className="mobile-checkout-info">
               <span className="mobile-label">Tổng thanh toán</span>
-              <span className="mobile-total">{formatPrice(total)}</span>
+              <span className="mobile-total">{formatVND(total)}</span>
             </div>
             <button className="mobile-checkout-btn" onClick={checkoutHandler} disabled={selectedCartItems.length === 0}>
               ĐẶT HÀNG

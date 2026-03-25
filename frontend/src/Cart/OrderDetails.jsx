@@ -39,7 +39,9 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, Link } from 'react-router-dom';
 import { getOrderDetails } from '../features/orders/orderSlice';
-import '../OrderStyles/OrderDetails.css'; // Make sure this CSS file is present
+import '../OrderStyles/OrderDetails.css'; 
+import formatVND from '../utils/formatCurrency.js';
+import html2pdf from 'html2pdf.js';
 
 const OrderDetails = () => {
   const { id } = useParams();
@@ -71,6 +73,26 @@ const OrderDetails = () => {
     year: 'numeric'
   });
 
+  const exportToPDF = () => {
+    const element = document.querySelector('main.container');
+    const opt = {
+      margin:       [10, 10],
+      filename:     `Hoa_Don_${orderDetails._id}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    // Ẩn các phần no-print
+    const noPrintElements = element.querySelectorAll('.no-print');
+    noPrintElements.forEach(el => el.style.display = 'none');
+
+    html2pdf().set(opt).from(element).save().then(() => {
+      // Hiện lại sau khi xuất xong
+      noPrintElements.forEach(el => el.style.display = '');
+    });
+  };
+
   return (
     <main className="container mx-auto px-4 py-8 max-w-5xl">
       {/* NavigationHeader */}
@@ -82,11 +104,9 @@ const OrderDetails = () => {
           Quay lại danh sách đơn hàng
         </Link>
         {user && user.role === 'admin' && (
-          <button className="inline-flex items-center px-4 py-2 bg-slate-800 text-white text-sm font-semibold rounded-lg hover-btn-gradient transition-all shadow-sm" onClick={() => window.print()}>
-            <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-            </svg>
-            In Đơn Hàng
+          <button className="inline-flex items-center px-4 py-2 bg-slate-800 text-white text-sm font-semibold rounded-lg hover-btn-gradient transition-all shadow-sm" onClick={exportToPDF}>
+            <span className="material-symbols-outlined mr-2">picture_as_pdf</span>
+            Xuất PDF (Hóa đơn)
           </button>
         )}
       </nav>
@@ -175,7 +195,7 @@ const OrderDetails = () => {
                 <div>
                   <p className="text-sm font-semibold text-slate-800">Giao hàng tiêu chuẩn</p>
                   <p className="text-xs text-slate-500">
-                    Phí vận chuyển: {orderDetails.shippingPrice ? `${orderDetails.shippingPrice.toLocaleString('vi-VN')} VNĐ` : 'Miễn phí'}
+                    Phí vận chuyển: {orderDetails.shippingPrice ? formatVND(orderDetails.shippingPrice) : 'Miễn phí'}
                   </p>
                 </div>
               </div>
@@ -221,11 +241,11 @@ const OrderDetails = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center text-sm font-medium text-slate-700">
-                    {item.price.toLocaleString('vi-VN')} VNĐ
+                    {formatVND(item.price)}
                   </td>
                   <td className="px-6 py-4 text-center text-sm font-medium text-slate-700">{item.quantity}</td>
                   <td className="px-6 py-4 text-right text-sm font-bold text-slate-900">
-                    {(item.price * item.quantity).toLocaleString('vi-VN')} VNĐ
+                    {formatVND(item.price * item.quantity)}
                   </td>
                 </tr>
               ))}
@@ -241,32 +261,30 @@ const OrderDetails = () => {
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-slate-500">Tạm tính</span>
-              <span className="font-medium text-slate-800">{orderDetails.itemPrice?.toLocaleString('vi-VN')} VNĐ</span>
+              <span className="font-medium text-slate-800">{formatVND(orderDetails.itemPrice)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-slate-500">Phí vận chuyển</span>
-              <span className="font-medium text-slate-800">{orderDetails.shippingPrice?.toLocaleString('vi-VN')} VNĐ</span>
+              <span className="font-medium text-slate-800">{formatVND(orderDetails.shippingPrice)}</span>
             </div>
             {orderDetails.taxPrice !== undefined && orderDetails.taxPrice > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">Thuế (Tax)</span>
-                <span className="font-medium text-slate-800">{orderDetails.taxPrice?.toLocaleString('vi-VN')} VNĐ</span>
+                <span className="font-medium text-slate-800">{formatVND(orderDetails.taxPrice)}</span>
               </div>
             )}
             <div className="pt-3 border-t border-slate-100 flex justify-between items-baseline">
               <span className="text-base font-bold text-slate-900">Tổng tiền</span>
               <span className="text-xl font-extrabold text-blue-600">
-                {orderDetails.totalPrice?.toLocaleString('vi-VN')} VNĐ
+                {formatVND(orderDetails.totalPrice)}
               </span>
             </div>
           </div>
           {/* Action Button */}
           {user && user.role === 'admin' && (
-            <button className="no-print mt-6 w-full py-3 bg-blue-600 text-white rounded-lg font-bold hover-btn-gradient transition-colors shadow-md flex items-center justify-center" onClick={() => window.print()}>
-              <svg className="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-              </svg>
-              In biên nhận
+            <button className="no-print mt-6 w-full py-3 bg-blue-600 text-white rounded-lg font-bold hover-btn-gradient transition-colors shadow-md flex items-center justify-center" onClick={exportToPDF}>
+              <span className="material-symbols-outlined mr-2">picture_as_pdf</span>
+              Xuất PDF (Biên nhận)
             </button>
           )}
         </div>

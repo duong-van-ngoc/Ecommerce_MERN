@@ -66,6 +66,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getProductDetails, removeErrors } from '../features/products/productSlice'
 import { toast } from 'react-toastify'
 import { addItemsToCart, removeMessage } from '../features/cart/cartSlice';
+import { formatVND } from '../utils/formatCurrency';
 
 
 function ProductDetails() {
@@ -244,10 +245,6 @@ function ProductDetails() {
     }
   }
 
-  const formatPrice = (price) => {
-    if (price === undefined || price === null) return '0 ₫';
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(price));
-  }
 
   // Lấy ảnh sản phẩm hoặc sử dụng ảnh dự phòng
   const productImages = product?.images?.length > 0
@@ -317,10 +314,10 @@ function ProductDetails() {
 
               {/* Price */}
               <div className="price-section">
-                <span className="current-price">{formatPrice(product.price)}</span>
+                <span className="current-price">{formatVND(product.price)}</span>
                 {discountPercent > 0 && (
                   <>
-                    <span className="original-price">{formatPrice(originalPrice)}</span>
+                    <span className="original-price">{formatVND(originalPrice)}</span>
                     <span className="discount-badge">-{discountPercent}%</span>
                   </>
                 )}
@@ -607,9 +604,9 @@ function ProductDetails() {
                   <div className="related-card-info">
                     <div className="related-card-name">{item.name}</div>
                     <div className="related-card-price">
-                      <span className="current">{formatPrice(item.price)}</span>
+                      <span className="current">{formatVND(item.price)}</span>
                       {item.originalPrice && (
-                        <span className="original">{formatPrice(item.originalPrice)}</span>
+                        <span className="original">{formatVND(item.originalPrice)}</span>
                       )}
                     </div>
                   </div>

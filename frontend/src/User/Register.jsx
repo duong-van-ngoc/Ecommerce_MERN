@@ -129,8 +129,8 @@ function Register() {
         <section className="register-card">
             <div className="register-card-body">
                 <div className="register-header">
-                    <h1>Create your account</h1>
-                    <p>Join our community today</p>
+                    <h1>Tạo tài khoản</h1>
+                    <p>Tham gia cộng đồng của chúng tôi ngay hôm nay</p>
                 </div>
 
                 <form className="register-form" onSubmit={registerSubmit} encType='multipart/form-data'>
@@ -166,12 +166,12 @@ function Register() {
                         </label>
 
                         <div className="register-avatar-copy">
-                            <p>Upload Profile Picture</p>
+                            <p>Tải ảnh đại diện</p>
                         </div>
                     </div>
 
                     <div className="register-field">
-                        <label htmlFor="register-name">Username</label>
+                        <label htmlFor="register-name">Tên người dùng</label>
                         <div className="register-input-wrap">
                             <span className="register-input-icon" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -182,7 +182,7 @@ function Register() {
                                 id="register-name"
                                 type="text"
                                 name="name"
-                                placeholder="Enter your username"
+                                placeholder="Nhập tên người dùng"
                                 value={name}
                                 onChange={registerDataChange}
                             />
@@ -209,7 +209,7 @@ function Register() {
                     </div>
 
                     <div className="register-field">
-                        <label htmlFor="register-password">Password</label>
+                        <label htmlFor="register-password">Mật khẩu</label>
                         <div className="register-input-wrap">
                             <span className="register-input-icon" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -220,7 +220,7 @@ function Register() {
                                 id="register-password"
                                 type={showPassword ? 'text' : 'password'}
                                 name="password"
-                                placeholder="Enter password"
+                                placeholder="Nhập mật khẩu"
                                 value={password}
                                 onChange={registerDataChange}
                             />
@@ -247,12 +247,12 @@ function Register() {
                     </div>
 
                     <button className="register-submit-btn hover-btn-gradient">
-                        {loading ? 'Registering...' : 'Register Now'}
+                        {loading ? 'Đang đăng ký...' : 'Đăng ký ngay'}
                     </button>
 
                     <p className="register-login-link">
-                        Already have an account?
-                        <Link to="/login" className="hover-link-slide">Log in</Link>
+                        Đã có tài khoản?
+                        <Link to="/login" className="hover-link-slide">Đăng nhập</Link>
                     </p>
                 </form>
             </div>

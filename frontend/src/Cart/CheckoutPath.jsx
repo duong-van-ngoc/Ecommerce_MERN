@@ -42,15 +42,15 @@ import { AccountBalance, LibraryAddCheck, LocalShipping } from '@mui/icons-mater
 function CheckoutPath({activePath}) {
     const path = [
         {
-            label: 'Shipping Details',
+            label: 'Thông tin giao hàng',
             icon: <LocalShipping />
         },
         {
-            label: 'Confirm Order',
+            label: 'Xác nhận đơn',
             icon: <LibraryAddCheck />
         },
         {
-            label: 'Payment',
+            label: 'Thanh toán',
             icon: <AccountBalance />
         }
     ]

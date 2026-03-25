@@ -50,6 +50,7 @@ import CheckoutPath from "./CheckoutPath";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import axios from "axios";
+import { formatVND } from "../utils/formatCurrency";
 
 function Payment() {
   const navigate = useNavigate();
@@ -157,7 +158,7 @@ function Payment() {
 
   return (
     <>
-      <PageTitle title="Payment" />
+      <PageTitle title="Thanh toán" />
       <Navbar />
       <CheckoutPath activePath={2} />
 
@@ -169,7 +170,7 @@ function Payment() {
         {error ? <p style={{ color: "red", marginTop: 10 }}>{error}</p> : null}
 
         <button className="payment-btn hover-btn-gradient" onClick={placeOrderCOD} disabled={loading}>
-          {loading ? "Đang tạo đơn..." : `Thanh toán khi nhận hàng (${displayTotal})`}
+          {loading ? "Đang tạo đơn..." : `Thanh toán khi nhận hàng (${formatVND(displayTotal)})`}
         </button>
       </div>
 

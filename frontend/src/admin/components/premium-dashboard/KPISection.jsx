@@ -1,4 +1,5 @@
 import React from 'react';
+import formatVND from '../../../utils/formatCurrency.js';
 
 export default function KPISection({ stats }) {
     if (!stats) return null;
@@ -23,7 +24,7 @@ export default function KPISection({ stats }) {
                 </div>
                 <div>
                     <span className="font-label text-xs uppercase tracking-widest opacity-80">Tổng Doanh Thu</span>
-                    <div className="font-headline text-6xl font-bold mt-1 tracking-tighter">${totalRev.toLocaleString()}</div>
+                    <div className="font-headline text-6xl font-bold mt-1 tracking-tighter">{formatVND(totalRev)}</div>
                 </div>
             </div>
             

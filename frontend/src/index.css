@@ -105,3 +105,32 @@ input:focus, select:focus {
 :root {
     --primary-premium: #702e36;
 }
+
+/* Print Optimization */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    body {
+        background-color: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    main {
+        margin-left: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    .dashboard-content {
+        padding: 0 !important;
+    }
+    
+    /* Ensure charts and colors are printed */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}

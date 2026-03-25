@@ -54,6 +54,7 @@ import { createOrder } from '../features/orders/orderSlice' // Import createOrde
 import OrderSuccess from './OrderSuccess' // Import popup component
 import { toast } from 'react-toastify' // Import toast
 import { removeOrderedItems } from '../features/cart/cartSlice'
+import { formatVND } from '../utils/formatCurrency'
 
 function OrderConfirm() {
   const dispatch = useDispatch() // Thêm dispatch hook
@@ -188,7 +189,6 @@ function OrderConfirm() {
     }
   }
 
-  const formatVND = (n) => Number(n || 0).toLocaleString('vi-VN') + ' đ'
 
   const getItemImage = (item) =>
     item?.image ||

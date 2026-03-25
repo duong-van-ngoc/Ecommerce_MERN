@@ -51,6 +51,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { fetchAllProducts, deleteProduct } from '../adminSLice/adminSlice';
+import { formatVND } from '../../utils/formatCurrency';
 import '../styles/ProductsManagement.css';
 import ProductFormModal from '../components/ProductFormModal';
 import ImportProductModal from '../components/ImportProductModal';
@@ -209,7 +210,7 @@ function ProductsManagement() {
                                                 })()}
                                             </td>
                                             <td className="product-name">{product.name}</td>
-                                            <td className="product-price">{Number(product.price).toLocaleString('vi-VN')}₫</td>
+                                            <td className="product-price">{formatVND(product.price)}</td>
                                             <td>{typeof product.category === 'object' ? product.category?.level1 : product.category}</td>
                                             <td>
                                                 <span className={`stock-badge ${product.stock < 10 ? 'low' : ''}`}>
