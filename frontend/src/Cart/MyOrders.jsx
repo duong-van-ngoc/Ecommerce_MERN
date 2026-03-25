@@ -41,6 +41,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getMyOrders } from "../features/orders/orderSlice";
 import { Link } from "react-router-dom";
+import { formatVND } from "../utils/formatCurrency";
 
 import PageTitle from "../components/PageTitle";
 import Navbar from "../components/Navbar";
@@ -114,7 +115,6 @@ function MyOrders() {
     return result;
   }, [orders, currentTab, searchQuery]);
 
-  const formatVND = (n) => new Intl.NumberFormat("vi-VN").format(n || 0);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -254,7 +254,7 @@ function MyOrders() {
                               <div className="product-info">
                                 <h3 className="product-name">{item.name}</h3>
                                 <p className="product-meta">Số lượng: {item.quantity}</p>
-                                <p className="product-price-inline">₫{formatVND(item.price)}</p>
+                                <p className="product-price-inline">{formatVND(item.price)}</p>
                               </div>
                             </div>
                           ))}
@@ -268,7 +268,7 @@ function MyOrders() {
                           <div className="footer-actions-row">
                             <div className="total-block">
                               <span className="total-label">Tổng tiền</span>
-                              <span className="total-price">₫{formatVND(order.totalPrice)}</span>
+                              <span className="total-price">{formatVND(order.totalPrice)}</span>
                             </div>
                             <div className="action-buttons">
                               <Link to={`/order/${order._id}`} className="btn-detail">Xem Chi Tiết</Link>

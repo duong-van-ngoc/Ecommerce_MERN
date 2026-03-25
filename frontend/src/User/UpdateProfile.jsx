@@ -160,39 +160,39 @@ function UpdateProfile() {
                                                     strokeLinejoin="round"
                                                 />
                                             </svg>
-                                            <span>Change Photo</span>
+                                            <span>Đổi ảnh</span>
                                         </div>
                                     </div>
                                 </label>
 
-                                <h1 className="update-profile-title">Update Profile</h1>
+                                <h1 className="update-profile-title">Cập nhật hồ sơ</h1>
 
                                 <div className="update-profile-field">
-                                    <label htmlFor="update-profile-name">Full Name</label>
+                                    <label htmlFor="update-profile-name">Họ và tên</label>
                                     <input
                                         id="update-profile-name"
                                         type="text"
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         name="name"
-                                        placeholder="e.g., Jane Doe"
+                                        placeholder="VD: Nguyễn Văn A"
                                     />
                                 </div>
 
                                 <div className="update-profile-field">
-                                    <label htmlFor="update-profile-email">Email Address</label>
+                                    <label htmlFor="update-profile-email">Địa chỉ Email</label>
                                     <input
                                         id="update-profile-email"
                                         type="text"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         name="email"
-                                        placeholder="e.g., jane.doe@example.com"
+                                        placeholder="VD: nguyenvana@gmail.com"
                                     />
                                 </div>
 
                                 <button className="update-profile-submit hover-btn-gradient" type="submit">
-                                    Update Profile
+                                    Cập nhật hồ sơ
                                 </button>
                             </form>
                         </section>

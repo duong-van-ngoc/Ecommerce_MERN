@@ -52,6 +52,7 @@ import React, { useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { importProducts } from '../adminSLice/adminSlice';
 import { toast } from 'react-toastify';
+import { formatVND } from '../../utils/formatCurrency';
 import * as XLSX from 'xlsx';
 import '../styles/ImportProductModal.css';
 
@@ -289,7 +290,7 @@ function ImportProductModal({ onClose, onImportSuccess }) {
                                                     )}
                                                 </td>
                                                 <td>{row.name || <em className="empty-cell">—</em>}</td>
-                                                <td>{row.price ? Number(row.price).toLocaleString('vi-VN') + '₫' : <em className="empty-cell">—</em>}</td>
+                                                <td>{row.price ? formatVND(row.price) : <em className="empty-cell">—</em>}</td>
                                                 <td>{row.stock ?? <em className="empty-cell">—</em>}</td>
                                                 <td>{row.category_level1 || row['Category Level 1'] || <em className="empty-cell">—</em>}</td>
                                                 <td>{row.category_level2 || row['Category Level 2'] || <em className="empty-cell">—</em>}</td>

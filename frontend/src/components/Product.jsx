@@ -46,6 +46,7 @@ import React, { useState } from 'react'
 import '../componentStyles/Product.css'
 import { Link } from 'react-router-dom'
 import Rating from './Rating'
+import { formatVND } from '../utils/formatCurrency'
 
 function Product({ product }) {
 
@@ -56,8 +57,6 @@ function Product({ product }) {
 
     }
 
-    // Format giá VND
-    const formatVND = (n) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n || 0);
 
     // Tính % giảm giá
     const discountPercent = product.originalPrice && product.originalPrice > product.price

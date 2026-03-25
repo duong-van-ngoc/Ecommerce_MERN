@@ -1,4 +1,5 @@
 import React from 'react';
+import formatVND from '../../../utils/formatCurrency.js';
 
 export default function OrdersTable({ orders }) {
     if (!orders || orders.length === 0) {
@@ -54,7 +55,7 @@ export default function OrdersTable({ orders }) {
                                         </div>
                                     </td>
                                     <td className="px-6 py-6 font-body text-sm text-stone-500">{dateStr}</td>
-                                    <td className="px-6 py-6 font-body text-sm font-bold">${Number(total).toLocaleString()}</td>
+                                    <td className="px-6 py-6 font-body text-sm font-bold">{formatVND(total)}</td>
                                     <td className="px-6 py-6">
                                         <span className={`inline-flex px-3 py-1 rounded-full text-[9px] font-label uppercase tracking-widest border ${statusColor}`}>
                                             {statusText}

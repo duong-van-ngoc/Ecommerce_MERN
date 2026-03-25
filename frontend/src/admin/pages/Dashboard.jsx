@@ -47,11 +47,13 @@ import { Navigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import { fetchDashboardStats, fetchRecentOrders } from '../adminSLice/adminSlice';
+import html2pdf from 'html2pdf.js';
 
 // Import New Premium Components
 import KPISection from '../components/premium-dashboard/KPISection';
 import RevenueChart from '../components/premium-dashboard/RevenueChart';
 import OrdersTable from '../components/premium-dashboard/OrdersTable';
+import formatVND from '../../utils/formatCurrency.js';
 
 function Dashboard() {
     const dispatch = useDispatch();
@@ -92,6 +94,26 @@ function Dashboard() {
         );
     }
 
+    const exportToPDF = () => {
+        const element = document.querySelector('.dashboard-content');
+        const opt = {
+            margin:       [10, 10],
+            filename:     `Bao_Cao_Doanh_Thu_${new Date().toLocaleDateString('vi-VN')}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, logging: false },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // Ẩn các nút khi xuất
+        const buttons = element.querySelectorAll('.no-print');
+        buttons.forEach(btn => btn.style.display = 'none');
+
+        html2pdf().from(element).set(opt).save().then(() => {
+            // Hiện lại các nút sau khi xong
+            buttons.forEach(btn => btn.style.display = '');
+        });
+    };
+
     return (
         <div className="dashboard-content">
             {/* Header Content Inside Main Area */}
@@ -105,9 +127,12 @@ function Dashboard() {
                         <span className="material-symbols-outlined text-[18px]">calendar_month</span>
                         Tháng Này
                     </button>
-                    <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#1a1c1b] text-white font-label text-xs uppercase tracking-widest hover:bg-[#ee5a6f] transition-all shadow-md">
-                        <span className="material-symbols-outlined text-[18px]">download</span>
-                        Xuất Báo Cáo
+                    <button 
+                        className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#1a1c1b] text-white font-label text-xs uppercase tracking-widest hover:bg-[#ee5a6f] transition-all shadow-md no-print"
+                        onClick={exportToPDF}
+                    >
+                        <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                        Xuất PDF (Báo cáo)
                     </button>
                 </div>
             </div>

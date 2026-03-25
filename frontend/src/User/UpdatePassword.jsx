@@ -107,21 +107,21 @@ function UpdatePassword() {
                     <div className="input-group">
                         <input type="password" 
                                name = "oldPassword" 
-                               placeholder='Old Passwod' 
+                               placeholder='Mật khẩu hiện tại' 
                                value= {oldPassword} 
                                onChange={(e) => setOldPassWord(e.target.value)} />
                     </div>
                     <div className="input-group">
                         <input type="password" 
                                name="newPassword"  
-                               placeholder='New Passwod' 
+                               placeholder='Mật khẩu mới' 
                                value= {newPassword} 
                                onChange={(e) => setNewPassWord(e.target.value)}/>
                     </div>
                     <div className="input-group">
                         <input type="password"
                                name="confirmPassword"  
-                               placeholder='Confirm Passwod' 
+                               placeholder='Xác nhận mật khẩu' 
                                value= {confirmPassword} 
                                onChange={(e) => setConfirmPassword(e.target.value)}/>
                     </div>
