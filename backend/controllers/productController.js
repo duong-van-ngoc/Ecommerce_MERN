@@ -222,7 +222,7 @@ export const createReviewProduct = handleAsyncError(async (req, res, next) => {
 
     // Xử lý upload ảnh mới cho đánh giá
     let imagesLinks = [];
-    
+
     // Nếu có giữ lại ảnh cũ
     if (req.body.oldImages) {
         try {
@@ -241,7 +241,7 @@ export const createReviewProduct = handleAsyncError(async (req, res, next) => {
         for (let i = 0; i < files.length; i++) {
             const result = await new Promise((resolve, reject) => {
                 const uploadStream = cloudinary.uploader.upload_stream(
-                    { 
+                    {
                         folder: "reviews",
                         resource_type: "auto"
                     },
@@ -358,8 +358,8 @@ import * as xlsx from 'xlsx';
 const findHeaderRow = (rows) => {
     for (let i = 0; i < Math.min(rows.length, 20); i++) {
         const row = rows[i];
-        if (Array.isArray(row) && row.some(cell => 
-            typeof cell === 'string' && 
+        if (Array.isArray(row) && row.some(cell =>
+            typeof cell === 'string' &&
             (cell.toLowerCase().includes('name') || cell.toLowerCase().includes('tên'))
         )) {
             return i;
@@ -374,11 +374,11 @@ const findHeaderRow = (rows) => {
 // =============================================
 export const importProducts = handleAsyncError(async (req, res, next) => {
     let products = [];
-    
+
     // Check if a file was uploaded
     if (req.files && req.files.file) {
         const file = req.files.file;
-        
+
         try {
             // Check file type (optional, but good practice)
             // const ext = file.name.split('.').pop().toLowerCase();
@@ -386,21 +386,21 @@ export const importProducts = handleAsyncError(async (req, res, next) => {
 
             // Read the file data into a workbook
             const workbook = xlsx.read(file.data, { type: 'buffer' });
-            
+
             // Assuming data is in the first sheet
             const sheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[sheetName];
-            
+
             // Tìm dòng header thực sự để tránh trường hợp file có tiêu đề trang trí ở dòng 1-3
             const rawRows = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
             const headerIdx = findHeaderRow(rawRows);
 
             // Convert to JSON array starting from the identified header row
-            products = xlsx.utils.sheet_to_json(worksheet, { 
+            products = xlsx.utils.sheet_to_json(worksheet, {
                 range: headerIdx,
-                defval: '' 
+                defval: ''
             });
-            
+
         } catch (error) {
             return next(new HandleError(`Lỗi đọc file: ${error.message}`, 400));
         }
@@ -409,7 +409,7 @@ export const importProducts = handleAsyncError(async (req, res, next) => {
         try {
             products = typeof req.body.products === 'string' ? JSON.parse(req.body.products) : req.body.products;
         } catch (error) {
-           return next(new HandleError("Dữ liệu JSON products không hợp lệ", 400));
+            return next(new HandleError("Dữ liệu JSON products không hợp lệ", 400));
         }
     }
 
@@ -418,14 +418,13 @@ export const importProducts = handleAsyncError(async (req, res, next) => {
     }
 
     const imported = [];
+    const updated = [];
+    const skipped = [];
     const errors = [];
 
     for (let i = 0; i < products.length; i++) {
-        // Handle variations in column names from Excel/CSV
-        // We will try to map common Vietnamese/English headers to our schema fields
         const rawItem = products[i];
-        
-        // Define mapping functions to handle potential header variations
+
         const getValue = (keys) => {
             for (const key of keys) {
                 if (rawItem[key] !== undefined && rawItem[key] !== null && rawItem[key] !== '') {
@@ -436,6 +435,7 @@ export const importProducts = handleAsyncError(async (req, res, next) => {
         };
 
         const item = {
+            sku: getValue(['SKU', 'sku', 'Mã SP', 'Mã sản phẩm']),
             name: getValue(['Tên', 'Tên sản phẩm', 'Name', 'name']),
             description: getValue(['Mô Tả', 'Mô tả', 'Description', 'description']),
             price: getValue(['Giá Bán', 'Giá bán', 'Price', 'price']),
@@ -452,8 +452,12 @@ export const importProducts = handleAsyncError(async (req, res, next) => {
 
         try {
             // Validate required fields
+            if (!item.sku || !String(item.sku).trim()) {
+                errors.push({ row: i + 2, name: item.name || '', message: 'Thiếu trường SKU (Mã sản phẩm)' });
+                continue;
+            }
             if (!item.name || !String(item.name).trim()) {
-                errors.push({ row: i + 2, name: item.name || '', message: 'Thiếu trường Tên (name)' }); // i+2 because row 1 is usually header in Excel
+                errors.push({ row: i + 2, name: item.name || '', message: 'Thiếu trường Tên (name)' });
                 continue;
             }
             if (!item.description || !String(item.description).trim()) {
@@ -469,17 +473,15 @@ export const importProducts = handleAsyncError(async (req, res, next) => {
                 continue;
             }
             if (!item.categoryLevel1 || !item.categoryLevel2 || !item.categoryLevel3) {
-                // Check fallback to old 'category' field if new ones are missing
-                 const oldCategory = getValue(['Danh mục', 'Category', 'category']);
-                 if(oldCategory) {
+                const oldCategory = getValue(['Danh mục', 'Category', 'category']);
+                if (oldCategory) {
                     errors.push({ row: i + 2, name: item.name, message: 'File mẫu cũ. Cần cập nhật sang 3 cột Danh Mục Cấp 1, 2, 3.' });
-                 } else {
+                } else {
                     errors.push({ row: i + 2, name: item.name, message: 'Thiếu thông tin Danh mục cấp 1/2/3' });
-                 }
+                }
                 continue;
             }
 
-            // Parse sizes and colors from comma-separated string
             let sizes = item.sizes || [];
             if (typeof sizes === 'string' || typeof sizes === 'number') {
                 sizes = String(sizes).split(',').map(s => s.trim()).filter(s => s);
@@ -494,9 +496,12 @@ export const importProducts = handleAsyncError(async (req, res, next) => {
                 colors = [];
             }
 
-            // Create product with placeholder image
+            const productSku = String(item.sku).trim();
+            const productName = String(item.name).trim();
+
             const productData = {
-                name: String(item.name).trim(),
+                sku: productSku,
+                name: productName,
                 description: String(item.description).trim(),
                 price: Number(item.price),
                 originalPrice: Number(item.originalPrice) || 0,
@@ -510,15 +515,48 @@ export const importProducts = handleAsyncError(async (req, res, next) => {
                 material: item.material ? String(item.material).trim() : '',
                 sizes,
                 colors,
-                images: [{
-                    public_id: 'placeholder',
-                    url: '/placeholder.png'
-                }],
                 user: req.user.id
             };
 
-            const product = await Product.create(productData);
-            imported.push(product);
+            // 1. Kiểm tra sản phẩm trùng SKU
+            let existingProduct = await Product.findOne({ sku: productSku });
+
+            // Determine import mode for this item
+            const importMode = rawItem._importMode || 'auto'; // auto, overwrite, accumulate, skip
+
+            if (existingProduct) {
+                if (importMode === 'skip') {
+                    skipped.push({ sku: productSku, name: productName, reason: 'Bỏ qua theo yêu cầu' });
+                    continue;
+                }
+
+                if (importMode === 'accumulate') {
+                    // Only add stock, keep everything else
+                    existingProduct.stock += Number(item.stock);
+                    await existingProduct.save({ validateBeforeSave: false });
+                    updated.push({
+                        ...existingProduct.toObject(),
+                        _action: 'accumulate',
+                        _addedStock: Number(item.stock)
+                    });
+                } else {
+                    // importMode === 'overwrite' or 'auto' -> full update (keep existing images)
+                    const updatedProduct = await Product.findByIdAndUpdate(
+                        existingProduct._id,
+                        { $set: productData },
+                        { new: true, runValidators: true }
+                    );
+                    updated.push({ ...updatedProduct.toObject(), _action: 'overwrite' });
+                }
+            } else {
+                // Product does not exist -> CREATE NEW with placeholder image
+                productData.images = [{
+                    public_id: 'placeholder',
+                    url: '/placeholder.png'
+                }];
+                const newProduct = await Product.create(productData);
+                imported.push(newProduct);
+            }
         } catch (err) {
             errors.push({ row: i + 2, name: item.name || '', message: err.message });
         }
@@ -527,9 +565,65 @@ export const importProducts = handleAsyncError(async (req, res, next) => {
     res.status(200).json({
         success: true,
         imported: imported.length,
+        updated: updated.length,
+        skipped: skipped.length,
         failed: errors.length,
         errors,
-        products: imported
+        skippedItems: skipped,
+        products: [...imported, ...updated]
+    });
+})
+
+// =============================================
+// Admin - Kiểm tra sản phẩm đã tồn tại trước khi import
+// POST /api/v1/admin/products/import-precheck
+// =============================================
+export const importProductsPreCheck = handleAsyncError(async (req, res, next) => {
+    const { skus } = req.body;
+
+    if (!skus || !Array.isArray(skus) || skus.length === 0) {
+        return next(new HandleError("Danh sách SKU trống", 400));
+    }
+
+    const results = [];
+
+    for (const sku of skus) {
+        if (!sku || !String(sku).trim()) {
+            results.push({ sku: sku || '', exists: false });
+            continue;
+        }
+
+        const trimmedSku = String(sku).trim();
+        const existingProduct = await Product.findOne({
+            sku: { $regex: `^${trimmedSku.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+        }).select('_id name sku stock price');
+
+        if (existingProduct) {
+            results.push({
+                sku: trimmedSku,
+                name: existingProduct.name,
+                exists: true,
+                _id: existingProduct._id,
+                currentStock: existingProduct.stock,
+                currentPrice: existingProduct.price
+            });
+        } else {
+            results.push({
+                sku: trimmedSku,
+                exists: false
+            });
+        }
+    }
+
+    const existCount = results.filter(r => r.exists).length;
+    const newCount = results.filter(r => !r.exists).length;
+
+    res.status(200).json({
+        success: true,
+        total: results.length,
+        existCount,
+        newCount,
+        results
     });
 })
 
@@ -539,7 +633,7 @@ export const importProducts = handleAsyncError(async (req, res, next) => {
 // =============================================
 export const updateProductsBulk = handleAsyncError(async (req, res, next) => {
     let products = [];
-    
+
     // Check if a file was uploaded
     if (req.files && req.files.file) {
         const file = req.files.file;
@@ -555,7 +649,7 @@ export const updateProductsBulk = handleAsyncError(async (req, res, next) => {
         try {
             products = typeof req.body.products === 'string' ? JSON.parse(req.body.products) : req.body.products;
         } catch (error) {
-           return next(new HandleError("Dữ liệu JSON products không hợp lệ", 400));
+            return next(new HandleError("Dữ liệu JSON products không hợp lệ", 400));
         }
     }
 
@@ -586,46 +680,46 @@ export const updateProductsBulk = handleAsyncError(async (req, res, next) => {
         }
 
         const product = await Product.findById(id);
-        if(!product) {
+        if (!product) {
             errors.push({ row: i + 2, name: name || id, message: `Không tìm thấy sản phẩm có ID: ${id}` });
             continue;
         }
 
         const updateData = {};
-        
+
         const price = getValue(['Giá Bán', 'Giá bán', 'Price', 'price']);
-        if(price !== null && !isNaN(price)) updateData.price = Number(price);
+        if (price !== null && !isNaN(price)) updateData.price = Number(price);
 
         const originalPrice = getValue(['Giá Gốc', 'Giá gốc', 'Original Price', 'originalPrice']);
-        if(originalPrice !== null && !isNaN(originalPrice)) updateData.originalPrice = Number(originalPrice);
+        if (originalPrice !== null && !isNaN(originalPrice)) updateData.originalPrice = Number(originalPrice);
 
         const stock = getValue(['Tồn Kho', 'Tồn kho', 'Số lượng', 'Stock', 'stock']);
-        if(stock !== null && !isNaN(stock)) updateData.stock = Number(stock);
+        if (stock !== null && !isNaN(stock)) updateData.stock = Number(stock);
 
         const desc = getValue(['Mô Tả', 'Mô tả', 'Description', 'description']);
-        if(desc) updateData.description = String(desc).trim();
+        if (desc) updateData.description = String(desc).trim();
 
         const pName = getValue(['Tên', 'Tên sản phẩm', 'Name', 'name']);
-        if(pName) updateData.name = String(pName).trim();
+        if (pName) updateData.name = String(pName).trim();
 
         const catL1 = getValue(['Danh Mục Cấp 1', 'Danh mục cấp 1', 'Category Level 1', 'level1', 'category_level1', 'category.level1']);
         const catL2 = getValue(['Danh Mục Cấp 2', 'Danh mục cấp 2', 'Category Level 2', 'level2', 'category_level2', 'category.level2']);
         const catL3 = getValue(['Danh Mục Cấp 3', 'Danh mục cấp 3', 'Category Level 3', 'level3', 'category_level3', 'category.level3']);
-        
+
         if (catL1 || catL2 || catL3) {
-             updateData.category = {
-                 level1: String(catL1 || product.category.level1).trim(),
-                 level2: String(catL2 || product.category.level2).trim(),
-                 level3: String(catL3 || product.category.level3).trim(),
-             }
+            updateData.category = {
+                level1: String(catL1 || product.category.level1).trim(),
+                level2: String(catL2 || product.category.level2).trim(),
+                level3: String(catL3 || product.category.level3).trim(),
+            }
         }
 
         try {
-           const updatedProduct = await Product.findByIdAndUpdate(id, updateData, {
-               new: true,
-               runValidators: true,
-           });
-           updated.push(updatedProduct);
+            const updatedProduct = await Product.findByIdAndUpdate(id, updateData, {
+                new: true,
+                runValidators: true,
+            });
+            updated.push(updatedProduct);
         } catch (err) {
             errors.push({ row: i + 2, name: pName || id, message: err.message });
         }

@@ -50,7 +50,7 @@
  */
 import React, { useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { importProducts } from '../adminSLice/adminSlice';
+import { importProducts, importProductsPreCheck } from '../adminSLice/adminSlice';
 import { toast } from 'react-toastify';
 import { formatVND } from '../../utils/formatCurrency';
 import * as XLSX from 'xlsx';
@@ -68,14 +68,14 @@ function ImportProductModal({ onClose, onImportSuccess }) {
     const [fileName, setFileName] = useState('');
     const [validationErrors, setValidationErrors] = useState([]);
 
-    const REQUIRED_FIELDS = ['name', 'description', 'price', 'stock', 'category_level1'];
+    const REQUIRED_FIELDS = ['sku', 'name', 'description', 'price', 'stock', 'category_level1'];
 
     // Hàm tìm dòng chứa Header thực sự
     const findHeaderRow = (rows) => {
         for (let i = 0; i < Math.min(rows.length, 20); i++) {
             const row = rows[i];
-            if (Array.isArray(row) && row.some(cell => 
-                typeof cell === 'string' && 
+            if (Array.isArray(row) && row.some(cell =>
+                typeof cell === 'string' &&
                 (cell.toLowerCase().includes('name') || cell.toLowerCase().includes('tên'))
             )) {
                 return i;
@@ -103,21 +103,21 @@ function ImportProductModal({ onClose, onImportSuccess }) {
         setFileName(file.name);
 
         const reader = new FileReader();
-        reader.onload = (evt) => {
+        reader.onload = async (evt) => {
             try {
                 const data = new Uint8Array(evt.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
-                
+
                 // Đọc thô toàn bộ rows để tìm Header
                 const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
                 const headerIdx = findHeaderRow(rawRows);
 
                 // Parse lại dữ liệu từ dòng Header đã tìm thấy
-                const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, {
                     range: headerIdx,
-                    defval: '' 
+                    defval: ''
                 });
 
                 if (jsonData.length === 0) {
@@ -129,8 +129,11 @@ function ImportProductModal({ onClose, onImportSuccess }) {
                 const errors = [];
                 const mappedData = jsonData.map((row, idx) => {
                     const mappedRow = { ...row };
-                    
+
                     // Linh hoạt map tiêu đề cho category (bao gồm cả định dạng category.level1)
+                    if (!mappedRow.sku) {
+                        mappedRow.sku = row['sku'] || row['SKU'] || row['Mã SP'] || row['Mã sản phẩm'];
+                    }
                     if (!mappedRow.category_level1) {
                         mappedRow.category_level1 = row['category_level1'] || row['category.level1'] || row['Category Level 1'] || row['Danh mục cấp 1'] || row['Danh mục Cấp 1'] || row['level1'];
                     }
@@ -140,7 +143,7 @@ function ImportProductModal({ onClose, onImportSuccess }) {
                     if (!mappedRow.category_level3) {
                         mappedRow.category_level3 = row['category_level3'] || row['category.level3'] || row['Category Level 3'] || row['Danh mục cấp 3'] || row['Danh mục Cấp 3'] || row['level3'];
                     }
-                    
+
                     // Thỏa mãn validation cũ nếu file có field 'category' hoặc 'Danh mục'
                     if (!mappedRow.category_level1) {
                         const oldCat = row['category'] || row['Category'] || row['Danh mục'];
@@ -160,7 +163,29 @@ function ImportProductModal({ onClose, onImportSuccess }) {
                     return mappedRow;
                 });
 
-                setPreviewData(mappedData);
+                const validSkus = mappedData
+                    .filter((_, idx) => !errors.find(e => e.row === idx + 1) && _.sku)
+                    .map(r => String(r.sku).trim());
+
+                let preCheckData = [];
+                if (validSkus.length > 0) {
+                    try {
+                        const preCheckRes = await dispatch(importProductsPreCheck(validSkus)).unwrap();
+                        preCheckData = preCheckRes.results || [];
+                    } catch (e) {
+                        toast.warning('Không thể kiểm tra sản phẩm trùng lặp theo SKU');
+                    }
+                }
+
+                const finalData = mappedData.map((row, idx) => {
+                    const existing = preCheckData.find(item => item.sku === String(row.sku).trim() && item.exists);
+                    if (existing) {
+                        return { ...row, _isExisting: true, _existingName: existing.name, _existingStock: existing.currentStock, _existingId: existing._id, _importMode: 'accumulate' };
+                    }
+                    return { ...row, _isExisting: false, _importMode: 'create' };
+                });
+
+                setPreviewData(finalData);
                 setValidationErrors(errors);
             } catch (err) {
                 toast.error('Không thể đọc file: ' + err.message);
@@ -169,19 +194,33 @@ function ImportProductModal({ onClose, onImportSuccess }) {
         reader.readAsArrayBuffer(file);
     };
 
+    const handleModeChange = (index, mode) => {
+        setPreviewData(prev => {
+            const newData = [...prev];
+            newData[index] = { ...newData[index], _importMode: mode };
+            return newData;
+        });
+    };
+
     // Handle import
     const handleImport = async () => {
         const errorRows = new Set(validationErrors.map(e => e.row));
-        const validData = previewData.filter((_, idx) => !errorRows.has(idx + 1));
+        const validData = previewData.filter((row, idx) => !errorRows.has(idx + 1) && row._importMode !== 'skip');
 
         if (validData.length === 0) {
-            toast.error('Không có sản phẩm hợp lệ để import');
+            toast.error('Không có sản phẩm hợp lệ để import (hoặc tất cả đã bị bỏ qua)');
             return;
         }
 
         try {
             const result = await dispatch(importProducts(validData)).unwrap();
-            toast.success(`✅ Import thành công ${result.imported} sản phẩm!`);
+
+            // Build success message showing both imported and updated counts
+            const messages = [];
+            if (result.imported > 0) messages.push(`🆕 Thêm mới ${result.imported} sản phẩm`);
+            if (result.updated > 0) messages.push(`🔄 Cập nhật ${result.updated} sản phẩm`);
+            toast.success(`✅ ${messages.join(', ')}`);
+
             if (result.failed > 0) {
                 toast.warning(`⚠️ ${result.failed} sản phẩm lỗi`);
             }
@@ -196,16 +235,16 @@ function ImportProductModal({ onClose, onImportSuccess }) {
     const handleDownloadTemplate = () => {
         const template = [
             {
-                name: 'Áo thun nam basic', description: 'Áo thun cotton mát mẻ',
+                sku: 'AOM01', name: 'Áo thun nam basic', description: 'Áo thun cotton mát mẻ',
                 price: 150000, originalPrice: 200000, stock: 100,
-                category_level1: 'NAM', category_level2: 'Áo', category_level3: 'Thun', 
+                category_level1: 'NAM', category_level2: 'Áo', category_level3: 'Thun',
                 brand: 'Coolmate', material: 'Cotton',
                 sizes: 'S,M,L,XL', colors: 'Đen,Trắng,Navy'
             },
             {
-                name: 'Túi xách nữ thời trang', description: 'Túi xách da PU cao cấp',
+                sku: 'TXN01', name: 'Túi xách nữ thời trang', description: 'Túi xách da PU cao cấp',
                 price: 450000, originalPrice: 600000, stock: 50,
-                category_level1: 'PHỤ KIỆN & GIÀY DÉP', category_level2: 'Phụ kiện Nữ', category_level3: 'Túi xách', 
+                category_level1: 'PHỤ KIỆN & GIÀY DÉP', category_level2: 'Phụ kiện Nữ', category_level3: 'Túi xách',
                 brand: 'Juno', material: 'Da PU',
                 sizes: 'Free', colors: 'Đen,Đỏ,Be'
             }
@@ -216,7 +255,8 @@ function ImportProductModal({ onClose, onImportSuccess }) {
         XLSX.writeFile(wb, 'template_import_san_pham.xlsx');
     };
 
-    const validCount = previewData.length - validationErrors.length;
+    const errorRows = new Set(validationErrors.map(e => e.row));
+    const validCount = previewData.filter((row, idx) => !errorRows.has(idx + 1) && row._importMode !== 'skip').length;
     const errorCount = validationErrors.length;
 
     return (
@@ -224,7 +264,7 @@ function ImportProductModal({ onClose, onImportSuccess }) {
             <div className="import-modal" onClick={e => e.stopPropagation()}>
                 {/* Header */}
                 <div className="import-modal-header">
-                    <h2>📥 Import Sản Phẩm Từ Excel/CSV <span style={{fontSize: '12px', color: '#999'}}>(v2.0)</span></h2>
+                    <h2>📥 Import Sản Phẩm Từ Excel/CSV <span style={{ fontSize: '12px', color: '#999' }}>(v2.0)</span></h2>
                     <button className="import-modal-close" onClick={onClose}>×</button>
                 </div>
 
@@ -255,10 +295,33 @@ function ImportProductModal({ onClose, onImportSuccess }) {
                 {/* Preview Table */}
                 {previewData.length > 0 && (
                     <>
-                        <div className="import-stats">
-                            <span className="stat-valid">✅ {validCount} hợp lệ</span>
-                            {errorCount > 0 && <span className="stat-error">❌ {errorCount} lỗi</span>}
-                            <span className="stat-total">📦 Tổng: {previewData.length} dòng</span>
+                        <div className="import-stats" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <span className="stat-valid">✅ {validCount} hợp lệ</span>
+                                {errorCount > 0 && <span className="stat-error">❌ {errorCount} lỗi</span>}
+                                <span className="stat-total">📦 Tổng: {previewData.length} dòng</span>
+                            </div>
+
+                            {previewData.some(row => row._isExisting) && (
+                                <div className="bulk-action" style={{ background: '#f8f9fa', padding: '6px 12px', borderRadius: '4px', border: '1px solid #ddd' }}>
+                                    <label style={{ marginRight: '8px', fontSize: '13px', fontWeight: 'bold', color: '#333' }}> Áp dụng cho SP cũ:</label>
+                                    <select
+                                        style={{ padding: '4px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
+                                        onChange={(e) => {
+                                            const mode = e.target.value;
+                                            if (!mode) return;
+                                            setPreviewData(prev => prev.map(row =>
+                                                row._isExisting ? { ...row, _importMode: mode } : row
+                                            ));
+                                        }}
+                                    >
+                                        <option value="">-- Chọn hành động --</option>
+                                        <option value="accumulate">Cập nhật (Cộng dồn)</option>
+                                        <option value="overwrite">Cập nhật (Ghi đè)</option>
+                                        <option value="skip">Bỏ qua</option>
+                                    </select>
+                                </div>
+                            )}
                         </div>
 
                         <div className="import-preview-container">
@@ -267,12 +330,12 @@ function ImportProductModal({ onClose, onImportSuccess }) {
                                     <tr>
                                         <th>#</th>
                                         <th>Trạng thái</th>
+                                        <th>Hành động</th>
+                                        <th>SKU</th>
                                         <th>Tên SP</th>
                                         <th>Giá</th>
                                         <th>Kho</th>
                                         <th>Danh mục 1</th>
-                                        <th>Danh mục 2</th>
-                                        <th>Danh mục 3</th>
                                         <th>Thương hiệu</th>
                                     </tr>
                                 </thead>
@@ -280,21 +343,43 @@ function ImportProductModal({ onClose, onImportSuccess }) {
                                     {previewData.slice(0, 50).map((row, idx) => {
                                         const rowError = validationErrors.find(e => e.row === idx + 1);
                                         return (
-                                            <tr key={idx} className={rowError ? 'row-error' : 'row-valid'}>
+                                            <tr key={idx} className={rowError ? 'row-error' : row._isExisting ? 'row-warning' : 'row-valid'}>
                                                 <td>{idx + 1}</td>
                                                 <td>
                                                     {rowError ? (
-                                                        <span className="status-error" title={rowError.message}>❌</span>
+                                                        <span className="status-error" title={rowError.message}>❌ Lỗi</span>
+                                                    ) : row._isExisting ? (
+                                                        <span className="status-warning" title="Đã tồn tại" style={{ color: '#d97706', fontWeight: 'bold' }}>⚠️ Đã tồn tại</span>
                                                     ) : (
-                                                        <span className="status-valid">✅</span>
+                                                        <span className="status-valid" style={{ color: '#16a34a', fontWeight: 'bold' }}>✨ Mới</span>
                                                     )}
                                                 </td>
+                                                <td>
+                                                    {!rowError && row._isExisting ? (
+                                                        <select
+                                                            value={row._importMode}
+                                                            onChange={(e) => handleModeChange(idx, e.target.value)}
+                                                            style={{ padding: '4px', borderRadius: '4px', border: '1px solid #ccc' }}
+                                                        >
+                                                            <option value="accumulate">Cập nhật (Cộng dồn)</option>
+                                                            <option value="overwrite">Cập nhật (Ghi đè)</option>
+                                                            <option value="skip">Bỏ qua</option>
+                                                        </select>
+                                                    ) : !rowError ? (
+                                                        <span style={{ color: '#16a34a' }}>Thêm mới</span>
+                                                    ) : <span>—</span>}
+                                                </td>
+                                                <td>{row.sku || <em className="empty-cell">—</em>}</td>
                                                 <td>{row.name || <em className="empty-cell">—</em>}</td>
                                                 <td>{row.price ? formatVND(row.price) : <em className="empty-cell">—</em>}</td>
-                                                <td>{row.stock ?? <em className="empty-cell">—</em>}</td>
+                                                <td>
+                                                    {rowError ? row.stock :
+                                                        (row._isExisting && row._importMode === 'accumulate') ?
+                                                            <span title={`Cũ: ${row._existingStock} + Mới: ${row.stock}`}>
+                                                                {row._existingStock} <strong style={{ color: 'green' }}>+{row.stock}</strong>
+                                                            </span> : row.stock ?? <em className="empty-cell">—</em>}
+                                                </td>
                                                 <td>{row.category_level1 || row['Category Level 1'] || <em className="empty-cell">—</em>}</td>
-                                                <td>{row.category_level2 || row['Category Level 2'] || <em className="empty-cell">—</em>}</td>
-                                                <td>{row.category_level3 || row['Category Level 3'] || <em className="empty-cell">—</em>}</td>
                                                 <td>{row.brand || 'No Brand'}</td>
                                             </tr>
                                         );

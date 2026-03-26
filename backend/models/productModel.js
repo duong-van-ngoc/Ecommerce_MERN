@@ -3,6 +3,13 @@
 import mongoose from "mongoose";
 
 const productSchema = new mongoose.Schema({ // tạo schema cho sản phẩm
+    sku: { // mã sản phẩm duy nhất
+        type: String,
+        trim: true,
+        unique: true,
+        sparse: true, // cho phép các sản phẩm cũ chưa có SKU không bị báo lỗi trùng lặp null
+        maxLength: [50, "Mã SKU không được vượt quá 50 ký tự"]
+    },
     name: {
         // tên sản phẩm
         type: String,

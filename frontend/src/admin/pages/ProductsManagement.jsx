@@ -66,6 +66,7 @@ function ProductsManagement() {
     const [showModal, setShowModal] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [initialFormData, setInitialFormData] = useState(null);
     const [activeTab, setActiveTab] = useState('list'); // 'list' | 'stock'
 
     // Fetch products khi component mount
@@ -99,8 +100,9 @@ function ProductsManagement() {
     };
 
     // Xử lý add new
-    const handleAddNew = () => {
+    const handleAddNew = (data = null) => {
         setSelectedProduct(null);
+        setInitialFormData(data);
         setShowModal(true);
     };
 
@@ -257,13 +259,17 @@ function ProductsManagement() {
                 </>
             )}
 
-            {activeTab === 'stock' && <StockManagement />}
+            {activeTab === 'stock' && <StockManagement onAddNew={handleAddNew} />}
 
             {/* Modal - ProductForm */}
             {showModal && (
                 <ProductFormModal
                     product={selectedProduct}
-                    onClose={() => setShowModal(false)}
+                    initialData={initialFormData}
+                    onClose={() => {
+                        setShowModal(false);
+                        setInitialFormData(null);
+                    }}
                 />
             )}
 
