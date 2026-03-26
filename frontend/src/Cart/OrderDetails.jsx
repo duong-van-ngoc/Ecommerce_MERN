@@ -74,23 +74,7 @@ const OrderDetails = () => {
   });
 
   const exportToPDF = () => {
-    const element = document.querySelector('main.container');
-    const opt = {
-      margin:       [10, 10],
-      filename:     `Hoa_Don_${orderDetails._id}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true, logging: false },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    // Ẩn các phần no-print
-    const noPrintElements = element.querySelectorAll('.no-print');
-    noPrintElements.forEach(el => el.style.display = 'none');
-
-    html2pdf().set(opt).from(element).save().then(() => {
-      // Hiện lại sau khi xuất xong
-      noPrintElements.forEach(el => el.style.display = '');
-    });
+    window.print();
   };
 
   return (

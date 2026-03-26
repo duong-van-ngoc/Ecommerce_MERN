@@ -100,7 +100,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/login/success" element={<LoginSuccess />} />
-        
+
         <Route path="/profile"
           element={<ProtectedRoute element={<Profile />} />}
         />
@@ -112,7 +112,7 @@ function App() {
         />
         <Route path="/password/forgot" element={<ForgotPassword />} />
         <Route path="/password/reset/:token" element={<ResetPassword />} />
-        
+
         <Route path="/cart" element={<Cart />} />
         <Route path="/shipping"
           element={<ProtectedRoute element={<Shipping />} />}
@@ -149,7 +149,8 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="products" element={<ProductsManagement />} />
           <Route path="orders" element={<OrdersManagement />} />
-          <Route path="users" element={<UsersManagement />} />
+          <Route path="use
+          rs" element={<UsersManagement />} />
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>

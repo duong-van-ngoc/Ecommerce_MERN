@@ -55,7 +55,7 @@ import '../styles/StockManagement.css';
 /**
  * StockManagement - Tab quản lý nhập hàng
  */
-function StockManagement() {
+function StockManagement({ onAddNew }) {
     const dispatch = useDispatch();
     const { loading, searchResults } = useSelector(state => state.admin);
     const fileInputRef = useRef(null);
@@ -237,7 +237,16 @@ function StockManagement() {
                                 <p>❌ Không tìm thấy:</p>
                                 <ul>
                                     {importResult.notFound.map((item, i) => (
-                                        <li key={i}>{item.name} — {item.reason}</li>
+                                        <li key={i} className="notfound-item">
+                                            <span>{item.name} — {item.reason}</span>
+                                            <button 
+                                                className="btn-add-missing"
+                                                onClick={() => onAddNew({ name: item.name })}
+                                                title="Thêm sản phẩm này vào hệ thống"
+                                            >
+                                                ➕ Thêm mới
+                                            </button>
+                                        </li>
                                     ))}
                                 </ul>
                             </div>
@@ -347,7 +356,15 @@ function StockManagement() {
                 )}
 
                 {searchQuery && searchResults.length === 0 && !loading && (
-                    <p className="no-results">Không tìm thấy sản phẩm nào</p>
+                    <div className="no-results-container">
+                        <p className="no-results">Không tìm thấy sản phẩm nào khớp với "{searchQuery}"</p>
+                        <button 
+                            className="btn-add-notfound"
+                            onClick={() => onAddNew({ name: searchQuery })}
+                        >
+                            ➕ Thêm mới sản phẩm này
+                        </button>
+                    </div>
                 )}
             </div>
         </div>

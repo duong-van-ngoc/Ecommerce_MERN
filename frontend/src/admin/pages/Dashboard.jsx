@@ -95,23 +95,7 @@ function Dashboard() {
     }
 
     const exportToPDF = () => {
-        const element = document.querySelector('.dashboard-content');
-        const opt = {
-            margin:       [10, 10],
-            filename:     `Bao_Cao_Doanh_Thu_${new Date().toLocaleDateString('vi-VN')}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true, logging: false },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        // Ẩn các nút khi xuất
-        const buttons = element.querySelectorAll('.no-print');
-        buttons.forEach(btn => btn.style.display = 'none');
-
-        html2pdf().from(element).set(opt).save().then(() => {
-            // Hiện lại các nút sau khi xong
-            buttons.forEach(btn => btn.style.display = '');
-        });
+        window.print();
     };
 
     return (

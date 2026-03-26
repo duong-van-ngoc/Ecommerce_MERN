@@ -161,6 +161,24 @@ export const importProducts = createAsyncThunk(
 );
 
 /**
+ * Async Thunk - Kiểm tra sản phẩm tồn tại trước khi import
+ */
+export const importProductsPreCheck = createAsyncThunk(
+    'admin/importProductsPreCheck',
+    async (skus, { rejectWithValue }) => {
+        try {
+            const { data } = await axios.post('/api/v1/admin/products/import-precheck',
+                { skus },
+                { withCredentials: true }
+            );
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Kiểm tra sản phẩm thất bại');
+        }
+    }
+);
+
+/**
  * Async Thunk - Import tồn kho hàng loạt
  */
 export const importStock = createAsyncThunk(
@@ -713,9 +731,19 @@ const adminSlice = createSlice({
             .addCase(importProducts.fulfilled, (state, action) => {
                 state.loading = false;
                 state.importResult = action.payload;
-                // Thêm sản phẩm mới vào danh sách
-                if (action.payload.products) {
-                    state.products = [...state.products, ...action.payload.products];
+                
+                // Cập nhật/Thêm sản phẩm vào danh sách một cách thông minh để tránh trùng lặp ID
+                if (action.payload.products && Array.isArray(action.payload.products)) {
+                    action.payload.products.forEach(newP => {
+                        const index = state.products.findIndex(p => p._id === newP._id);
+                        if (index !== -1) {
+                            // Nếu đã tồn tại (Updated), cập nhật sản phẩm cũ
+                            state.products[index] = newP;
+                        } else {
+                            // Nếu chưa có (New), thêm mới vào đầu danh sách
+                            state.products.unshift(newP);
+                        }
+                    });
                 }
             })
             .addCase(importProducts.rejected, (state, action) => {

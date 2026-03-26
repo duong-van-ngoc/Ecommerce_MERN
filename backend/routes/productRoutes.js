@@ -10,6 +10,7 @@ import {
   updateProduct,
   deteteProduct,
   importProducts,
+  importProductsPreCheck,
   updateProductsBulk,
   importStock,
   updateStock,
@@ -29,6 +30,7 @@ router
   .route("/admin/products")
   .get(verifyUserAuth, roleBasedAccess("admin"), getAdminProducts);
 
+
 router
   .route("/admin/products/create")
   .post(verifyUserAuth, roleBasedAccess("admin"), createProducts);
@@ -37,6 +39,11 @@ router
 router
   .route("/admin/products/import")
   .post(verifyUserAuth, roleBasedAccess("admin"), importProducts);
+
+// Kiểm tra sản phẩm tồn tại trước khi import
+router
+  .route("/admin/products/import-precheck")
+  .post(verifyUserAuth, roleBasedAccess("admin"), importProductsPreCheck);
 
 // Cập nhật sản phẩm hàng loạt từ Excel/CSV
 router

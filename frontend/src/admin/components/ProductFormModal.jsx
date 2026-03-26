@@ -55,7 +55,7 @@ import { toast } from 'react-toastify';
 import { getLevel1Categories, getLevel2Categories, getLevel3Categories } from '../../constants/categories';
 import '../styles/ProductFormModal.css';
 
-function ProductFormModal({ product, onClose }) {
+function ProductFormModal({ product, onClose, initialData }) {
     const dispatch = useDispatch();
     const isEditMode = !!product;
 
@@ -99,8 +99,13 @@ function ProductFormModal({ product, onClose }) {
                 colors: product.colors || []
             });
             setImagesPreview(product.images?.map(img => img.url) || []);
+        } else if (initialData) {
+            setFormData(prev => ({
+                ...prev,
+                ...initialData
+            }));
         }
-    }, [product]);
+    }, [product, initialData]);
 
     // Calculate discount automatically
     useEffect(() => {
