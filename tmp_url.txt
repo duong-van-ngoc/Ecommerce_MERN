@@ -1,0 +1,3 @@
+﻿[dotenv@17.2.2] injecting env (24) from backend\config\config.env -- tip: ≡ƒöÉ encrypt with Dotenvx: https://dotenvx.com
+VNPay initialized successfully
+Generated URL: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=1000000&vnp_Command=pay&vnp_CreateDate=20260328045451&vnp_CurrCode=VND&vnp_IpAddr=127.0.0.1&vnp_Locale=vn&vnp_OrderInfo=Test+payment&vnp_ReturnUrl=http%3A%2F%2Flocalhost%3A3000%2Fcallback&vnp_TmnCode=9QUND0QZ&vnp_TxnRef=test_order_123&vnp_Version=2.1.0&vnp_SecureHash=536c2119f27549a295799eab239b68d47bb492545195b04e5b099d90b2e8b6c7c787337a478d749435cb1904ec7617096cd04c557190423e6ed0a660f24548cc

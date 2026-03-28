@@ -9,6 +9,9 @@ import order from './routes/orderRoutes.js';
 import admin from './routes/adminRoutes.js';
 import settings from './routes/settingsRoutes.js';
 import address from './routes/addressRoute.js';
+import payment from './routes/paymentRoutes.js';
+import cart from './routes/cartRoutes.js';
+
 import errorHandleMiddleware from './middleware/error.js';
 import cookieParser from 'cookie-parser';
 import fileUpload from 'express-fileupload';
@@ -68,6 +71,9 @@ app.use("/api/v1", order);
 app.use("/api/v1/admin", admin);
 app.use("/api/v1", settings);
 app.use("/api/v1/address", address);
+app.use("/api/v1", payment);
+app.use("/api/v1", cart);
+
 app.use(errorHandleMiddleware);
 
 export default app;

@@ -5,33 +5,47 @@
  * 1. Vai trò: 
  *    - Quản lý trạng thái giỏ hàng (sản phẩm, số lượng, biến thể) và thông tin vận chuyển.
  *    - Hỗ trợ lưu trữ riêng biệt cho từng người dùng thông qua LocalStorage.
+ *    - Đồng bộ hóa dữ liệu với Backend Cart (Database).
  * 
  * 2. Luồng hoạt động (Mới):
  *    - (1) Ứng dụng khởi chạy (App.jsx) -> Kiểm tra thông tin người dùng.
- *    - (2) Nhận diện User ID -> Dispatch `syncCartWithUser(userId)` (nếu là khách dùng 'guest').
- *    - (3) Tải dữ liệu từ LocalStorage theo key `cartItems_${userId}` vào Redux state.
- *    - (4) Khi thêm/xóa/sửa: Cập nhật đồng thời Redux state và LocalStorage theo key định danh.
- *    - (5) Khi Logout (Đăng xuất): Tự động chuyển vùng nhớ về key 'guest' (khách).
- * 
- * 3. Các thực thể quản lý:
- *    - `cartItems`: Danh sách sản phẩm trong giỏ hàng hiện tại.
- *    - `shippingInfo`: Thông tin địa chỉ nhận hàng của tài khoản hiện tại.
- *    - `userId`: ID định danh để phân tách dữ liệu các tài khoản khác nhau.
+ *    - (2) Nhận diện User ID -> Dispatch `syncCartWithUser(userId)`.
+ *    - (3) Nếu đã đăng nhập -> Dispatch `fetchCart()` để lấy dữ liệu từ DB.
+ *    - (4) Khi thêm/xóa/sửa: Cập nhật song song LocalStorage và DB (qua API).
  * ============================================================================
  */
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "../../api/http.js";
 
 // Hàm hỗ trợ lấy Key LocalStorage động dựa trên ID người dùng
-// Điều này giúp tách biệt dữ liệu giữa các tài khoản khác nhau trên cùng 1 trình duyệt
 const getCartKey = (userId) => userId ? `cartItems_${userId}` : 'cartItems_guest';
 const getShippingKey = (userId) => userId ? `shippingInfo_${userId}` : 'shippingInfo_guest';
 
-// Thunk: Thêm sản phẩm vào giỏ hàng (lấy thông tin chi tiết từ API)
-export const addItemsToCart = createAsyncThunk('cart/addItemsToCart', async ({ id, quantity, isUpdate, size, color }, { rejectWithValue }) => {
+// Thunk: Lấy giỏ hàng từ Backend
+export const fetchCart = createAsyncThunk('cart/fetchCart', async (_, { rejectWithValue }) => {
+    try {
+        const { data } = await axios.get('/api/v1/cart');
+        return data.cart.items;
+    } catch (error) {
+        return rejectWithValue(error.response?.data?.message || 'Không thể tải giỏ hàng');
+    }
+});
+
+// Thunk: Đồng bộ giỏ hàng hiện tại lên Backend (ví dụ sau khi login)
+export const syncCartWithDB = createAsyncThunk('cart/syncCartWithDB', async (items, { rejectWithValue }) => {
+    try {
+        const { data } = await axios.post('/api/v1/cart/sync', { items });
+        return data.cart.items;
+    } catch (error) {
+        return rejectWithValue(error.response?.data?.message || 'Lỗi đồng bộ giỏ hàng');
+    }
+});
+
+// Thunk: Thêm sản phẩm vào giỏ hàng
+export const addItemsToCart = createAsyncThunk('cart/addItemsToCart', async ({ id, quantity, isUpdate, size, color }, { getState, rejectWithValue }) => {
     try {
         const { data } = await axios.get(`/api/v1/products/${id}`);
-        return {
+        const item = {
             product: data.product._id,
             name: data.product.name,
             price: data.product.price,
@@ -41,11 +55,18 @@ export const addItemsToCart = createAsyncThunk('cart/addItemsToCart', async ({ i
             isUpdate: isUpdate,
             size: size,
             color: color
+        };
+
+        const { user } = getState().user;
+        if (user) {
+            await axios.post('/api/v1/cart/item', item);
         }
+
+        return item;
     } catch (error) {
         return rejectWithValue(error.response?.data || 'Đã xảy ra lỗi')
     }
-})
+});
 
 const cartSlice = createSlice({
     name: 'cart',
@@ -63,15 +84,10 @@ const cartSlice = createSlice({
         },
     },
     reducers: {
-        // Đồng bộ giỏ hàng khi người dùng thay đổi (Đăng nhập/Đăng xuất)
         syncCartWithUser: (state, action) => {
             const userId = action.payload;
             state.userId = userId;
-            
-            // Tải dữ liệu giỏ hàng tương ứng với ID người dùng từ máy cục bộ
             state.cartItems = JSON.parse(localStorage.getItem(getCartKey(userId))) || [];
-            
-            // Tải thông tin vận chuyển tương ứng
             state.shippingInfo = JSON.parse(localStorage.getItem(getShippingKey(userId))) || {
                 address: "", pinCode: "", phoneNumber: "", country: "VN",
                 provinceCode: "", districtCode: "", wardCode: "",
@@ -85,28 +101,42 @@ const cartSlice = createSlice({
             state.message = null
             state.success = false
         },
-        // Xóa sản phẩm khỏi giỏ hàng
         removeItemFromCart: (state, action) => {
             const { product, size, color } = action.payload;
-            state.cartItems = state.cartItems.filter(item =>
-                !(item.product === product && item.size === size && item.color === color)
-            );
-            // Lưu lại vào LocalStorage theo ID người dùng hiện tại
+            const pId = product && typeof product === 'object' ? product._id : product;
+            const pSize = size || '';
+            const pColor = color || '';
+
+            state.cartItems = state.cartItems.filter(item => {
+                const itemProductId = item.product && typeof item.product === 'object' ? item.product._id : item.product;
+                return !(itemProductId === pId && (item.size || '') === pSize && (item.color || '') === pColor);
+            });
+            
             localStorage.setItem(getCartKey(state.userId), JSON.stringify(state.cartItems));
+
+            if (state.userId) {
+                axios.post('/api/v1/cart/item/remove', { product: pId, size: pSize, color: pColor }).catch(err => console.error(err));
+            }
         },
-        // Lưu thông tin vận chuyển
         saveShippingInfo: (state, action) => {
             state.shippingInfo = action.payload;
             localStorage.setItem(getShippingKey(state.userId), JSON.stringify(state.shippingInfo));
         },
-        // Xóa các sản phẩm đã hoàn thành đặt hàng
         removeOrderedItems: (state, action) => {
-            const orderedItems = action.payload;
-            const orderedKeys = new Set(orderedItems.map(item => `${item.product}-${item.size}-${item.color}`));
-            state.cartItems = state.cartItems.filter(item => !orderedKeys.has(`${item.product}-${item.size}-${item.color}`));
+            const orderedItems = action.payload || [];
+            const orderedKeys = new Set(orderedItems.map(item => {
+                const pId = item.product && typeof item.product === 'object' ? item.product._id : item.product;
+                return `${pId}-${item.size || ''}-${item.color || ''}`;
+            }));
+
+            state.cartItems = state.cartItems.filter(item => {
+                const pId = item.product && typeof item.product === 'object' ? item.product._id : item.product;
+                const key = `${pId}-${item.size || ''}-${item.color || ''}`;
+                return !orderedKeys.has(key);
+            });
+
             localStorage.setItem(getCartKey(state.userId), JSON.stringify(state.cartItems));
         },
-        // Làm trống hoàn toàn giỏ hàng (khi cần reset)
         clearCart: (state) => {
             state.cartItems = [];
             state.shippingInfo = {
@@ -119,9 +149,7 @@ const cartSlice = createSlice({
         }
     },
     extraReducers: (builder) => {
-        // Tự động xử lý khi người dùng Đăng xuất thành công
         builder.addCase('user/logout/fulfilled', (state) => {
-            // Chuyển vùng nhớ về tài khoản Khách (guest)
             state.userId = null;
             state.cartItems = JSON.parse(localStorage.getItem(getCartKey(null))) || [];
             state.shippingInfo = JSON.parse(localStorage.getItem(getShippingKey(null))) || {
@@ -130,12 +158,23 @@ const cartSlice = createSlice({
                 provinceName: "", districtName: "", wardName: "",
             };
         })
-        // Xử lý sau khi thêm sản phẩm thành công qua Thunk
+        .addCase(fetchCart.fulfilled, (state, action) => {
+            state.cartItems = action.payload || [];
+            state.loading = false;
+            localStorage.setItem(getCartKey(state.userId), JSON.stringify(state.cartItems));
+        })
+        .addCase(syncCartWithDB.fulfilled, (state, action) => {
+            state.cartItems = action.payload || [];
+            state.loading = false;
+            localStorage.setItem(getCartKey(state.userId), JSON.stringify(state.cartItems));
+        })
         .addCase(addItemsToCart.fulfilled, (state, action) => {
             const item = action.payload;
-            const existingItem = state.cartItems.find((i) =>
-                i.product === item.product && i.size === item.size && i.color === item.color
-            );
+            const existingItem = state.cartItems.find((i) => {
+                const iId = (typeof i.product === 'object' && i.product?._id) ? i.product._id : i.product;
+                const itemId = (typeof item.product === 'object' && item.product?._id) ? item.product._id : item.product;
+                return iId === itemId && (i.size || "") === (item.size || "") && (i.color || "") === (item.color || "");
+            });
 
             if (existingItem) {
                 if (item.isUpdate) {
@@ -152,17 +191,15 @@ const cartSlice = createSlice({
 
             state.loading = false;
             state.success = true;
-            
-            // Lưu dữ liệu vào vùng nhớ riêng của người dùng
             localStorage.setItem(getCartKey(state.userId), JSON.stringify(state.cartItems));
         });
     }
-})
+});
 
 export const { 
     removeErrors, removeMessage, removeItemFromCart, 
     saveShippingInfo, removeOrderedItems, clearCart, 
     syncCartWithUser 
-} = cartSlice.actions
+} = cartSlice.actions;
 
-export default cartSlice.reducer
+export default cartSlice.reducer;

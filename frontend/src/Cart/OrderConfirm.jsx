@@ -55,6 +55,8 @@ import OrderSuccess from './OrderSuccess' // Import popup component
 import { toast } from 'react-toastify' // Import toast
 import { removeOrderedItems } from '../features/cart/cartSlice'
 import { formatVND } from '../utils/formatCurrency'
+import axios from '../api/http.js'
+
 
 function OrderConfirm() {
   const dispatch = useDispatch() // Thêm dispatch hook
@@ -79,18 +81,19 @@ function OrderConfirm() {
   // ✅ trạng thái phương thức thanh toán (mặc định là COD)
   const [paymentMethod, setPaymentMethod] = useState(() => {
     try {
-      return JSON.parse(sessionStorage.getItem('paymentMethod') || '"cod"')
+      return JSON.parse(sessionStorage.getItem('paymentMethod') || '"COD"')
     } catch {
-      return 'cod'
+      return 'COD'
     }
   })
+
 
   useEffect(() => {
     sessionStorage.setItem('paymentMethod', JSON.stringify(paymentMethod))
   }, [paymentMethod])
 
   const fullAddress = [
-    shippingInfo?.address,
+     shippingInfo?.address,
     shippingInfo?.wardName,
     shippingInfo?.districtName,
     shippingInfo?.provinceName,
@@ -110,32 +113,37 @@ function OrderConfirm() {
   const navigate = useNavigate()
 
   /**
-   * Xử lý đặt hàng
-   * FLOW:
-   * 1. Validate cart items
-   * 2. Chuẩn bị order data
-   * 3. Dispatch createOrder API
-   * 4. Success → Hiện popup
-   * 5. Error → Hiện thông báo lỗi
+   * Xử lý đặt hàng (Place Order)
+   * Luồng xử lý (Flow):
+   * 1. Kiểm tra giỏ hàng (Validation).
+   * 2. Ánh xạ dữ liệu shipping sang cấu trúc Backend (Mapping data).
+   * 3. Gọi API tạo đơn hàng nguyên bản (createOrder).
+   * 4. Phân nhánh theo phương thức thanh toán:
+   *    - VNPAY: Tạo link thanh toán -> Redirect sang VNPay (KHÔNG xóa giỏ hàng tại đây).
+   *    - COD: Hiển thị Popup thành công -> Xóa giỏ hàng (removeOrderedItems).
+   * 
+   * Tại sao không xóa giỏ hàng ngay khi bắt đầu thanh toán VNPay?
+   * - Để bảo toàn sản phẩm nếu người dùng lỡ tay nhấn "Hủy" hoặc lỗi mạng khi đang ở trang VNPay.
+   * - Giỏ hàng chỉ được dọn dẹp tại trang VnpayResult.jsx sau khi có xác nhận '00' (Thành công).
    */
   const proceesToPayment = async () => {
-    // Validation
+    // Validation: Đảm bảo có hàng mới cho đặt
     if (cartItems.length === 0) {
       toast.error('Giỏ hàng đang trống!', { position: 'top-center' })
       return
     }
 
-    // Ánh xạ thông tin giao hàng frontend sang cấu trúc model backend
+    // Mapping: Chuẩn hóa dữ liệu địa chỉ cho Backend Model
     const mappedShippingInfo = {
       address: `${shippingInfo.address}, ${shippingInfo.wardName || ''}`,
-      city: shippingInfo.districtName, // Ánh xạ Quận/Huyện -> City
-      state: shippingInfo.provinceName, // Ánh xạ Tỉnh/Thành -> State
+      city: shippingInfo.districtName, 
+      state: shippingInfo.provinceName,
       country: shippingInfo.country || 'VN',
       pinCode: Number(shippingInfo.pinCode) || 700000,
       phoneNo: Number(shippingInfo.phoneNumber || shippingInfo.phoneNo)
     }
 
-    // Chuẩn bị order data
+    // Prepare Order Data
     const orderData = {
       shippingInfo: mappedShippingInfo,
       orderItems: Array.isArray(cartItems) ? cartItems.map(item => ({
@@ -149,43 +157,73 @@ function OrderConfirm() {
       })) : [],
       paymentInfo: {
         method: paymentMethod,
-        status: paymentMethod === 'cod' ? 'Chưa thanh toán' : 'Đã thanh toán'
+        status: "PENDING"
       },
-      itemsPrice: Number(subtotal),
+      paymentMethod,
+      itemPrice: Number(subtotal),
       taxPrice: Number(tax),
       shippingPrice: Number(shippingCharges),
       totalPrice: Number(total)
     }
 
     try {
+      // BƯỚC 1: Tạo đơn hàng trong Database trước
       const result = await dispatch(createOrder(orderData)).unwrap()
+      const orderId = result.order._id;
 
-      // Lưu thông tin đơn hàng vào sessionStorage
+      // BƯỚC 2: Xử lý theo phương thức thanh toán
+      if (paymentMethod === 'VNPAY') {
+        /**
+         * LUỒNG VNPAY:
+         * Gọi backend tạo URL thanh toán. 
+         * Sau đó Redirect người dùng rời khỏi website sang cổng VNPay.
+         */
+        const { data } = await axios.post("/api/v1/payment/vnpay/create", {
+          amount: total,
+          orderId: orderId,
+          orderDescription: `Thanh toan don hang ${orderId}`
+        });
+
+        if (data.success && data.paymentUrl) {
+          // Lưu danh sách sản phẩm đang đặt vào sessionStorage để xóa sau khi thanh toán thành công
+          // Tránh việc xóa nhầm các sản phẩm khác vẫn còn trong giỏ hàng
+          sessionStorage.setItem('vnpayOrderedItems', JSON.stringify(cartItems));
+          
+          window.location.href = data.paymentUrl;
+          return; // Kết thúc tại đây, logic xóa giỏ sẽ nằm ở trang Result
+        } else {
+          toast.error("Lỗi khi tạo liên kết thanh toán VNPay");
+          return;
+        }
+      }
+
+      /**
+       * LUỒNG COD (Thanh toán khi nhận hàng):
+       * Lưu thông tin vào session, hiển thị popup và dọn dẹp giỏ hàng ngay lập tức.
+       */
       const data = { subtotal, shippingCharges, tax, total }
       sessionStorage.setItem('orderInfo', JSON.stringify(data))
       sessionStorage.setItem('paymentMethod', JSON.stringify(paymentMethod))
 
-      // Lưu order ID và hiện popup
       setCreatedOrderId(result.order._id)
       setShowSuccessPopup(true)
-      sessionStorage.removeItem("directBuyItem"); // Xóa mục mua ngay sau khi thành công
-      sessionStorage.removeItem("selectedOrderItems"); // Xóa mục đã chọn sau khi thành công
+      sessionStorage.removeItem("directBuyItem"); 
+      sessionStorage.removeItem("selectedOrderItems"); 
 
-      // Xóa sản phẩm đã đặt khỏi giỏ hàng
+      // Xóa sản phẩm khỏi Redux Store và LocalStorage
       dispatch(removeOrderedItems(cartItems));
 
-      // Toast success
       toast.success('Đặt hàng thành công!', {
         position: 'top-center',
         autoClose: 2000
       })
     } catch (error) {
-      // Xử lý lỗi
-      toast.error(error || 'Đặt hàng thất bại. Vui lòng thử lại!', {
+      console.error('Create order error:', error);
+      const message = error.response?.data?.message || (typeof error === 'string' ? error : (error.message || "Đã có lỗi xảy ra"));
+      toast.error(`Lỗi: ${message}`, {
         position: 'top-center',
         autoClose: 3000
       })
-      console.error('Create order error:', error)
     }
   }
 
@@ -299,17 +337,38 @@ function OrderConfirm() {
                 {/* Payment Method */}
                 <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
                   <h3 className="mb-6 font-serif text-xl font-bold italic text-slate-900">Phương thức thanh toán</h3>
-                  <div className="flex items-center gap-4 rounded-lg border-2 border-[#702e36] bg-[#702e36]/5 p-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#702e36] text-white">
+                  
+                  {/* Option COD */}
+                  <div 
+                    className={`flex items-center gap-4 rounded-lg border-2 p-4 cursor-pointer transition-all mb-4 ${paymentMethod === 'COD' ? 'border-[#702e36] bg-[#702e36]/5' : 'border-slate-100 hover:border-slate-200'}`}
+                    onClick={() => setPaymentMethod('COD')}
+                  >
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-full ${paymentMethod === 'COD' ? 'bg-[#702e36] text-white' : 'bg-slate-100 text-slate-400'}`}>
                       <span className="material-symbols-outlined">payments</span>
                     </div>
                     <div>
                       <p className="text-sm font-bold">Thanh toán khi nhận hàng (COD)</p>
                       <p className="text-xs text-slate-500">Thanh toán bằng tiền mặt khi giao hàng</p>
                     </div>
-                    <span className="material-symbols-outlined ml-auto text-[#702e36]">check_circle</span>
+                    {paymentMethod === 'COD' && <span className="material-symbols-outlined ml-auto text-[#702e36]">check_circle</span>}
+                  </div>
+
+                  {/* Option VNPAY */}
+                  <div 
+                    className={`flex items-center gap-4 rounded-lg border-2 p-4 cursor-pointer transition-all ${paymentMethod === 'VNPAY' ? 'border-[#005ba1] bg-[#005ba1]/5' : 'border-slate-100 hover:border-slate-200'}`}
+                    onClick={() => setPaymentMethod('VNPAY')}
+                  >
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-full ${paymentMethod === 'VNPAY' ? 'bg-[#005ba1] text-white' : 'bg-slate-100 text-slate-400'}`}>
+                      <span className="material-symbols-outlined">credit_card</span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold">Thanh toán qua VNPay</p>
+                      <p className="text-xs text-slate-500">Thanh toán qua ứng dụng ngân hàng, QR Code</p>
+                    </div>
+                    {paymentMethod === 'VNPAY' && <span className="material-symbols-outlined ml-auto text-[#005ba1]">check_circle</span>}
                   </div>
                 </div>
+
 
                 {/* Order Summary */}
                 <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
@@ -339,10 +398,11 @@ function OrderConfirm() {
                   <button 
                     onClick={proceesToPayment}
                     disabled={cartItems.length === 0}
-                    className="coral-gradient mt-8 w-full rounded-full py-4 text-center font-bold uppercase tracking-widest text-white shadow-lg transition-transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`${paymentMethod === 'VNPAY' ? 'bg-[#005ba1]' : 'coral-gradient'} mt-8 w-full rounded-full py-4 text-center font-bold uppercase tracking-widest text-white shadow-lg transition-transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
-                    Xác nhận đặt hàng
+                    {paymentMethod === 'VNPAY' ? 'Thanh toán VNPay' : 'Xác nhận đặt hàng'}
                   </button>
+
                   <p className="mt-4 text-center text-[10px] uppercase tracking-tighter text-slate-400">
                     Bằng cách nhấn nút, bạn đồng ý với các điều khoản của Tobi Shop
                   </p>
