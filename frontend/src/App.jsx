@@ -53,7 +53,7 @@ import UpdatePassword from './User/UpdatePassword'
 import ForgotPassword from './User/ForgotPassword'
 import ResetPassword from './User/ResetPassword'
 import { loaderUser } from './features/user/userSlice'
-import { syncCartWithUser } from './features/cart/cartSlice'
+import { syncCartWithUser, fetchCart } from './features/cart/cartSlice'
 import UserDashboard from './User/UserDashboard'
 
 import Cart from './Cart/Cart'
@@ -65,6 +65,8 @@ import OrderDetails from "./Cart/OrderDetails";
 import OrderSuccess from "./Cart/OrderSuccess";
 import Notifications from "./User/Notifications";
 import Vouchers from "./User/Vouchers";
+import VnpayResult from "./Pages/VnpayResult";
+
 
 // Admin
 import AdminLayout from './admin/components/AdminLayout';
@@ -88,6 +90,9 @@ function App() {
   useEffect(() => {
     const userId = user ? user._id : null;
     dispatch(syncCartWithUser(userId));
+    if (userId) {
+      dispatch(fetchCart());
+    }
   }, [dispatch, user]);
 
   return (
@@ -135,6 +140,15 @@ function App() {
           path="/order/success"
           element={<ProtectedRoute element={<OrderSuccess />} />}
         />
+        <Route
+          path="/payment/success"
+          element={<ProtectedRoute element={<VnpayResult />} />}
+        />
+        <Route
+          path="/payment/failed"
+          element={<ProtectedRoute element={<VnpayResult />} />}
+        />
+
 
         <Route path="/notifications" element={<ProtectedRoute element={<Notifications />} />} />
         <Route path="/notifications/order" element={<ProtectedRoute element={<Notifications />} />} />

@@ -93,7 +93,73 @@ function Payment() {
   const getItemImage = (item) =>
     item?.image || item?.images?.[0]?.url || item?.images?.[0] || item?.thumbnail || "";
 
+  const placeOrderVnpay = async () => {
+    setError("");
+    if (!shippingInfoPayload.address || !shippingInfoPayload.city || !shippingInfoPayload.state) {
+      setError("Thiếu thông tin giao hàng (địa chỉ/tỉnh/quận).");
+      return;
+    }
+    if (cartItems.length === 0) {
+      setError("Giỏ hàng trống.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // 1. Tạo đơn hàng PENDING với method VNPAY
+      const orderPayload = {
+        shippingInfo: shippingInfoPayload,
+        orderItems: cartItems.map((item) => ({
+          name: item.name,
+          price: String(item.price),
+          quantity: item.quantity,
+          image: getItemImage(item),
+          product: item.product || item._id,
+        })),
+        itemPrice: totals.itemPrice,
+        taxPrice: totals.taxPrice,
+        shippingPrice: totals.shippingPrice,
+        totalPrice: totals.totalPrice,
+        paymentMethod: "VNPAY"
+      };
+
+      const { data: orderData } = await axios.post("/api/v1/order/new", orderPayload, {
+        withCredentials: true,
+      });
+
+      const orderId = orderData?.orderId || orderData?.order?._id;
+      if (!orderId) throw new Error("Không lấy được ID đơn hàng");
+
+      // 2. Gọi API tạo link thanh toán VNPay
+      const { data: paymentData } = await axios.post("/api/v1/payment/vnpay/create", {
+        amount: totals.totalPrice,
+        orderId: orderId,
+        orderDescription: `Thanh toan don hang ${orderId}`
+      }, {
+        withCredentials: true,
+      });
+
+      if (paymentData.success && paymentData.paymentUrl) {
+         // Dọn dữ liệu trước khi redirect
+         sessionStorage.removeItem("orderInfo");
+         localStorage.removeItem("cartItems");
+         
+         // Chuyển hướng sang VNPay
+         window.location.href = paymentData.paymentUrl;
+      } else {
+        setError("Lỗi khi tạo liên kết thanh toán VNPay");
+      }
+
+    } catch (err) {
+      const msg = err?.response?.data?.message || err?.message || "Lỗi xử lý VNPay";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const placeOrderCOD = async () => {
+
     setError("");
 
     // check tối thiểu
@@ -172,7 +238,17 @@ function Payment() {
         <button className="payment-btn hover-btn-gradient" onClick={placeOrderCOD} disabled={loading}>
           {loading ? "Đang tạo đơn..." : `Thanh toán khi nhận hàng (${formatVND(displayTotal)})`}
         </button>
+
+        <button 
+          className="payment-btn hover-btn-gradient" 
+          style={{ marginTop: '15px', background: 'linear-gradient(to right, #e61937, #f7d01b)', color: '#fff' }}
+          onClick={() => placeOrderVnpay()} 
+          disabled={loading}
+        >
+          {loading ? "Đang xử lý..." : `Thanh toán qua VNPay (${formatVND(displayTotal)})`}
+        </button>
       </div>
+
 
       <Footer />
     </>

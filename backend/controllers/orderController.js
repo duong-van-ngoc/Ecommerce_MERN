@@ -15,9 +15,10 @@ export const createNewOrder = handleAsyncError(async (req, res, next) => {
     orderItems,
 
     paymentInfo: {
-      method: "COD",
+      method: req.body.paymentMethod || "COD",
       status: "PENDING",
     },
+
 
     itemPrice,
     taxPrice,
