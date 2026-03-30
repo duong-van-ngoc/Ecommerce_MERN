@@ -56,6 +56,7 @@ import '../styles/ProductsManagement.css';
 import ProductFormModal from '../components/ProductFormModal';
 import ImportProductModal from '../components/ImportProductModal';
 import StockManagement from '../components/StockManagement';
+import { STYLE_OPTIONS } from '../../constants/aiSettings';
 
 /**
  * ProductsManagement - Nội dung trang quản lý sản phẩm (không có layout)
@@ -68,6 +69,7 @@ function ProductsManagement() {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [initialFormData, setInitialFormData] = useState(null);
     const [activeTab, setActiveTab] = useState('list'); // 'list' | 'stock'
+    const [filterStyle, setFilterStyle] = useState('');
 
     // Fetch products khi component mount
     useEffect(() => {
@@ -135,7 +137,11 @@ function ProductsManagement() {
 
         return (
             (product.name && product.name.toLowerCase().includes(searchLower)) ||
+            (product.style && product.style.toLowerCase().includes(searchLower)) ||
+            (product.vibe && product.vibe.toLowerCase().includes(searchLower)) ||
             categoryStr.toLowerCase().includes(searchLower)
+        ) && (
+            filterStyle === '' || product.style === filterStyle
         );
     });
 
@@ -171,6 +177,27 @@ function ProductsManagement() {
                 >
                     📊 Nhập hàng
                 </button>
+                {activeTab === 'list' && (
+                    <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <span style={{ fontSize: '13px', color: '#666' }}>Lọc Style:</span>
+                        <select 
+                            className="form-select" 
+                            style={{ padding: '6px 12px', fontSize: '13px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                            value={filterStyle}
+                            onChange={(e) => setFilterStyle(e.target.value)}
+                        >
+                            <option value="">Tất cả</option>
+                            {STYLE_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                        </select>
+                        <button 
+                            className="btn-clear-filter"
+                            style={{ background: 'none', border: 'none', color: '#004aeb', fontSize: '13px', cursor: 'pointer', display: filterStyle ? 'block' : 'none' }}
+                            onClick={() => setFilterStyle('')}
+                        >
+                            Xóa lọc
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Tab Content */}
@@ -184,6 +211,7 @@ function ProductsManagement() {
                                     <th>Hình Ảnh</th>
                                     <th>Tên Sản Phẩm</th>
                                     <th>Giá</th>
+                                    <th>Style</th>
                                     <th>Danh Mục</th>
                                     <th>Kho</th>
                                     <th>Đánh Giá</th>
@@ -213,6 +241,16 @@ function ProductsManagement() {
                                             </td>
                                             <td className="product-name">{product.name}</td>
                                             <td className="product-price">{formatVND(product.price)}</td>
+                                            <td>
+                                                <div style={{display: 'flex', flexDirection: 'column', gap: '2px'}}>
+                                                    <span className={`style-badge ${!product.style ? 'no-style' : ''}`}>
+                                                        {product.style || 'Chưa gắn tag'}
+                                                    </span>
+                                                    {product.trending && (
+                                                        <span className="trending-tag">HOT</span>
+                                                    )}
+                                                </div>
+                                            </td>
                                             <td>{typeof product.category === 'object' ? product.category?.level1 : product.category}</td>
                                             <td>
                                                 <span className={`stock-badge ${product.stock < 10 ? 'low' : ''}`}>

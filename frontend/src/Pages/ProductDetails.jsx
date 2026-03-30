@@ -62,7 +62,7 @@ import Footer from '../components/Footer'
 import Loader from '../components/Loader'
 import Rating from '../components/Rating';
 import { useDispatch, useSelector } from 'react-redux'
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { getProductDetails, removeErrors } from '../features/products/productSlice'
 import { toast } from 'react-toastify'
 import { addItemsToCart, removeMessage } from '../features/cart/cartSlice';
@@ -84,6 +84,7 @@ function ProductDetails() {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams();
 
   // Hàm hỗ trợ ánh xạ tên màu sang mã hex (Tạm thời hardcode, sau này có thể lưu trong DB hoặc config)
@@ -211,6 +212,16 @@ function ProductDetails() {
       setSelectionError(true);
       return;
     }
+
+    if (!isAuthenticated) {
+      toast.info('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng', {
+        position: 'top-center',
+        autoClose: 2500
+      });
+      navigate(`/login?redirect=${encodeURIComponent(`${location.pathname}${location.search}`)}`);
+      return;
+    }
+
     setSelectionError(false);
     const color = selectedColor !== null ? productColors[selectedColor]?.name : '';
     const size = selectedSize !== null ? productSizes[selectedSize]?.name : '';

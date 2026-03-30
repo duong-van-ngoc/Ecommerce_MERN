@@ -101,7 +101,7 @@ export const getProduct = createAsyncThunk('product/getProduct',
       return data;
 
     } catch (error) {
-      return rejectWithValue(error.response?.data || "An error occurred");
+      return rejectWithValue(error.response?.data || "Đã xảy ra lỗi khi tải sản phẩm!");
     }
   }
 );

@@ -144,6 +144,17 @@ function ImportProductModal({ onClose, onImportSuccess }) {
                         mappedRow.category_level3 = row['category_level3'] || row['category.level3'] || row['Category Level 3'] || row['Danh mục cấp 3'] || row['Danh mục Cấp 3'] || row['level3'];
                     }
 
+                    // --- Mapping AI Stylist fields ---
+                    if (!mappedRow.vibe) {
+                        mappedRow.vibe = row['vibe'] || row['Vibe'] || row['Cảm hứng'] || row['Cảm xúc'];
+                    }
+                    if (!mappedRow.style) {
+                        mappedRow.style = row['style'] || row['Style'] || row['Phong cách'] || row['Gu thời trang'];
+                    }
+                    if (mappedRow.trending === undefined) {
+                        mappedRow.trending = row['trending'] || row['Trending'] || row['Xu hướng'] || row['Hot'] || row['Nổi bật'];
+                    }
+
                     // Thỏa mãn validation cũ nếu file có field 'category' hoặc 'Danh mục'
                     if (!mappedRow.category_level1) {
                         const oldCat = row['category'] || row['Category'] || row['Danh mục'];
@@ -239,14 +250,16 @@ function ImportProductModal({ onClose, onImportSuccess }) {
                 price: 150000, originalPrice: 200000, stock: 100,
                 category_level1: 'NAM', category_level2: 'Áo', category_level3: 'Thun',
                 brand: 'Coolmate', material: 'Cotton',
-                sizes: 'S,M,L,XL', colors: 'Đen,Trắng,Navy'
+                sizes: 'S,M,L,XL', colors: 'Đen,Trắng,Navy',
+                vibe: 'Năng động, Thoải mái', style: 'Streetwear', trending: 'true'
             },
             {
                 sku: 'TXN01', name: 'Túi xách nữ thời trang', description: 'Túi xách da PU cao cấp',
                 price: 450000, originalPrice: 600000, stock: 50,
                 category_level1: 'PHỤ KIỆN & GIÀY DÉP', category_level2: 'Phụ kiện Nữ', category_level3: 'Túi xách',
                 brand: 'Juno', material: 'Da PU',
-                sizes: 'Free', colors: 'Đen,Đỏ,Be'
+                sizes: 'Free', colors: 'Đen,Đỏ,Be',
+                vibe: 'Thanh lịch, Sang trọng', style: 'Office', trending: 'false'
             }
         ];
         const ws = XLSX.utils.json_to_sheet(template);
@@ -334,6 +347,8 @@ function ImportProductModal({ onClose, onImportSuccess }) {
                                         <th>SKU</th>
                                         <th>Tên SP</th>
                                         <th>Giá</th>
+                                        <th>Style</th>
+                                        <th>Trending</th>
                                         <th>Kho</th>
                                         <th>Danh mục 1</th>
                                         <th>Thương hiệu</th>
@@ -372,6 +387,8 @@ function ImportProductModal({ onClose, onImportSuccess }) {
                                                 <td>{row.sku || <em className="empty-cell">—</em>}</td>
                                                 <td>{row.name || <em className="empty-cell">—</em>}</td>
                                                 <td>{row.price ? formatVND(row.price) : <em className="empty-cell">—</em>}</td>
+                                                <td>{row.style || <em className="empty-cell">—</em>}</td>
+                                                <td style={{textAlign: 'center'}}>{row.trending === true || String(row.trending).toLowerCase() === 'true' ? '🔥' : '—'}</td>
                                                 <td>
                                                     {rowError ? row.stock :
                                                         (row._isExisting && row._importMode === 'accumulate') ?

@@ -1,3 +1,4 @@
+
 /**
  * ============================================================================
  * COMPONENT: ProductFormModal
@@ -53,6 +54,7 @@ import { useDispatch } from 'react-redux';
 import { createProduct, updateProduct } from '../adminSLice/adminSlice';
 import { toast } from 'react-toastify';
 import { getLevel1Categories, getLevel2Categories, getLevel3Categories } from '../../constants/categories';
+import { STYLE_OPTIONS } from '../../constants/aiSettings';
 import '../styles/ProductFormModal.css';
 
 function ProductFormModal({ product, onClose, initialData }) {
@@ -74,6 +76,9 @@ function ProductFormModal({ product, onClose, initialData }) {
         oldImages: [],
         sizes: [],
         colors: [],
+        vibe: '',
+        style: '',
+        trending: false,
     });
 
     const [imagesPreview, setImagesPreview] = useState([]);
@@ -96,7 +101,10 @@ function ProductFormModal({ product, onClose, initialData }) {
                 images: [],
                 oldImages: product.images || [],
                 sizes: product.sizes || [],
-                colors: product.colors || []
+                colors: product.colors || [],
+                vibe: product.vibe || '',
+                style: product.style || '',
+                trending: product.trending || false,
             });
             setImagesPreview(product.images?.map(img => img.url) || []);
         } else if (initialData) {
@@ -260,6 +268,10 @@ function ProductFormModal({ product, onClose, initialData }) {
         formData.sizes.forEach((tag) => myForm.append('sizes', tag));
         formData.colors.forEach((tag) => myForm.append('colors', tag));
 
+        myForm.set('vibe', formData.vibe || '');
+        myForm.set('style', formData.style || '');
+        myForm.set('trending', String(formData.trending === true));
+
         // Append new images
         formData.images.forEach((image) => {
             myForm.append('images', image);
@@ -291,9 +303,10 @@ function ProductFormModal({ product, onClose, initialData }) {
                 await dispatch(createProduct(myForm)).unwrap();
                 toast.success('Thêm sản phẩm thành công!');
             }
+            // Gọi onClose để đóng modal và làm mới dữ liệu ở component cha
             onClose();
         } catch (error) {
-            toast.error(error || 'Có lỗi xảy ra!');
+            toast.error(error || 'Có lỗi xảy ra khi lưu sản phẩm!');
         }
     };
 
@@ -535,6 +548,53 @@ function ProductFormModal({ product, onClose, initialData }) {
                                                 onKeyDown={(e) => handleTagKeyDown(e, 'colors')}
                                             />
                                             <button type="button" className="tag-add-btn" onClick={() => addTag('colors')}>Thêm</button>
+                                        </div>
+                                    </div>
+
+                                    {/* AI Personal Stylist Fields */}
+                                    <div className="form-section-block" style={{marginTop: '20px', borderTop: '1px dashed #ddd', paddingTop: '15px'}}>
+                                        <h4 style={{fontSize: '0.9rem', color: '#666', marginBottom: '10px', display: 'flex', alignItems: 'center'}}>
+                                            <span style={{marginRight: '8px'}}>✨</span> AI Stylist Settings
+                                        </h4>
+                                        <div className="form-group">
+                                            <label className="form-label">Phong cách (Style)</label>
+                                            <select
+                                                name="style"
+                                                className="form-select"
+                                                value={formData.style}
+                                                onChange={handleChange}
+                                            >
+                                                <option value="">Chọn phong cách...</option>
+                                                {STYLE_OPTIONS.map(option => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.icon} {option.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Cảm hứng (Vibe)</label>
+                                            <input
+                                                type="text"
+                                                name="vibe"
+                                                className="form-input"
+                                                value={formData.vibe}
+                                                onChange={handleChange}
+                                                placeholder="VD: Bí ẩn, Năng động, Quyến rũ..."
+                                            />
+                                        </div>
+                                        <div className="form-group" style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                                            <input
+                                                type="checkbox"
+                                                name="trending"
+                                                id="trending_check"
+                                                checked={formData.trending}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, trending: e.target.checked }))}
+                                                style={{width: '18px', height: '18px', cursor: 'pointer'}}
+                                            />
+                                            <label htmlFor="trending_check" style={{cursor: 'pointer', fontWeight: '500', color: '#d32f2f'}}>
+                                                Sản phẩm HOT / Xu hướng 🔥
+                                            </label>
                                         </div>
                                     </div>
                                 </div>
