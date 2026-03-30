@@ -70,6 +70,19 @@ const productSchema = new mongoose.Schema({ // tạo schema cho sản phẩm
     colors: [ // mảng các màu có sẵn: ["Red", "Blue"]
         { type: String }
     ],
+    // --- PHÂN LOẠI PHONG CÁCH (AI STYLIST) ---
+    vibe: { // cảm hứng sản phẩm (Bí ẩn, Năng động, Phóng khoáng...)
+        type: String,
+        default: ""
+    },
+    style: { // phong cách thời trang (Streetwear, Minimalism, Vintage...)
+        type: String,
+        default: ""
+    },
+    trending: { // đánh giá sản phẩm hot/xu hướng
+        type: Boolean,
+        default: false
+    },
 
     // --- HÌNH ẢNH & ĐÁNH GIÁ ---
     ratings: { // đánh giá trung bình của sản phẩm
@@ -133,5 +146,5 @@ const productSchema = new mongoose.Schema({ // tạo schema cho sản phẩm
 
 })
 
-export default mongoose.model("Product", productSchema); // xuất model Product để sử dụng ở các file khác
+export default mongoose.models.Product || mongoose.model("Product", productSchema);
 // Product: tên model, productSchema: schema của model

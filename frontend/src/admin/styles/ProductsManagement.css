@@ -287,3 +287,43 @@
         min-width: 800px;
     }
 }
+
+/* AI Stylist Badges */
+.style-badge {
+    font-size: 11px;
+    background: #f8fafc;
+    padding: 2px 8px;
+    border-radius: 6px;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    width: fit-content;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+}
+
+.style-badge.no-style {
+    background: #f1f5f9;
+    color: #94a3b8;
+    border: 1px dashed #cbd5e1;
+    font-size: 11px;
+    font-weight: 400;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.trending-tag {
+    font-size: 10px;
+    color: #ef4444;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.trending-tag::before {
+    content: "🔥";
+}

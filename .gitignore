@@ -7,6 +7,16 @@ node_modules
 # Ignore agent folder
 .agent/
 
+# Backup and Legacy
+BE_laptopshop/
+
+# Temporary and Test files
+temp_files.json
+test_vnpay.js
+tmp_check_excel.js
+tmp_url.txt
+add-comments.cjs
+
 # Ignore custom requested folders
 fix_bug/
 test_data/

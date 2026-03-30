@@ -11,6 +11,7 @@ import settings from './routes/settingsRoutes.js';
 import address from './routes/addressRoute.js';
 import payment from './routes/paymentRoutes.js';
 import cart from './routes/cartRoutes.js';
+import aiAssistant from './routes/aiRoute.js';
 
 import errorHandleMiddleware from './middleware/error.js';
 import cookieParser from 'cookie-parser';
@@ -28,13 +29,21 @@ app.set('query parser', 'extended');
 const allowedOrigins = [
     process.env.FRONTEND_URL,
     'http://localhost:5173',
+    'http://localhost:5174',
     'http://localhost:3000'
 ].filter(Boolean);
+
+// Allow any localhost port in development
+const isAllowedOrigin = (origin) => {
+    if (allowedOrigins.includes(origin)) return true;
+    if (process.env.NODE_ENV !== 'production' && /^http:\/\/localhost:\d+$/.test(origin)) return true;
+    return false;
+};
 
 app.use((req, res, next) => {
     const origin = req.headers.origin;
 
-    if (origin && allowedOrigins.includes(origin)) {
+    if (origin && isAllowedOrigin(origin)) {
         res.header('Access-Control-Allow-Origin', origin);
         res.header('Vary', 'Origin');
         res.header('Access-Control-Allow-Credentials', 'true');
@@ -73,6 +82,7 @@ app.use("/api/v1", settings);
 app.use("/api/v1/address", address);
 app.use("/api/v1", payment);
 app.use("/api/v1", cart);
+app.use("/api/v1/ai", aiAssistant);
 
 app.use(errorHandleMiddleware);
 

@@ -72,6 +72,12 @@ export const createProducts = handleAsyncError(async (req, res, next) => {
     if (!req.body.colors) req.body.colors = [];
     if (!Array.isArray(req.body.colors)) req.body.colors = [req.body.colors];
 
+    // --- Xử lý các trường AI Stylist ---
+    if (req.body.vibe) req.body.vibe = String(req.body.vibe).trim();
+    if (req.body.style) req.body.style = String(req.body.style).trim();
+    if (req.body.trending !== undefined) {
+        req.body.trending = req.body.trending === true || String(req.body.trending).toLowerCase() === 'true' || req.body.trending === 1;
+    }
 
     const product = await Product.create(req.body);
 
@@ -113,74 +119,79 @@ export const getAllProducts = handleAsyncError(async (req, res, next) => {
     });
 })
 
-// cập nhật sản phẩm 
-export const updateProduct = async (req, res, next) => {
+// --- HAM UPDATE SAN PHAM (DA TOI UU) ---
+
+export const updateProduct = handleAsyncError(async (req, res, next) => {
     let product = await Product.findById(req.params.id);
+
     if (!product) {
         return next(new HandleError("Sản phẩm không tồn tại", 404));
     }
 
-    let images = [];
+    console.log("---------- [DEEP DEBUG] ----------");
+    console.log("ID nhận được:", req.params.id);
+    console.log("Vibe từ Body:", req.body.vibe);
+    console.log("Style từ Body:", req.body.style);
+    console.log("Schema Paths:", Object.keys(Product.schema.paths).filter(p => ['vibe', 'style', 'trending'].includes(p)));
 
-    // Xử lý ảnh cũ
+    // 1. Xử lý Hình ảnh
+    let images = [];
     if (req.body.oldImages) {
-        // Nó đến dưới dạng chuỗi JSON từ frontend
         try {
             const oldImages = JSON.parse(req.body.oldImages);
-            if (Array.isArray(oldImages)) {
-                images = [...oldImages];
-            }
-        } catch (e) {
-            console.error("Error parsing oldImages", e);
-        }
+            if (Array.isArray(oldImages)) images = [...oldImages];
+        } catch (e) { console.error("Lỗi parse oldImages:", e); }
     }
 
-    // Xử lý upload ảnh mới
     if (req.files && req.files.images) {
         const files = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
-
         for (let i = 0; i < files.length; i++) {
             const result = await new Promise((resolve, reject) => {
-                const uploadStream = cloudinary.uploader.upload_stream(
-                    { folder: "products" },
-                    (error, result) => {
-                        if (error) reject(error);
-                        else resolve(result);
-                    }
-                );
+                const uploadStream = cloudinary.uploader.upload_stream({ folder: "products" }, (error, result) => {
+                    if (error) reject(error); else resolve(result);
+                });
                 uploadStream.end(files[i].data);
             });
-
-            images.push({
-                public_id: result.public_id,
-                url: result.secure_url,
-            });
+            images.push({ public_id: result.public_id, url: result.secure_url });
         }
     }
 
-    if (typeof req.body.category === 'string') {
-        try {
-            req.body.category = JSON.parse(req.body.category);
-        } catch (error) {
-            return next(new HandleError("Dữ liệu category không hợp lệ, vui lòng gửi dạng Object {level1, level2, level3}", 400));
-        }
+    // 2. Cập nhật các trường cơ bản
+    const fields = ["name", "description", "price", "originalPrice", "stock", "brand", "material", "sku"];
+    fields.forEach(f => { if (req.body[f] !== undefined) product[f] = req.body[f]; });
+
+    // 3. Category & Arrays
+    if (req.body.category) {
+        product.category = typeof req.body.category === "string" ? JSON.parse(req.body.category) : req.body.category;
+    }
+    if (req.body.sizes) product.sizes = Array.isArray(req.body.sizes) ? req.body.sizes : [req.body.sizes];
+    if (req.body.colors) product.colors = Array.isArray(req.body.colors) ? req.body.colors : [req.body.colors];
+
+    // 4. [FIX CHỐT] Cập nhật AI STYLIST
+    if (req.body.vibe !== undefined) product.vibe = String(req.body.vibe).trim();
+    if (req.body.style !== undefined) product.style = String(req.body.style).trim();
+    if (req.body.trending !== undefined) {
+        product.trending = req.body.trending === true || String(req.body.trending).toLowerCase() === "true" || req.body.trending === 1;
     }
 
-    req.body.images = images;
+    if (images.length > 0) product.images = images;
 
-    if (req.body.sizes && !Array.isArray(req.body.sizes)) req.body.sizes = [req.body.sizes];
-    if (req.body.colors && !Array.isArray(req.body.colors)) req.body.colors = [req.body.colors];
+    // Lưu và Log kết quả
+    await product.save();
 
+    console.log("Sản phẩm sau khi SAVE:", { vibe: product.vibe, style: product.style });
+    console.log("----------------------------------");
 
-    product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-        new: true,
-        runValidators: true,
-    })
     res.status(200).json({
         success: true,
-        product
-    })
-}
+        product,
+        _tobi_debug: {
+            received_vibe: req.body.vibe,
+            received_style: req.body.style,
+            schema_keys: Object.keys(Product.schema.paths)
+        }
+    });
+});
 // Xóa sản phẩm 
 export const deteteProduct = handleAsyncError(async (req, res, next) => {
     const product = await Product.findByIdAndDelete(req.params.id)
@@ -435,12 +446,15 @@ export const importProducts = handleAsyncError(async (req, res, next) => {
         };
 
         const item = {
-            sku: getValue(['SKU', 'sku', 'Mã SP', 'Mã sản phẩm']),
             name: getValue(['Tên', 'Tên sản phẩm', 'Name', 'name']),
             description: getValue(['Mô Tả', 'Mô tả', 'Description', 'description']),
             price: getValue(['Giá Bán', 'Giá bán', 'Price', 'price']),
+            sku: getValue(['SKU', 'sku', 'Mã SP', 'Mã sản phẩm']),
             originalPrice: getValue(['Giá Gốc', 'Giá gốc', 'Original Price', 'originalPrice']),
             stock: getValue(['Tồn Kho', 'Tồn kho', 'Số lượng', 'Stock', 'stock']),
+            vibe: getValue(['Cảm hứng', 'Vibe', 'vibe', 'Cảm xúc', 'Cam hung', 'vibe_stylist']),
+            style: getValue(['Phong cách', 'Style', 'style', 'Phong cach', 'style_stylist']),
+            trending: getValue(['Trending', 'Hot', 'Xu hướng', 'thinh_hanh', 'Xu huong']) === 'true' || getValue(['Trending', 'Hot', 'Xu hướng']) === true,
             categoryLevel1: getValue(['Danh Mục Cấp 1', 'Danh mục cấp 1', 'Category Level 1', 'level1', 'category_level1', 'category.level1']),
             categoryLevel2: getValue(['Danh Mục Cấp 2', 'Danh mục cấp 2', 'Category Level 2', 'level2', 'category_level2', 'category.level2']),
             categoryLevel3: getValue(['Danh Mục Cấp 3', 'Danh mục cấp 3', 'Category Level 3', 'level3', 'category_level3', 'category.level3']),
@@ -515,6 +529,9 @@ export const importProducts = handleAsyncError(async (req, res, next) => {
                 material: item.material ? String(item.material).trim() : '',
                 sizes,
                 colors,
+                vibe: item.vibe ? String(item.vibe).trim() : '',
+                style: item.style ? String(item.style).trim() : '',
+                trending: item.trending === true || String(item.trending).toLowerCase() === 'true' || item.trending === 1,
                 user: req.user.id
             };
 
@@ -605,7 +622,9 @@ export const importProductsPreCheck = handleAsyncError(async (req, res, next) =>
                 exists: true,
                 _id: existingProduct._id,
                 currentStock: existingProduct.stock,
-                currentPrice: existingProduct.price
+                currentPrice: existingProduct.price,
+                currentVibe: existingProduct.vibe || "N/A",
+                currentStyle: existingProduct.style || "N/A"
             });
         } else {
             results.push({
@@ -713,6 +732,15 @@ export const updateProductsBulk = handleAsyncError(async (req, res, next) => {
                 level3: String(catL3 || product.category.level3).trim(),
             }
         }
+
+        const vibe = getValue(['Vibe', 'Cảm hứng', 'vibe']);
+        if (vibe !== null) updateData.vibe = String(vibe).trim();
+
+        const style = getValue(['Style', 'Phong cách', 'style']);
+        if (style !== null) updateData.style = String(style).trim();
+
+        const trending = getValue(['Trending', 'Xu hướng', 'Hot', 'trending']);
+        if (trending !== null) updateData.trending = trending === true || String(trending).toLowerCase() === 'true' || trending === 1;
 
         try {
             const updatedProduct = await Product.findByIdAndUpdate(id, updateData, {

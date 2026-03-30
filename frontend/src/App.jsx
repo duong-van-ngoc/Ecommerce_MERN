@@ -56,8 +56,9 @@ import { loaderUser } from './features/user/userSlice'
 import { syncCartWithUser, fetchCart } from './features/cart/cartSlice'
 import UserDashboard from './User/UserDashboard'
 
-import Cart from './Cart/Cart'
-import Shipping from './Cart/Shipping'
+import Cart from "./Cart/Cart.jsx";
+import CartAction from "./Cart/CartAction.jsx";
+import Shipping from "./Cart/Shipping.jsx";
 import OrderConfirm from './Cart/OrderConfirm'
 import Payment from './Cart/Payment'
 import MyOrders from "./Cart/MyOrders";
@@ -66,6 +67,7 @@ import OrderSuccess from "./Cart/OrderSuccess";
 import Notifications from "./User/Notifications";
 import Vouchers from "./User/Vouchers";
 import VnpayResult from "./Pages/VnpayResult";
+import AIChatBubble from "./components/layout/AIChatBubble";
 
 
 // Admin
@@ -119,6 +121,7 @@ function App() {
         <Route path="/password/reset/:token" element={<ResetPassword />} />
 
         <Route path="/cart" element={<Cart />} />
+        <Route path="/cart/add/:id" element={<CartAction />} />
         <Route path="/shipping"
           element={<ProtectedRoute element={<Shipping />} />}
         />
@@ -163,13 +166,13 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="products" element={<ProductsManagement />} />
           <Route path="orders" element={<OrdersManagement />} />
-          <Route path="use
-          rs" element={<UsersManagement />} />
+          <Route path="users" element={<UsersManagement />} />
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
 
       {isAuthenticated && <UserDashboard user={user} />}
+      <AIChatBubble />
     </Router>
   )
 }

@@ -41,7 +41,12 @@ import { useParams, Link } from 'react-router-dom';
 import { getOrderDetails } from '../features/orders/orderSlice';
 import '../OrderStyles/OrderDetails.css'; 
 import formatVND from '../utils/formatCurrency.js';
-import html2pdf from 'html2pdf.js';
+import { toJpeg } from 'html-to-image';
+import jsPDF from 'jspdf';
+import { toast } from 'react-toastify';
+ 
+// Fallback image URL that supports CORS
+const SAFE_PLACEHOLDER_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=200&h=200&q=80";
 
 const OrderDetails = () => {
   const { id } = useParams();
@@ -73,12 +78,107 @@ const OrderDetails = () => {
     year: 'numeric'
   });
 
-  const exportToPDF = () => {
-    window.print();
+  const exportToPDF = async () => {
+    const element = document.getElementById('order-details-content');
+    if (!element) return;
+
+    const toastId = toast.loading("Đang khởi tạo PDF Hóa đơn...");
+    try {
+        // --- Permanent Scrollbar Fix: Bơm mã CSS tạm thời ---
+        const style = document.createElement('style');
+        style.id = 'hide-scrollbar-style';
+        style.innerHTML = `
+            *::-webkit-scrollbar { display: none !important; }
+            * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+            .overflow-x-auto { overflow: visible !important; }
+            /* Hóa đơn Compact Premium Style */
+            #order-details-content { 
+                background-color: #ffffff !important; 
+                color: #000000 !important;
+                padding: 20px !important;
+            }
+            section { 
+                border: 1px solid #e2e8f0 !important; 
+                box-shadow: none !important;
+                background-color: #ffffff !important;
+                margin-bottom: 12px !important; /* Thu gọn giãn cách */
+                padding: 12px 15px !important; /* Thu gọn padding */
+            }
+            h1 { 
+                text-align: center !important; 
+                text-transform: uppercase !important; 
+                border-bottom: 1.5px solid #1e293b !important;
+                padding-bottom: 8px !important;
+                margin-bottom: 15px !important;
+                font-size: 18px !important; /* Thu nhỏ tiêu đề */
+            }
+            h1::before {
+                content: "HÓA ĐƠN BÁN HÀNG" !important;
+                display: block !important;
+                font-size: 22px !important;
+                margin-bottom: 5px !important;
+                color: #1e293b !important;
+            }
+            h2 { font-size: 14px !important; margin-bottom: 8px !important; padding-bottom: 4px !important; }
+            .bg-slate-50, .bg-slate-100 { background-color: #ffffff !important; }
+            /* Thu gọn ảnh sản phẩm */
+            .h-16 { height: 2.5rem !important; width: 2.5rem !important; }
+            table td, table th { padding: 8px 12px !important; font-size: 12px !important; }
+        `;
+        document.head.appendChild(style);
+
+        const dataUrl = await toJpeg(element, { 
+            quality: 0.98,
+            backgroundColor: '#ffffff',
+            pixelRatio: 2, 
+            cacheBust: true,
+            skipFonts: false,
+            imagePlaceholder: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+            filter: (node) => !node?.classList?.contains('no-print'),
+            style: {
+                fontFamily: 'sans-serif',
+                margin: '0',
+                padding: '20px',
+                width: '1024px',
+                maxWidth: 'none'
+            }
+        });
+
+        document.head.removeChild(style);
+
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const margin = 10;
+        const pageHeightLimit = pdfHeight - margin * 2;
+        const pageWidthLimit = pdfWidth - margin * 2;
+        
+        const imgProps = pdf.getImageProperties(dataUrl);
+        
+        // --- Smart Auto-Scaling to fit 1 Page ---
+        // Tính toán tỷ lệ để hình ảnh luôn nằm vừa trong 1 trang A4
+        const scale = Math.min(pageWidthLimit / imgProps.width, pageHeightLimit / imgProps.height);
+        
+        const finalWidth = imgProps.width * scale;
+        const finalHeight = imgProps.height * scale;
+        
+        // Căn giữa hình ảnh theo chiều ngang
+        const xOffset = (pdfWidth - finalWidth) / 2;
+        
+        pdf.addImage(dataUrl, 'JPEG', xOffset, margin, finalWidth, finalHeight);
+        // ----------------------------------------
+        
+        const filename = `Hoa_Don_${orderDetails._id}.pdf`;
+        pdf.save(filename);
+        toast.update(toastId, { render: "Đã xuất Hoá đơn PDF thành công!", type: "success", isLoading: false, autoClose: 3000 });
+    } catch (err) {
+        console.error(err);
+        toast.update(toastId, { render: "Lỗi xuất PDF!", type: "error", isLoading: false, autoClose: 3000 });
+    }
   };
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-5xl">
+    <main id="order-details-content" className="container mx-auto px-4 py-8 max-w-5xl">
       {/* NavigationHeader */}
       <nav className="no-print mb-6 flex items-center justify-between">
         <Link className="flex items-center text-sm font-medium text-blue-600 hover-link-slide transition-colors" to={user?.role === 'admin' ? '/admin/orders' : '/orders/user'}>
@@ -209,7 +309,14 @@ const OrderDetails = () => {
                   <td className="px-6 py-4">
                     <div className="flex items-center">
                       <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-slate-200">
-                        <img alt={item.name} className="h-full w-full object-cover object-center" src={item.image} />
+                        <img 
+                          alt={item.name} 
+                          className="h-full w-full object-cover object-center" 
+                          // Nếu link là example.com (hỏng CORS), tự động đổi sang ảnh xịn chuẩn CORS
+                          src={item.image && item.image.includes('example.com') ? SAFE_PLACEHOLDER_IMAGE : (item.image || SAFE_PLACEHOLDER_IMAGE)} 
+                          crossOrigin="anonymous"
+                          onError={(e) => { e.target.src = SAFE_PLACEHOLDER_IMAGE; }}
+                        />
                       </div>
                       <div className="ml-4">
                         <Link to={`/product/${item.product}`} className="text-sm font-bold text-slate-800 hover-link-slide transition-colors">
