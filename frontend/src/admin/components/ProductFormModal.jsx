@@ -1,53 +1,58 @@
-
 /**
- * ============================================================================
- * COMPONENT: ProductFormModal
- * ============================================================================
- * 1. Component là gì: 
- *    - Hộp Modal Popup chứa Form chỉnh sửa / thêm mới Thông tin chi tiết một Sản phẩm. Hỗ trợ edit nhiều options (Màu, Size, Hình ảnh..).
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Cửa Sổ Biểu Mẫu Sản Phẩm (Product Form Modal).
  * 
- * 2. Props: 
- *    - `product`: Object sản phẩm hiện tại (nếu đang Edit). Dùng làm điều kiện `isEditMode`.
- *    - `onClose`: Function đóng Modal do Cha truyền.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Là "trạm sản xuất" nội dung sản phẩm. Admin thực hiện mọi thao tác Thêm mới (Create) hoặc Chỉnh sửa (Update) chi tiết hàng hóa tại đây.
+ *    - Quản lý siêu dữ liệu phức tạp: Từ giá cả, kho hàng, danh mục 3 cấp cho đến các thuộc tính đặc thù như Size, Màu sắc và đặc biệt là Hình ảnh sản phẩm.
+ *    - Đóng vai trò then chốt trong việc cung cấp dữ liệu cho "AI Stylist" thông qua các trường Style, Vibe và Trending.
  * 
- * 3. State:
- *    - Local State (useState):
- *      + `formData`: Payload chuẩn bị Post (name, price, stock, category..).
- *      + `imagesPreview`: Mảng String Base64 / URL local preview ảnh trước khi tải.
- *      + `tempTag`: Cache lưu String 1 Size / 1 Color đang gõ dở trên ô Input.
- *      + `discountPercent`: % giảm giá tự tính toán được giữa price và originalPrice.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Quản trị Dữ liệu Hàng hóa (Product Catalog Management Flow).
  * 
- * 4. Render lại khi nào:
- *    - Điền Form, Gõ Textbox, Chọn select -> trigger setState `handleChange`.
- *    - Khi tính % Discount trong `useEffect`.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - FormData API for File Upload: Kỹ thuật bắt buộc phải biết! Thay vì gửi JSON, ta đóng gói dữ liệu vào `new FormData()`. Điều này cho phép gửi cả File ảnh (binary) và dữ liệu văn bản trong cùng một Request lên Server.
+ *    - Advanced Image Handling with FileReader: Biến File ảnh từ máy tính người dùng thành chuỗi `Base64` để hiển thị bản xem trước (Preview) ngay lập tức. Giúp Admin biết ảnh có đẹp hay không trước khi bấm nút "Lưu".
+ *    - Drag & Drop & Multi-image logic: Hỗ trợ kéo thả ảnh chuyên nghiệp. Quản lý đồng thời mảng ảnh cũ (`oldImages` từ Cloudinary) và mảng ảnh mới (Files đang chọn) để đảm bảo không bị mất dữ liệu khi cập nhật.
+ *    - Dynamic Cascading Selects: Hệ thống danh mục 3 cấp thông minh. Khi chọn Cấp 1, Cấp 2 sẽ tự động lọc dữ liệu tương ứng. Khi thay đổi cấp cha, các cấp con sẽ tự động reset (`categoryLevel2: ''`) để tránh "râu ông nọ cắm cằm bà kia".
+ *    - Tagging Input System: Tự xây dựng logic nhập "Sizes" và "Colors" bằng cách nhấn Enter. Mỗi tag là một Chip có nút "x" để xóa, lưu trữ dưới dạng mảng chuỗi (`Array of Strings`).
+ *    - Auto-Discount Engine: Một `useEffect` liên tục "soi" Giá bán và Giá gốc. Chỉ cần Admin nhập giá, hệ thống tự tính toán % giảm giá và hiển thị nhãn "Giảm X%" trực quan ngay trên Form.
  * 
- * 5. Event handling:
- *    - `handleChange`: Thay đổi Text Input. Reset Category Con khi đổi Category Cha.
- *    - `handleImageChange`, `handleDrop`: Chuyển path file Hình ảnh sang Base64 đổ ra list preview.
- *    - `removeImage`, `addTag`, `removeTag`: Thay đổi Array data local.
- *    - `handleSubmit`: Khởi tạo formData HTML chuẩn, gói JSON category/oldImages, trigger Edit/Delete action của Redux.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Object `product` (nếu sửa) và `initialData` (data gợi ý từ tab nhập kho).
+ *    - Output: Một bản ghi sản phẩm hoàn chỉnh (bao gồm ảnh đã upload) được lưu vào Database.
  * 
- * 6. Conditional rendering:
- *    - Tùy chỉnh Tiêu đề (Thêm Mới / Cập nhật) dựa vào boolean var `isEditMode`.
- *    - Nút disabled / Label select phụ thuộc Cấp trên.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `formData`: "Nhà kho" chứa toàn bộ thông tin sản phẩm đang sửa dở.
+ *    - `imagesPreview`: Mảng chứa các đường dẫn ảnh để "vẽ" ra giao diện xem trước.
+ *    - `tempTag`: Trạng thái tạm thời khi người dùng đang gõ dở một cái Size hoặc Màu.
  * 
- * 7. List rendering:
- *    - Render List Thẻ `<option>` Danh mục theo config `categories.js`.
- *    - List array Tag Size, Màu Sắc và List Hình ảnh (`imagesPreview.map()`).
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `handleImageChange`: Đọc file ảnh và nạp vào hàng chờ upload.
+ *    - `addTag` / `removeTag`: Thao tác với mảng thuộc tính Size/Màu.
+ *    - `handleSubmit`: Bước quan trọng nhất - Đóng gói tất cả thành `FormData`, bọc JSON cho các Object lồng nhau, rồi "bắn" lên API.
  * 
- * 8. Controlled input:
- *    - Tất cả Input (name, price, select Box) đều có val=`formData.[props]`.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Mở Modal -> Nếu là Sửa thì "đổ" dữ liệu cũ vào Form.
+ *    - Bước 2: Admin gõ tên, chọn danh mục, chỉnh giá (Discount tự nhảy).
+ *    - Bước 3: Kéo thả 3 tấm ảnh sản phẩm vào -> Xem trước ảnh hiện lên bên dưới.
+ *    - Bước 4: Nhập "L, XL" vào ô Size -> Nhấn Lưu -> Hệ thống gửi `FormData` lên Server xử lý.
  * 
- * 9. Lifting state up:
- *    - Trigger API Create / Update của Thunk gửi JSON String data lên Backend (`dispatch(updateProduct/createProduct)`).
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Request: `POST /api/v1/admin/product/new` hoặc `PUT /api/v1/admin/product/:id`.
+ *    - Database: Tác động vào Collection `Products`. Backend sẽ xử lý lưu ảnh lên Cloudinary và lưu Link vào MongoDB.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Component mount, Kiểm tra props `product`. Nếu có Data -> Gắn state `formData` ban đầu để pre-fill input form.
- *    - (2) User điền Input, tương tác Drag and Drop hình ảnh -> Hàm `handleImageChange` sync UI.
- *    - (3) Thao tác Tagging (Màu/Size) tạo Mảng String đẩy vào Array form.
- *    - (4) Khi Submit form -> Gói `new FormData()`, xử object logic array oldImages/newImages. Dispatch Action API.
- *    - (5) Toast báo thành công và gọi Callback `onClose()` tắt giao diện form cha.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - `required` attribute: Đảm bảo Admin không quên nhập các thông tin cốt lõi.
+ *    - AI Stylist Badge: Hiển thị mục cài đặt AI với các Icon riêng biệt để Admin chú ý gắn thuộc tính thời trang.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Đọc file hình ảnh (`FileReader.readAsDataURL`).
+ *    - Dispatch Action gửi dữ liệu lên Server (Tác vụ cực kỳ nặng vì có đính kèm ảnh).
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Lưu ý cách dùng `JSON.stringify` bên trong `FormData`. Vì `FormData` chỉ nhận String hoặc Blob, nên các Object phức tạp (như danh mục) phải được "hóa thạch" thành chuỗi JSON trước khi gửi đi.
+ *    - Logic Xóa ảnh (`removeImage`): Cần phân biệt rõ đang xóa ảnh mới chọn (xóa trong mảng `images`) hay xóa ảnh đã lưu ở server (xóa trong mảng `oldImages`).
  */
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';

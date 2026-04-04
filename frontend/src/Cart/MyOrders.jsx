@@ -1,53 +1,68 @@
 /**
- * ============================================================================
- * COMPONENT: MyOrders
- * ============================================================================
- * 1. Component là gì: 
- *    - Đảm nhiệm vai trò hiển thị và xử lý logic cho vùng phần tử `MyOrders` trong ứng dụng.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Trang Lịch sử Đơn hàng (My Orders Page).
  * 
- * 2. Props: 
- *    - Không nhận trực tiếp props truyền từ cha.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Là trung tâm quản lý mọi giao dịch đã thực hiện của người dùng.
+ *    - Cung cấp cái nhìn tổng quan về trạng thái của các đơn hàng: Đang chờ, Đang giao, Đã nhận hay Đã hủy.
+ *    - Cho phép tìm kiếm nhanh đơn hàng cũ và kích hoạt quy trình Đánh giá sản phẩm (Feedback/Review).
  * 
- * 3. State:
- *    - Local State (quản lý nội bộ qua useState).
- *      + Global State (lấy từ Redux qua useSelector).
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Sau mua hàng & Quản lý Tài khoản (Post-purchase & Account Management Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi Local State thay đổi.
- *    - Khi Global State (Redux) cập nhật.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - `useMemo` for Client-side Filtering: Kỹ thuật lọc dữ liệu cực nhanh ngay tại trình duyệt. Thay vì mỗi lần đổi Tab hay gõ tìm kiếm lại phải gọi API, hệ thống sử dụng `useMemo` để tính toán lại danh sách hiển thị dựa trên mảng `orders` có sẵn trong Redux.
+ *    - Status Normalization: Một hàm helper (`normalizeStatus`) thông minh giúp "làm sạch" dữ liệu trạng thái từ backend (có thể là tiếng Việt, tiếng Anh, viết hoa/thường) về một bộ mã chuẩn để điều khiển logic UI.
+ *    - Nested List Rendering: Kỹ thuật "Vòng lặp trong vòng lặp". Duyệt qua từng Đơn hàng, rồi trong mỗi đơn lại duyệt qua từng Sản phẩm con để hiển thị hình ảnh và tên.
+ *    - Component Composition: Kết hợp `AccountSidebar` (Thanh điều hướng tài khoản) và `ReviewComment` (Modal đánh giá) để tạo nên một trang Dashboard hoàn chỉnh.
  * 
- * 5. Event handling:
- *    - Có tương tác sự kiện (onClick, onChange, onSubmit...).
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Mảng dữ liệu `orders` từ Redux Store.
+ *    - Output: Giao diện quản lý đơn hàng tương tác cao, cho phép lọc, tìm kiếm và đánh giá.
  * 
- * 6. Conditional rendering:
- *    - Sử dụng toán tử 3 ngôi (? :) hoặc `&&` để ẩn/hiện element hoặc component.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `currentTab`: Lưu trữ trạng thái bộ lọc hiện tại (ví dụ: đang xem các đơn "Đang giao").
+ *    - `searchQuery`: Lưu nội dung người dùng gõ vào ô tìm kiếm.
+ *    - `reviewProduct`: State đặc biệt lưu thông tin sản phẩm mà người dùng muốn đánh giá. Khi biến này có giá trị, Modal đánh giá sẽ tự động bật lên.
  * 
- * 7. List rendering:
- *    - Sử dụng `.map()` để render danh sách elements.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `getStatusConfig`: Một "tự điển" nhỏ giúp ánh xạ trạng thái sang màu sắc CSS và văn bản hiển thị tương ứng.
+ *    - `formatDate`: Format lại thời gian sang định dạng `DD/MM/YYYY HH:mm` cho người Việt dễ đọc.
  * 
- * 8. Controlled input:
- *    - Có form input elements (có thể bị controlled bởi state).
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: `useEffect` kích hoạt ngay khi vào trang để lấy toàn bộ đơn hàng của User từ Server.
+ *    - Bước 2: Dữ liệu đổ về Redux -> `filteredOrders` (useMemo) tự động tính toán lại danh sách ban đầu.
+ *    - Bước 3: User click Tab hoặc Search -> `filteredOrders` tiếp tục "lọc" dữ liệu theo ý muốn người dùng.
+ *    - Bước 4: User nhấn "Đánh giá" -> `reviewProduct` được gán giá trị -> Modal đánh giá hiện lên.
  * 
- * 9. Lifting state up:
- *    - Dữ liệu được quản lý cục bộ hoặc đẩy lên Redux store toàn cục.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - UI -> GET Request -> API `/api/v1/orders/me` -> MongoDB -> Trả về mảng Orders.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Component Mount -> Chạy useEffect (gọi API hoặc thiết lập timer/listener).
- *    - (2) Nhận State/Props và render UI ban đầu.
- *    - (3) End-User tương tác trên component -> Cập nhật State -> Re-render màn hình.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Loading State: Hiển thị Spinner xoay khi đang đợi API trả về kết quả.
+ *    - Empty State: Hiển thị hình minh họa "Chưa có đơn hàng" nếu mảng sau khi lọc bị rỗng.
+ *    - Action Guard: Chỉ những đơn hàng có trạng thái "Hoàn thành" mới được hiển thị nút "Đánh giá".
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Hàm `dispatch(getMyOrders())` thực hiện lấy dữ liệu từ Server.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Chú ý hàm `normalizeStatus`: Nếu backend thêm trạng thái mới, bạn PHẢI cập nhật hàm này đầu tiên để giao diện không bị lỗi hiển thị.
+ *    - `order._id?.slice(-8)`: Đây là thủ thuật UI để hiển thị mã đơn hàng ngắn gọn, dễ nhớ cho khách hàng.
  */
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getMyOrders } from "../features/orders/orderSlice";
+import { getMyOrders, cancelOrder, removeSuccess, removeErrors } from "../features/orders/orderSlice";
 import { Link } from "react-router-dom";
 import { formatVND } from "../utils/formatCurrency";
+import { toast } from "react-toastify";
 
 import PageTitle from "../components/PageTitle";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import AccountSidebar from "../components/AccountSidebar";
 import ReviewComment from "./ReviewComment";
+import CancelOrderModal from "./CancelOrderModal";
 import "../CartStyles/MyOrders.css";
 
 // Status tabs
@@ -87,12 +102,42 @@ function MyOrders() {
   const [reviewProduct, setReviewProduct] = useState(null);
   const [reviewOrderId, setReviewOrderId] = useState(null);
 
-  const { orders = [], loading, error } = useSelector((state) => state.order);
+  // Cancellation Modal State
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [selectedCancelOrderId, setSelectedCancelOrderId] = useState(null);
+
+  const { orders = [], loading, error, success } = useSelector((state) => state.order);
   const { user } = useSelector((state) => state.user);
 
   useEffect(() => {
     dispatch(getMyOrders());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      dispatch(removeErrors());
+    }
+
+    if (success) {
+      toast.success("Hủy đơn hàng thành công!");
+      setIsCancelModalOpen(false);
+      setSelectedCancelOrderId(null);
+      dispatch(removeSuccess());
+      dispatch(getMyOrders()); // Load lại danh sách đơn hàng mới nhất
+    }
+  }, [dispatch, error, success]);
+
+  const handleCancelOrder = (id) => {
+    setSelectedCancelOrderId(id);
+    setIsCancelModalOpen(true);
+  };
+
+  const confirmCancelOrder = (reason) => {
+    if (selectedCancelOrderId) {
+      dispatch(cancelOrder({ id: selectedCancelOrderId, reason }));
+    }
+  };
 
   // Filter and sort orders
   const filteredOrders = useMemo(() => {
@@ -271,6 +316,15 @@ function MyOrders() {
                               <span className="total-price">{formatVND(order.totalPrice)}</span>
                             </div>
                             <div className="action-buttons">
+                              {normalized === "pending" && (
+                                <button
+                                  className="btn-cancel-order"
+                                  onClick={() => handleCancelOrder(order._id)}
+                                  disabled={loading}
+                                >
+                                  Hủy Đơn
+                                </button>
+                              )}
                               <Link to={`/order/${order._id}`} className="btn-detail">Xem Chi Tiết</Link>
                               {normalized === "delivered" && (
                                 <>
@@ -317,11 +371,20 @@ function MyOrders() {
           setReviewProduct(null);
           setReviewOrderId(null);
         }}
-        product={reviewProduct}
-        orderId={reviewOrderId}
         onSuccess={() => {
           dispatch(getMyOrders());
         }}
+      />
+
+      {/* Cancellation Modal */}
+      <CancelOrderModal
+        isOpen={isCancelModalOpen}
+        onClose={() => {
+          setIsCancelModalOpen(false);
+          setSelectedCancelOrderId(null);
+        }}
+        onConfirm={confirmCancelOrder}
+        orderId={selectedCancelOrderId}
       />
     </>
   );

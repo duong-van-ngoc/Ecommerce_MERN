@@ -1,3 +1,51 @@
+/**
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Bảng Hiển Thị Giao Dịch Gần Đây (Premium Orders Table).
+ * 
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Cung cấp danh sách các đơn hàng mới nhất ngay trên Dashboard để Admin xử lý nhanh mà không cần chuyển trang.
+ *    - Giúp theo dõi dòng tiền và trạng thái vận chuyển trong thời gian thực.
+ *    - Là trung tâm của luồng xử lý đơn hàng (Order Fulfillment).
+ * 
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Quản trị Đơn hàng & Giao dịch (Transaction Management Flow).
+ * 
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Data Mapping: Duyệt qua mảng `orders` và sử dụng `index` kết hợp `_id` để tạo Key duy nhất cho React.
+ *    - Status Color Logic: Một "Machine State" đơn giản dùng câu lệnh `if` để gán màu sắc tương ứng (Xanh: Đã giao, Vàng: Đang xử lý, v.v.). Kỹ thuật này giúp Admin nhận diện trạng thái chỉ trong 0.5 giây.
+ *    - Date Formatting: Sử dụng `toLocaleDateString('vi-VN')` để hiển thị ngày tháng theo phong cách Việt Nam, cực kỳ thân thiện với người dùng trong nước.
+ *    - CSS Truncating: `substring(0,8)` để thu gọn mã ID đơn hàng dài ngoằng của MongoDB thành một mã ngắn gọn (ví dụ: `#64a1b2c3`).
+ *    - Tailwind Responsive Table: Sử dụng `overflow-x-auto` đảm bảo bảng vẫn hiển thị tốt trên các màn hình nhỏ (Tablet) mà không làm vỡ bố cục Dashboard.
+ * 
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Mảng dữ liệu `orders` (từ API).
+ *    - Output: Một bảng dữ liệu sang trọng, sắc nét với hiệu ứng hover từng dòng.
+ * 
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `orders`: Danh sách các đối tượng đơn hàng. Mỗi đối tượng chứa thông tin khách hàng, số tiền và trạng thái.
+ * 
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `orderStatus` mapping: Chuyển đổi từ giá trị Tiếng Anh trong Database (Pending, Shipped...) sang Tiếng Việt (Chờ xử lý, Đang giao...) cùng màu sắc tương ứng.
+ * 
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Nhận danh sách đơn hàng.
+ *    - Bước 2: Kiểm tra nếu rỗng -> Hiện thông báo "Chưa có đơn hàng".
+ *    - Bước 3: Duyệt mảng -> Xử lý thông tin hiển thị (tên khách, mã đơn, định dạng tiền).
+ *    - Bước 4: Render dòng dữ liệu với Badge trạng thái có viền và nền màu nhạt (Soft-colored Badges).
+ * 
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Lấy dữ liệu từ Collection `Orders`. Dữ liệu thường được `populate` thông tin người dùng (`user`) từ Backend để có tên hiển thị.
+ * 
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Phân tích tên: Sử dụng một chuỗi logic `order.user?.name || order.shippingInfo?.fullName || ...` để đảm bảo luôn hiển thị được một cái tên khách hàng dù dữ liệu có bị thiếu hụt ở bộ phận nào.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Không có. (Data đã được fetch ở Component cha).
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Avatar Chữ cái đầu: `String(customerName).charAt(0).toUpperCase()` - Đây là một Pattern thiết kế UI phổ biến giúp trang web trông đầy đặn ngay cả khi khách hàng không tải ảnh đại diện.
+ *    - Nut "Xem Tất Cả": Liên kết trực tiếp đến phân hệ quản lý đơn hàng chuyên sâu.
+ */
 import React from 'react';
 import formatVND from '../../../utils/formatCurrency.js';
 

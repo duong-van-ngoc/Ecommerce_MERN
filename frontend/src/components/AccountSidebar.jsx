@@ -1,43 +1,52 @@
 /**
- * ============================================================================
- * COMPONENT: AccountSidebar (Bảng Điều Hướng Cá Nhân)
- * ============================================================================
- * 1. Component là gì: 
- *    - Bảng danh mục menu cố định bên tay trái của Phân hệ tài khoản `/profile/*`.
- *    - Hiện Profile Card thu nhỏ (Tên + Avatar) và đường Link nhanh quản trị.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Thanh Điều Hướng Cá Nhân (Account Sidebar).
  * 
- * 2. Props: 
- *    - Tự trị (Không nhận Props).
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Là menu điều hướng phụ, chỉ xuất hiện khi người dùng truy cập vào khu vực Quản lý tài khoản.
+ *    - Giúp người dùng chuyển đổi nhanh giữa các trang: Hồ sơ cá nhân, Lịch sử mua hàng, Thông báo và Kho Voucher.
+ *    - Tăng tính thẩm mỹ với Profile Card thu nhỏ (Avatar + Tên) ở ngay đầu menu.
  * 
- * 3. State:
- *    - Global State: Extract giá trị `user` object từ Slice `user` thông qua `useSelector` Redux.
- *    - Hook URL: Lấy Path Route qua `useLocation`.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Quản lý Tài khoản & Hồ sơ (User Profile & Account Flow).
  * 
- * 4. Render lại khi nào:
- *    - Re-render mỗi khi Object Local User từ mẹ bị đánh dấu cập nhật do Login/Logout/Edit.
- *    - Re-render class `active` css khi Path URL thay đổi Route.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - `useLocation` from React Router: Dùng để lấy địa chỉ URL hiện tại. Kỹ thuật này giúp Sidebar luôn biết mình đang ở đâu để tự động "thắp sáng" (active) mục menu tương ứng.
+ *    - Redux State Integration: Lấy thông tin `user` toàn cục để hiển thị ảnh đại diện và tên thật của người dùng ngay trên Sidebar, tạo cảm giác cá nhân hóa cao.
+ *    - Dynamic Avatar Fallback: Logic thông minh cho ảnh đại diện. Nếu người dùng đã upload ảnh (có `avatar.url`), hệ thống sẽ hiện ảnh đó. Nếu chưa, nó sẽ lấy chữ cái đầu của tên (ví dụ: "D" cho "Dương") để tạo ra một Avatar giả lập đẹp mắt.
+ *    - Nested List Rendering (Sub-menus): Kỹ thuật render menu đa cấp. Mảng `menuItems` có thể chứa các món con (`subItems`), giúp tổ chức các tính năng phức tạp (như mục Thông báo) một cách gọn gàng.
+ *    - CSS Active Class Logic: Sử dụng hàm `isActive` để gán class CSS đặc biệt cho Link, giúp người dùng luôn định vị được mình đang ở mục nào.
  * 
- * 5. Event handling:
- *    - Các item Click trực tiếp Link Navigation Router DOM nên bỏ qua onClick thủ công.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Thông tin User từ Redux và đường dẫn URL từ trình duyệt.
+ *    - Output: Sidebar Menu có khả năng tương tác và điều hướng.
  * 
- * 6. Conditional rendering:
- *    - Nếu có giá trị Auth User có `avatar?.url` -> Render thẻ <img> từ AWS/Cloudinary. Còn không rơi fallback đổ `<div placeholder>` Icon bốc chữ cái đầu `user?.name?.charAt(0)`.
- *    - Cắm class động màu xanh (`active`) nếu địa chỉ URI trang hiện tại trùng với URI tĩnh của vòng lặp Link.
- *    - Kiểm tra có Sub-items con thả xuống (`Cập nhật Đơn Hàng`, `Khuyến mãi`) để expand Box.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - Không sử dụng Local State, hoàn toàn phụ thuộc vào URL và Global State.
  * 
- * 7. List rendering:
- *    - Map nguyên khối Configuration Array cố định của App Cấp 1 Menu `menuItems`. List map trong (Lồng) luôn Array `subItems`.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `isActive`: Kiểm tra xem đường dẫn truyền vào có trùng với trang hiện tại không.
+ *    - Logic Render lồng nhau: Duyệt qua danh sách menu chính và các danh sách con (`subItems`) nếu có.
  * 
- * 8. Controlled input:
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Component mount vào một phía của trang cá nhân.
+ *    - Bước 2: Hiển thị Avatar và tên User từ Redux.
+ *    - Bước 3: Duyệt mảng `menuItems` và render ra các thẻ Link.
+ *    - Bước 4: Kiểm tra URL, nếu khớp với trang nào thì mục đó sẽ nổi bật lên (highlight).
+ * 
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Không có. Tuy nhiên, thông tin User hiển thị ở đây được đồng bộ từ MongoDB thông qua quá trình Đăng nhập/Cập nhật trước đó.
+ * 
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Conditional Avatar: Quyết định hiện ảnh hay hiện chữ placeholder.
+ *    - Sub-menu Visibility: Các menu con trong mục Thông báo sẽ tự động "bung ra" (`expanded`) nếu người dùng đang ở một trong các trang con đó.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
  *    - Không có.
  * 
- * 9. Lifting state up:
- *    - Không.
- * 
- * 10. Luồng hoạt động:
- *    - Layout Sidebar này được render Song song với component Ruột (Giống Master Page).
- *    - User click Tab `Tài khoản của tôi` -> Địa chỉ bật sang `/profile` -> Sidebar highlight tab 1 và Layout render form kế bên.
- * ============================================================================
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Mảng `menuItems`: Đây là nơi bạn định nghĩa toàn bộ cấu trúc Sidebar. Nếu muốn thêm chức năng mới (ví dụ: "Danh sách địa chỉ"), hãy thêm một đối tượng mới vào mảng này.
+ *    - `user?.name?.charAt(0)`: Chú ý dấu `?.` (Optional Chaining) để tránh lỗi ứng dụng bị "văng" nếu dữ liệu User chưa kịp load về.
  */
 import React from "react";
 import { Link, useLocation } from "react-router-dom";

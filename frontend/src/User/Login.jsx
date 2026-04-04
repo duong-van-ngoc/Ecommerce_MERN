@@ -1,45 +1,51 @@
 /**
- * ============================================================================
- * COMPONENT: Login
- * ============================================================================
- * 1. Component là gì: 
- *    - Component màn hình Đăng nhập Authentication.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Trang Đăng nhập (Login Page).
  * 
- * 2. Props: 
- *    - Không nhận props từ component cha.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Là "cánh cửa" xác thực chính của ứng dụng.
+ *    - Hỗ trợ đa dạng phương thức: Email/Password truyền thống và Social Login (Google, Facebook).
+ *    - Xử lý cơ chế "Smart Redirect": Tự động đưa người dùng quay lại đúng trang họ đang xem dở sau khi đăng nhập thành công.
  * 
- * 3. State:
- *    - Local State (useState):
- *      + `loginEmail`: (string) Email đăng nhập nhập từ form.
- *      + `loginPassword`: (string) Mật khẩu đăng nhập nhập từ form.
- *    - Global State (useSelector): Lấy từ store `state.user` (error, loading, isAuthenticated, success).
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Xác thực & Bảo mật (Authentication & Security Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi gõ phím vào input email/password (Local state).
- *    - Khi `isAuthenticated`, `error`, `loading`, `success` thay đổi (do store Redux thay đổi).
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - `useLocation` & `URLSearchParams`: Kỹ thuật trích xuất tham số từ URL (ví dụ: `?redirect=shipping`).
+ *    - Redux Hook (`useDispatch`, `useSelector`): Lấy trạng thái đăng nhập toàn cục và gửi yêu cầu xác thực.
+ *    - OAuth2 Flow Strategy: Điều hướng trực tiếp sang Backend để thực hiện quy trình đăng nhập bên thứ ba thông qua Passport.js.
+ *    - Protected Logic: Tự động chặn truy cập vào trang Login nếu người dùng đã có Session (isAuthenticated = true).
  * 
- * 5. Event handling:
- *    - `loginSubmit(e)`: Xử lý submit gởi dữ liệu API đăng nhập `dispatch(login)`.
- *    - `onChange` ở input email/password để cập nhật state đồng bộ 2 form fields.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Thông tin tài khoản người dùng hoặc hành động Click Social.
+ *    - Output: Thông tin User, Token (lưu vào Cookie/Redux) và lệnh điều hướng (Redirect).
  * 
- * 6. Conditional rendering:
- *    - Tùy vào giá trị `loading` trên Redux: `disabled={loading}` và class loading cho button, đổi Text thành "Processing...".
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `loginEmail`, `loginPassword`: Hai biến state cục bộ kiểm soát dữ liệu input.
+ *    - `redirect`: Biến lưu trữ đích đến sau khi đăng nhập (mặc định là trang chủ `/`).
  * 
- * 7. List rendering:
- *    - Không dùng mảng `.map()`.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `loginSubmit`: Hàm tổng hợp dữ liệu form và kích hoạt tiến trình Redux Thunk.
+ *    - Social Login Buttons: Các hàm xử lý URL động, tự động nhận diện môi trường (Development/Production) để gọi đúng địa chỉ Backend.
  * 
- * 8. Controlled input:
- *    - Cả Email và Password input đều là Controlled Component gắn chặt `value` với React local state.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Người dùng nhập Email/Pass -> Submit Form.
+ *    - Bước 2: Dispatch `login` -> Server kiểm tra -> Trả về JWT Token và thông tin User.
+ *    - Bước 3: Redux Store cập nhật `isAuthenticated = true`.
+ *    - Bước 4: `useEffect` phát hiện thay đổi -> Gọi `navigate(redirect)` để chuyển hướng người dùng.
  * 
- * 9. Lifting state up:
- *    - Sử dụng global store dispatch (`login()`) truyền thông tin User đi để cập nhật UI toàn app khi đăng nhập thành công.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - UI -> POST /api/v1/login -> Backend Check -> MongoDB (User Collection) -> Success -> Trả về JSON + Set Cookie.
  * 
- * 10. Luồng hoạt động:
- *    - (1) User nhập thông tin form email/password -> `useState` React bắt data.
- *    - (2) Click "Sign In" -> Hàm `loginSubmit` gọi Redux Action `login()`.
- *    - (3) Redux tiến hành POST API, nếu lỗi Error Redux trả về -> `useEffect` báo lỗi qua `Toast` -> Clean Error.
- *    - (4) Nếu API thành công -> Store `success=true`, `isAuthenticated=true` -> navigate user về `redirect URL` hoặc Trang chủ `/`.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Nút Đăng nhập: Sẽ hiển thị "Đang xử lý..." và bị vô hiệu hóa (disabled) khi đang chờ Server phản hồi để tránh gửi yêu cầu trùng lặp.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Toàn bộ quá trình gọi API `login` là bất đồng bộ (Asynchronous).
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Chú ý logic build `backendUrl`: Ứng dụng tự động cắt gọt `/api/v1` từ URL cấu hình để lấy ra Base URL cho các dịch vụ Auth.
+ *    - Đừng quên file CSS `Login.css` chứa các hiệu ứng Blur và Orb (cầu sáng) tạo cảm giác Premium cho trang.
  */
 import React, { useEffect, useState } from 'react'
 import '../UserStyles/Login.css'

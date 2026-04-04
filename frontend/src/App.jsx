@@ -1,39 +1,52 @@
 /**
- * ============================================================================
- * COMPONENT: App
- * ============================================================================
- * 1. Component là gì: 
- *    - Đảm nhiệm vai trò hiển thị và xử lý logic cho vùng phần tử `App` trong ứng dụng.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Gốc (Root Component) và Trung tâm Điều hướng (Router) của ứng dụng.
  * 
- * 2. Props: 
- *    - Không nhận trực tiếp props truyền từ cha.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Định nghĩa toàn bộ "bản đồ" đường dẫn (URL) của website.
+ *    - Kiểm soát an ninh thông qua việc bảo vệ các trang riêng tư (Protected Routes).
+ *    - Thực hiện các tác vụ khởi tạo quan trọng: Kiểm tra phiên đăng nhập của người dùng và đồng bộ hóa giỏ hàng ngay khi mở web.
+ *    - Quản lý các thành phần giao diện hiển thị toàn cục (Global Components) như Chatbot AI, Dashboard User.
  * 
- * 3. State:
- *    - Global State (lấy từ Redux qua useSelector).
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Điều hướng & Cấu trúc ứng dụng (Navigation & App Structure Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi Global State (Redux) cập nhật.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - React Router DOM (v6): Sử dụng `BrowserRouter`, `Routes`, `Route` để quản lý chuyển trang không cần load lại web (SPA).
+ *    - Redux Hooks (`useSelector`, `useDispatch`): Kết nối Component với kho dữ liệu trung tâm để lấy thông tin User và kích hoạt các Action.
+ *    - Hooks `useEffect`: Thực thi các logic "Side Effect" (như gọi API lấy thông tin cá nhân) ngay khi ứng dụng vừa khởi chạy.
+ *    - Higher-Order Component (HOC) Pattern: Sử dụng `ProtectedRoute` để bọc lấy các Component khác nhằm kiểm tra quyền truy cập.
+ *    - Admin Layout Pattern: Tổ chức các trang quản trị vào một cấu trúc giao diện riêng biệt.
  * 
- * 5. Event handling:
- *    - Không có event controls phức tạp.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Trạng thái xác thực (isAuthenticated) và thông tin User từ Redux Store.
+ *    - Output: Giao diện (JSX) tương ứng với đường dẫn URL hiện tại trên trình duyệt.
  * 
- * 6. Conditional rendering:
- *    - Sử dụng toán tử 3 ngôi (? :) hoặc `&&` để ẩn/hiện element hoặc component.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - Lấy `isAuthenticated` và `user` từ Redux state để quyết định hiển thị hoặc điều hướng.
  * 
- * 7. List rendering:
- *    - Không sử dụng list rendering.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `useEffect` (dòng 85): Tự động gọi API `loaderUser` để khôi phục trạng thái đăng nhập từ Token lưu trong Cookie/LocalStorage.
+ *    - `useEffect` (dòng 92): Lắng nghe sự thay đổi của User để thực hiện đồng bộ giỏ hàng (Sync Cart).
  * 
- * 8. Controlled input:
- *    - Không chứa form controls.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: App Mount -> Chạy useEffect kiểm tra User.
+ *    - Bước 2: User hợp lệ -> Tiếp tục chạy logic đồng bộ giỏ hàng.
+ *    - Bước 3: Router khớp URL -> Render Component tương ứng (ví dụ: `/products` -> `<Products />`).
  * 
- * 9. Lifting state up:
- *    - Dữ liệu được quản lý cục bộ hoặc đẩy lên Redux store toàn cục.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - `dispatch(loaderUser)` -> Gọi API Backend `/api/v1/me` -> Trả về User Object -> Cập nhật Redux.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Component Mount -> Chạy useEffect (gọi API hoặc thiết lập timer/listener).
- *    - (2) Nhận State/Props và render UI ban đầu.
- *    - (3) End-User tương tác trên component -> Cập nhật State -> Re-render màn hình.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Chỉ hiển thị `UserDashboard` khi `isAuthenticated` là true.
+ *    - Các Route lồng nhau (Nested Routes) trong `/admin` để dùng chung `AdminLayout` cao cấp.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Sử dụng `createAsyncThunk` (qua dispatch) để thực hiện các cuộc gọi API lấy dữ liệu User và Cart.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Đây là nơi "đăng ký" mọi trang mới của dự án. Nếu bạn tạo một Page mới mà không khai báo `<Route>` ở đây, người dùng sẽ không thể truy cập qua URL.
+ *    - Thứ tự của các Route có thể quan trọng; các route bảo vệ (`ProtectedRoute`) phải luôn đảm bảo check đúng trạng thái Login để tránh lộ dữ liệu.
  */
 
 import React, { useEffect } from 'react'

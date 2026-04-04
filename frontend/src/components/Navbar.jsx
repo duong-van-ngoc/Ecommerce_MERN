@@ -1,52 +1,53 @@
 /**
- * ============================================================================
- * COMPONENT: Navbar
- * ============================================================================
- * 1. Component là gì: 
- *    - Thanh điều hướng chính (Header bar) cho toàn bộ ứng dụng. 
- *    - Chứa Logo, các menu chuyển trang, thanh tìm kiếm sản phẩm, biểu tượng giỏ hàng,
- *      và logic reponsive cho menu trên thiết bị di động (Mobile Drawer).
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Thanh Điều Hướng Toàn Cục (Global Navigation Bar).
  * 
- * 2. Props: 
- *    - Không nhận trực tiếp props từ component cha.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Là "xương sống" điều hướng, xuất hiện ở đầu mọi trang web.
+ *    - Cung cấp các lối tắt nhanh đến: Trang chủ, Danh mục Sản phẩm, Giỏ hàng và Tài khoản.
+ *    - Tích hợp bộ tìm kiếm nhanh giúp khách hàng tìm món đồ mong muốn chỉ trong vài giây.
  * 
- * 3. State:
- *    - Local State: 
- *      + `isMobileMenuOpen` (boolean): Trạng thái đóng/mở sidebar menu trên Mobile.
- *      + `searchQuery` (string): Lưu giá trị người dùng đang gõ vào ô tìm kiếm.
- *    - Global State (Redux): 
- *      + Lấy `isAuthenticated` từ store `user` (để quyết định hiển thị nút Login/Tài khoản).
- *      + Lấy `cartItems` từ store `cart` (để đếm số và hiện badge giỏ hàng).
- *    - URL hook: Xác định current path bằng `useLocation`.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Giao diện Chung & Trải nghiệm Người dùng (Shared UI & UX Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi Local State thay đổi (gõ phím, click menu).
- *    - Khi Global State (Auth, Cart) thay đổi.
- *    - Khi chuyển trang (Url Location đổi) thì re-render để reset trạng thái (đóng mobile menu).
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - `useLocation` & `useNavigate`: Bộ đôi từ `react-router-dom`. `useLocation` dùng để biết User đang ở trang nào (để làm sáng menu), còn `useNavigate` dùng để "đá" User sang trang kết quả tìm kiếm sau khi nhấn Enter.
+ *    - Redux Integration: Sử dụng `useSelector` để lấy `cartItems` (để đếm số lượng hiện trên badge giỏ hàng) và `isAuthenticated` (để ẩn/hiện nút Đăng nhập).
+ *    - Mobile Drawer Logic: Kỹ thuật xử lý Menu trên điện thoại bằng cách sử dụng State `isMobileMenuOpen` kết hợp với một lớp Overlay (lớp phủ mờ) để tạo cảm giác chuyên nghiệp.
+ *    - Body Scroll Lock: Sử dụng `useEffect` để khóa cuộn trang (`document.body.classList.add('menu-open')`) khi menu mobile đang mở, giúp người dùng không bị rối khi vuốt chạm.
+ *    - Simple Event Cleanup: Mỗi khi chuyển trang (`location` thay đổi), `useEffect` sẽ tự động đóng menu mobile lại, đảm bảo trang mới mở ra luôn ở trạng thái sạch sẽ nhất.
  * 
- * 5. Event handling:
- *    - `handleSearchSubmit`: Ngăn chặn hành vi reset trình duyệt khi submit form, chuyển hướng người dùng sang trang `/products` với query string.
- *    - `toggleMobileMenu` / `closeMobileMenu`: Xử lý click đóng mở mobile menu.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Dữ liệu từ Redux Store và URL hiện tại từ Browser.
+ *    - Output: Thanh Header (Desktop) và Sidebar Menu (Mobile).
  * 
- * 6. Conditional rendering:
- *    - Dựa vào `isActive(path)` để cấp class thẻ `active` tự động sáng lên ở trang hiện tại.
- *    - Nút (Icon Đăng ký) chỉ hiện khi `!isAuthenticated`.
- *    - Hamburger Icon biến đổi thành Close Icon nếu `isMobileMenuOpen` là true.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `isMobileMenuOpen`: Boolean điều khiển việc hiện/ẩn Menu trên Mobile.
+ *    - `searchQuery`: Một "Controlled Input" lưu nội dung người dùng gõ vào ô tìm kiếm.
  * 
- * 7. List rendering:
- *    - Component này code tĩnh HTML thay vì dùng Map, để kiểm soát class chính xác cho từng thẻ <li>.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `handleSearchSubmit`: Chặn hành vi load lại trang mặc định của Form, mã hóa từ khóa tìm kiếm và điều hướng sang trang `/products?keyword=...`.
+ *    - `isActive`: Một hàm tiện ích giúp kiểm tra xem một đường link có phải là trang hiện tại không để áp dụng CSS "active".
  * 
- * 8. Controlled input:
- *    - `<input type="text">` của Thanh search bị kiểm soát thông qua biến `searchQuery` và onCahnge.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Render các liên kết điều hướng và Icon.
+ *    - Bước 2: Người dùng gõ từ khóa -> `searchQuery` cập nhật -> Nhấn Enter -> Chuyển trang.
+ *    - Bước 3 (Trên Mobile): Click nút Hamburger -> Bật Side Menu -> Khóa cuộn trang.
+ *    - Bước 4: Click vào menu bất kỳ -> URL thay đổi -> Menu tự đóng -> Mở trang mới.
  * 
- * 9. Lifting state up:
- *    - Lấy thông tin Badge số trực tiếp từ Redux thay vì phải Lifting từ cha -> Con.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Component này không trực tiếp gọi API, nó chỉ điều hướng người dùng đến các trang có gọi API.
  * 
- * 10. Luồng hoạt động:
- *    - (1) User nhập chữ "Áo khoác" vào thanh search -> Nhấn Enter
- *    - (2) Gọi `handleSearchSubmit` -> Điều hướng URL sang `/products?keyword=Áo%20khoác`.
- *    - (3) Nếu ở Mobile: click Hamburger Icon -> State bật lên true -> CSS Sidebar trượt vào -> Nút cuộn (body scroll) bị khoá lại nhờ useEffect chặn Scroll event.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Cart Badge: Chỉ hiển thị thẻ tròn màu đỏ chứa con số nếu giỏ hàng có ít nhất 1 sản phẩm.
+ *    - Auth Guard UI: Nếu người dùng chưa đăng nhập, icon "Đăng ký" sẽ xuất hiện. Nếu đã đăng nhập, nó sẽ bị ẩn (hoặc thay thế bằng menu tài khoản tùy phiên bản).
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Không có xử lý bất đồng bộ phức tạp, chủ yếu là các Effect đồng bộ hóa UI với State.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Đừng quên file CSS tương ứng `Navbar.css` vì logic hiển thị Mobile/Desktop dựa hoàn toàn vào Media Queries trong đó.
+ *    - Chú ý hàm `encodeURIComponent`: Nó giúp bảo vệ ứng dụng khi người dùng tìm kiếm bằng các ký tự đặc biệt như `&`, `#`, `?`.
  */
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';

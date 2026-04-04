@@ -1,3 +1,50 @@
+/**
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Phân Hệ Hiển Thị Chỉ Số Kinh Doanh (KPI Section).
+ * 
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Là "trái tim" của Dashboard thổng kê. Cung cấp cái nhìn tức thời về hiệu quả kinh doanh của cửa hàng.
+ *    - Hiển thị 4 chỉ số vàng: Tổng doanh thu, Tổng đơn hàng, Số lượng sản phẩm và Tổng số khách hàng.
+ *    - Giúp Admin nắm bắt nhanh rủi ro hoặc cơ hội (ví dụ: Doanh thu giảm so với kỳ trước).
+ * 
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Thống kê - Báo cáo dữ liệu (Business Analytics Flow).
+ * 
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Grid Layout (Tailwind): Sử dụng hệ lưới 12 cột (`grid-cols-12`) để tạo bố cục linh hoạt. Card Doanh thu chiếm 5 cột (ưu tiên cao nhất), 3 card còn lại chia nhau 7 cột.
+ *    - Null Safety Pattern: Sử dụng `if (!stats) return null` và `Optional Chaining` (`?.`) kết hợp `Nullish Coalescing` (`?? 0`). Kỹ thuật này bảo vệ ứng dụng không bị "trắng trang" nếu Backend gặp sự cố hoặc chưa kịp trả về dữ liệu.
+ *    - Advanced Formatting: Gọi hàm `formatVND` từ utils để biến số thô thành chuỗi tiền tệ (ví dụ: `1000000` -> `1.000.000 ₫`).
+ *    - Linear Gradient Background: Sử dụng dải màu chuyển từ `#ff6b6b` sang `#ee5a6f` để làm nổi bật thẻ Doanh thu chính.
+ * 
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Object `stats` chứa các số thô từ Database (Revenue, Count, ...).
+ *    - Output: Một dãy các Card số liệu được thiết kế Premium với hiệu ứng hover sinh động.
+ * 
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `stats`: Prop quan trọng nhất, nhận dữ liệu tổng hợp từ trang `Dashboard.jsx`.
+ * 
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - Phân tách dữ liệu: Bóc tách `totalRevenue`, `change` (phần trăm tăng trưởng), `totalOrders`, `totalProducts`, `totalUsers`.
+ * 
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Nhận Object `stats` từ trang Cha.
+ *    - Bước 2: Kiểm tra tính hợp lệ của dữ liệu.
+ *    - Bước 3: Tính toán màu sắc icon và nhãn tăng trưởng.
+ *    - Bước 4: Render Card chính (Doanh thu) và các Card phụ bên phải.
+ * 
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Không trực tiếp gọi API. Đây là Component hiển thị thuần túy (Stateless / Presentational Component).
+ * 
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀF: 
+ *    - Conditional Label: Hiển thị ký tự `+` nếu `revChange >= 0`, giúp Admin dễ dàng nhận thấy sự tăng trưởng dương.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Không có.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Hiệu ứng Scale: `hover:scale-105` được áp dụng cho các card nhỏ để tăng tính tương tác (Interactive Feel).
+ *    - Shadow Design: Sử dụng một bóng đổ tùy chỉnh có màu hồng mờ (`rgba(238, 90, 111, 0.08)`) để tạo sự đồng bộ hoàn hảo với tông màu thương hiệu.
+ */
 import React from 'react';
 import formatVND from '../../../utils/formatCurrency.js';
 

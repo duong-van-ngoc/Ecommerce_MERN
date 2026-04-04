@@ -1,51 +1,54 @@
 /**
- * ============================================================================
- * COMPONENT: Products
- * ============================================================================
- * 1. Component là gì: 
- *    - Trang Danh sách sản phẩm (Shop/Products page).
- *    - Hỗ trợ các tính năng Lọc (Filter), Sắp xếp (Sort) và Phân trang (Pagination).
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Trang danh sách sản phẩm (Shop/Products Page).
  * 
- * 2. Props: 
- *    - Không nhận trực tiếp props từ component cha (Sử dụng URL Params để lấy keyword/category/page).
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Cung cấp không gian mua sắm chính cho người dùng: Nơi họ tìm kiếm, chọn lọc và xem lướt qua các mặt hàng.
+ *    - Là trung tâm xử lý các logic phức tạp về: Lọc (Filter), Sắp xếp (Sort) và Phân trang (Pagination).
+ *    - Đảm bảo trải nghiệm đồng nhất trên cả máy tính (Sidebar) và điện thoại (Drawer menu).
  * 
- * 3. State:
- *    - Local State (useState):
- *      + `currentPage`: Trang hiện tại.
- *      + `selectedCategories`, `priceRange`, `appliedPrice`, `selectedRating`, `sortBy`: Trạng thái các filter.
- *      + `isMobileDrawerOpen`: Trạng thái đóng/mở sidebar bộ lọc trên Mobile.
- *    - Global State (useSelector): Pull state `product` (loading, error, products, productCount) từ Redux.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Mua sắm (Shopping Flow) & Tìm kiếm (Search Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi bất kỳ filter nào thay đổi (giá, categories, rating, sort...).
- *    - Khi URL Params thay đổi.
- *    - Khi Redux fetch xong danh sách products.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - `useLocation` & `useNavigate`: Bộ đôi của React Router để quản lý "Trạng thái URL". Giúp đồng bộ bộ lọc lên thanh địa chỉ của trình duyệt.
+ *    - Sync State with URL: Kỹ thuật giúp người dùng có thể lưu link hoặc nhấn nút Back/Forward mà không bị mất các bộ lọc đã chọn.
+ *    - `useState` + `useEffect`: Theo dõi từng thay đổi nhỏ của người dùng (chọn giá, chọn sao) để lập tức gọi API tải lại danh sách.
+ *    - Skeleton Loading: Kỹ thuật hiển thị khung xương giả lập giúp trang web cảm giác tải nhanh hơn.
  * 
- * 5. Event handling:
- *    - Lắng nghe click filter: `handleCategoryToggle`, `handleApplyPrice`, `handleSortChange`, `handleClearAll`.
- *    - `handlePageChange` khi người dùng bấm qua trang khác.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Từ khóa tìm kiếm từ thanh Search, các action click từ Sidebar lọc.
+ *    - Output: Một danh sách sản phẩm đã được tinh lọc theo đúng ý người dùng.
  * 
- * 6. Conditional rendering:
- *    - Hiển thị Skeleton Loader nếu `loading = true`.
- *    - Hiển thị Empty State nhắc nhở nếu `products.length === 0`.
- *    - Ẩn/hiện Drawer filter trên Mobile dựa trên `isMobileDrawerOpen`.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `appliedPrice`, `selectedCategories`, `selectedRating`: Các biến lưu trữ tiêu chí lọc hiện tại.
+ *    - `currentPage`: Vị trí trang hiện tại trong danh sách dài.
+ *    - `isMobileDrawerOpen`: Biến logic quản lý việc đóng/mở bộ lọc trên điện thoại.
  * 
- * 7. List rendering:
- *    - Render List Sản phẩm bằng `products.map(product => <Product .../>)`.
- *    - Render danh sách `pricePresets`, `ratings`.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `handleApplyPrice`: Kiểm tra tính hợp lệ và áp dụng khung giá người dùng nhập.
+ *    - `handleCategoryToggle`: Chuyển đổi qua lại giữa các danh mục sản phẩm.
+ *    - `renderFilters`: Một hàm thông minh dùng để vẽ bộ lọc cho cả hai phiên bản giao diện (Desktop & Mobile) nhằm tiết kiệm mã nguồn.
  * 
- * 8. Controlled input:
- *    - Input khoảng giá (priceRange min/max), các Checkbox ratings đều là controlled component.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Người dùng click chọn "Dưới 500k".
+ *    - Bước 2: State `appliedPrice` cập nhật -> URL đổi thành `?price[lte]=500000`.
+ *    - Bước 3: `useEffect` phát hiện thay đổi -> Gửi yêu cầu lấy sản phẩm mới kèm giá lọc.
+ *    - Bước 4: Backend trả hàng -> Grid sản phẩm vẽ lại kết quả mới.
  * 
- * 9. Lifting state up:
- *    - Quản lý tất cả Filter State tại component này, và truyền xuống Component `Pagination` (props `currentPage`, `onPageChange`).
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - UI -> Update URL -> Redux Thunk -> Axios (Query Params) -> Backend Nodejs -> MongoDB Query -> Trả hàng -> UI.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Component mount -> Lấy query param trên URL (`keyword`, `category`, `page`) khởi tạo Local State.
- *    - (2) `useEffect` trigger khi Dependencies (các filters/page) thay đổi -> `dispatch(getProduct({ params }))`.
- *    - (3) Cập nhật URL `?category=...&page=...` tương ứng với hành động click Filter.
- *    - (4) UI render danh sách sản phẩm, nếu danh sách rỗng show empty template.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Validate logic: Không cho phép nhập giá tối thiểu lớn hơn giá tối đa.
+ *    - Body Scroll Lock: Khóa cuộn trang chính khi người dùng đang mở bảng lọc trên di động.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Các tiến trình gọi API tìm kiếm là bất đồng bộ hoàn toàn.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Cấu trúc "Query String" trong hàm `dispatch(getProduct)` phải khớp 100% với cách Backend xử lý Query (trong `productController.js`).
+ *    - `activeFilterCount`: Một chi tiết UX nhỏ nhưng đắt giá, giúp người dùng biết họ đang dùng bao nhiêu bộ lọc cùng lúc.
  */
 import React, { useEffect, useState } from 'react';
 import '../pageStyles/Products.css';

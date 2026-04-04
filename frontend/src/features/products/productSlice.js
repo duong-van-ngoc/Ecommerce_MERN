@@ -1,39 +1,53 @@
 /**
- * ============================================================================
- * COMPONENT: productSlice
- * ============================================================================
- * 1. Component là gì: 
- *    - Đảm nhiệm vai trò hiển thị và xử lý logic cho vùng phần tử `productSlice` trong ứng dụng.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là file Mảnh quản lý trạng thái Sản phẩm (Product Redux Slice).
  * 
- * 2. Props: 
- *    - Không nhận trực tiếp props truyền từ cha.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Quản lý toàn bộ dữ liệu liên quan đến hàng hóa: Danh sách sản phẩm, chi tiết từng sản phẩm, và các trạng thái tìm kiếm/lọc.
+ *    - Chịu trách nhiệm xây dựng các yêu cầu truy vấn (Query) phức tạp gửi lên Backend để lấy đúng dữ liệu người dùng mong muốn.
+ *    - Điều khiển việc hiển thị danh sách sản phẩm trên trang chủ, trang tìm kiếm và phân trang (Pagination).
  * 
- * 3. State:
- *    - Không sử dụng state (Stateless component).
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Dữ liệu Sản phẩm (Product Data Flow) & Hiển thị hàng hóa.
  * 
- * 4. Render lại khi nào:
- *    - Khi component cha re-render.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - `createAsyncThunk`: Xử lý gọi API bất đồng bộ với 3 trạng thái (Pending, Fulfilled, Rejected).
+ *    - Dynamic URL Construction: Kỹ thuật xây dựng chuỗi truy vấn (Query String) động dựa trên các bộ lọc (giá, danh mục, đánh giá sao, trạng thái kho).
+ *    - Redux Toolkit: Sử dụng `createSlice` và `extraReducers` để cập nhật kho dữ liệu một cách chuyên nghiệp.
+ *    - API Mapping: Chuyển đổi các lựa chọn sắp xếp của người dùng trên giao diện sang các tham số mà Database hiểu được (VD: "Mới nhất" -> `-createdAt`).
  * 
- * 5. Event handling:
- *    - Không có event controls phức tạp.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Các tiêu chí tìm kiếm từ người dùng (từ khóa, khoảng giá, số trang...).
+ *    - Output: Mảng danh sách sản phẩm, thông tin chi tiết một sản phẩm, và các thông số phân trang.
  * 
- * 6. Conditional rendering:
- *    - Sử dụng toán tử 3 ngôi (? :) hoặc `&&` để ẩn/hiện element hoặc component.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `products`: Danh sách các mặt hàng đang hiển thị.
+ *    - `product`: Dữ liệu chi tiết của một món hàng khi xem trang chi tiết.
+ *    - `loading`: Trạng thái đang tải dữ liệu để hiển thị Spinner hoặc Skeleton.
+ *    - `totalPages`: Tổng số trang có thể hiển thị sau khi đã lọc.
  * 
- * 7. List rendering:
- *    - Không sử dụng list rendering.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `getProduct`: Thunk quyền lực nhất, xử lý hàng loạt bộ lọc (Category, Price Range, Ratings, Stock, Sort) để gửi lên Server.
+ *    - `getProductDetails`: Lấy thông tin từ Backend dựa trên ID sản phẩm.
  * 
- * 8. Controlled input:
- *    - Không chứa form controls.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Component (như trang Sản phẩm) gọi `dispatch(getProduct)` kèm các filter.
+ *    - Bước 2: Slice xây dựng đường link API có chứa đầy đủ tham số (VD: `?page=1&keyword=laptop&price[gte]=500`).
+ *    - Bước 3: Gọi Axios trỏ tới Backend.
+ *    - Bước 4: Backend trả data -> Slice cập nhật vào `state.products` -> Giao diện React tự động vẽ lại.
  * 
- * 9. Lifting state up:
- *    - Dữ liệu được quản lý cục bộ hoặc đẩy lên Redux store toàn cục.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - React Component -> Dispatch Action -> Slice (Build Query) -> Backend (API) -> MongoDB -> Slice -> React UI.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Component Mount -> Chỉ mount giao diện thuần và nhận Props.
- *    - (2) Nhận State/Props và render UI ban đầu.
- *    - (3) End-User tương tác trên component -> Cập nhật State -> Re-render màn hình.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Logic kiểm tra `inStock`: Nếu người dùng tick chọn, slice sẽ gắn thêm tham số để Backend chỉ trả về sản phẩm còn hàng.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Sử dụng `createAsyncThunk` kết hợp `async/await` và xử lý lỗi bằng `rejectWithValue`.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Khi Backend thay đổi cấu trúc lọc (ví dụ đổi `price[gte]` thành `minPrice`), bạn PHẢI cập nhật logic xây dựng `link` trong `getProduct` đầu tiên.
+ *    - `resultPerPage` cần phải đồng bộ với thiết lập của Backend để đảm bảo phân trang không bị lệch.
  */
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../api/http.js';

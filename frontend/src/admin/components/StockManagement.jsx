@@ -1,49 +1,56 @@
 /**
- * ============================================================================
- * COMPONENT: StockManagement
- * ============================================================================
- * 1. Component là gì: 
- *    - Màn hình quản lý Cập nhật Tồn kho/Nhập hàng trong Admin. Có 2 luồng: Import Bulk qua Excel, và Update Quick tìm Product thủ công bằng Text.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Màn Hình Quản Lý Nhập Và Tồn Kho (Stock Management).
  * 
- * 2. Props: 
- *    - Không Props.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Đóng vai trò là "Thủ kho số". Giúp Admin kiểm soát chính xác số lượng hàng hóa đang có trong hệ thống.
+ *    - Cung cấp 2 giải pháp nhập hàng linh hoạt: 
+ *      + Giải pháp A: Nhập hàng loạt từ Excel (Phù hợp khi nhập kho định kỳ số lượng lớn).
+ *      + Giải pháp B: Tra cứu và cập nhật nhanh từng sản phẩm (Phù hợp khi điều chỉnh kho lẻ).
  * 
- * 3. State:
- *    - Local State (useState):
- *      + `stockPreview`: Mảng dữ liệu chuẩn bị Import khi Parse Excel.
- *      + `stockFileName`, `importResult`: Theo dõi tên file và JSON Report từ Server trả về sau khi up.
- *      + `searchQuery`: Chuỗi Search keyword tay.
- *      + `stockInputs`: Object Map lưu quantity edit của ID productId (Vd: `{ "id1": 50 }`).
- *    - Global State (useSelector): API `loading` var & list array `searchResults` từ adminStore.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Quản trị Kho hàng & Chuỗi cung ứng (Inventory & Supply Chain Management).
  * 
- * 4. Render lại khi nào:
- *    - Trạng thái Parse xong Excel hiện Preview Table. State List Search trả về. Trigger Gõ chữ Edit Quantity.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - SheetJS (XLSX): Tương tự Import sản phẩm nhưng logic ở đây chỉ quan tâm đến `name` và `quantity`. Chuyển đổi file Excel sang mảng JSON để xử lý.
+ *    - Advanced Feedback Loop: Sau khi Import, Server trả về một Object `importResult` cực kỳ chi tiết bao gồm: Những SP đã cập nhật (có số `oldStock`, `newStock`) và những SP "Không tìm thấy".
+ *    - Quick Action Integration (Lifting State Up): Một kỹ thuật hay! Nếu SP trong file Excel không tồn tại, hệ thống cung cấp nút "➕ Thêm mới". Khi bấm, nó sẽ gọi prop `onAddNew` truyền tên SP lên trang Cha để mở Modal tạo mới với tên đã có sẵn.
+ *    - Single-Item Quick Update: Sử dụng một Object state `stockInputs` để quản lý cùng lúc nhiều ô Input số lượng trong bảng tìm kiếm. Mỗi ID sản phẩm sẽ là một Key trong Object (`{ product_id: quantity }`).
+ *    - Real-time Stock Badge: Hiển thị trạng thái kho (Xanh/Đỏ). Nếu kho < 10, nhãn sẽ chuyển sang màu đỏ (`low` class) để cảnh báo Admin sắp hết hàng.
  * 
- * 5. Event handling:
- *    - Import file Excel (Tương tự ImportProduct dùng FileReader + sheetJS).
- *    - Submit Array data lên API bulk Stock.
- *    - `handleSearch`: Dispatch tìm Sản Phẩm match Keyword. `handleUpdateStock` lưu tay 1 con.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: File Excel nhập kho hoặc Từ khóa tìm kiếm tên sản phẩm.
+ *    - Output: Số lượng `stock` trong Database được tăng thêm tương ứng với số lượng nhập vào.
  * 
- * 6. Conditional rendering:
- *    - Hiện Report box Import (Số lg Update, Báo Lỗi ko tồn tại).
- *    - Hide / Show Bảng search & Preview Array.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `stockPreview`: Dữ liệu "tạm" từ file Excel hiện lên bảng cho Admin xem trước.
+ *    - `importResult`: Dữ liệu "đối soát" từ Server trả về sau khi lưu thành công.
+ *    - `stockInputs`: Lưu giá trị Admin đang gõ trong các ô nhập số lượng ở phần Tìm kiếm thủ công.
  * 
- * 7. List rendering:
- *    - `stockPreview.map`, `importResult.details.map`, `searchResults.map` render tr (row) bảng dữ liệu.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `handleImportStock`: Đẩy mảng dữ liệu nhập kho lên API Xử lý hàng loạt (Bulk Update).
+ *    - `handleUpdateStock`: Cập nhật tồn kho cho đúng 1 sản phẩm đang chọn.
+ *    - `handleSearch`: Gọi API tìm kiếm sản phẩm trong kho dữ liệu Admin.
  * 
- * 8. Controlled input:
- *    - List Input số lượng Tồn kho Map Array dựa vào object local State `stockInputs[id]`.
- *    - Input File ẩn, `searchQuery` Textbox.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Cách 1 (Excel): Chọn file -> Xem bản xem trước -> Bấm "Import" -> Nhận bảng kết quả đối soát kho cũ/mới.
+ *    - Cách 2 (Manual): Gõ tên SP -> Bấm Tìm -> Thấy SP trong bảng -> Gõ số lượng nhập thêm (vd: 50) -> Bấm nút Check xanh -> Kho tự nhảy số.
  * 
- * 9. Lifting state up:
- *    - Gởi API bulk Import Tồn kho / Single Update Tồn kho thông qua `adminSlice.js` (Thunk).
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Request Bulk: `POST /api/v1/admin/products/import-stock`.
+ *    - Request Single: `PUT /api/v1/admin/products/update-stock/:id`.
  * 
- * 10. Luồng hoạt động:
- *    - (1) User có 2 Lựa Chọn Giao Diện chính.
- *    - (2) Lựa chọn A (Excel): Chọn File XLS -> Parse ra Array list -> Gởi Redux bulk API -> Hiện Box Detail Update.
- *    - (3) Lựa chọn B (Tay): Search Textbar -> API Request trả List Sản Phẩm -> Lưu kết quả vô `searchResults`.
- *    - (4) Flow (B): Thao tác gõ Box cộng trừ thêm tồn kho, bấm Tick Update 1 sản phẩm 1 lúc đẩy lên API Mongoose Update. 
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Validation: File Excel bắt buộc có cột `name` và `quantity`. Số lượng nhập phải là số dương (> 0).
+ *    - Report UI: Chỉ hiển thị bảng đối soát `importResult` sau khi đã có phản hồi từ Server.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Đọc file Excel bằng `FileReader`.
+ *    - Các thao tác Dispatch Thunk (Search, Import, Update) với xử lý `unwrap()` để bắt lỗi API.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Khái niệm "Cộng dồn" (Accumulate): Khác với ghi đè, logic ở đây là `Tồn mới = Tồn cũ + Số lượng nhập`. Đây là logic nghiệp vụ thực tế của việc nhập hàng về kho.
+ *    - Nút "Thêm mới" trong danh sách "Không tìm thấy": Đây là điểm nhấn UX, giúp Admin xử lý các mã hàng mới phát sinh ngay trong quá trình kiểm kho mà không cần chuyển đổi màn hình phức tạp.
  */
 import React, { useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';

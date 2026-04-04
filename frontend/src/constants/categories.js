@@ -1,39 +1,49 @@
 /**
- * ============================================================================
- * COMPONENT: categories
- * ============================================================================
- * 1. Component là gì: 
- *    - Đảm nhiệm vai trò hiển thị và xử lý logic cho vùng phần tử `categories` trong ứng dụng.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là file Cấu trúc Danh mục Sản phẩm (Product Categorization Constants).
  * 
- * 2. Props: 
- *    - Không nhận trực tiếp props truyền từ cha.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Định nghĩa cây danh mục (Category Tree) 3 cấp dùng cho toàn bộ hệ thống (Client & Admin).
+ *    - Cung cấp các hàm tiện ích để lấy danh sách danh mục theo từng cấp, giúp đồng bộ hóa dữ liệu hiển thị.
+ *    - Là "Sổ cái" quy định các ngành hàng có trong shop.
  * 
- * 3. State:
- *    - Không sử dụng state (Stateless component).
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Phân loại Hàng hóa (Product Taxonomy Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi component cha re-render.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Nested Object Structure: Cấu trúc dữ liệu lồng nhau để biểu diễn quan hệ Cha-Con giữa các danh mục.
+ *    - Helper Functions: Các hàm `get...Categories` giúp trừu tượng hóa việc truy cập dữ liệu, giảm thiểu sai sót khi thao tác với Object phức tạp.
  * 
- * 5. Event handling:
- *    - Không có event controls phức tạp.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Tên danh mục cấp trên (dành cho các hàm helper).
+ *    - Output: Mảng danh sách các danh mục con tương ứng.
  * 
- * 6. Conditional rendering:
- *    - Render tĩnh, không có điều kiện.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - Dữ liệu tĩnh (Constants).
  * 
- * 7. List rendering:
- *    - Không sử dụng list rendering.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `getLevel1Categories`: Lấy các nhóm lớn nhất (NAM, NỮ, UNISEX...).
+ *    - `getLevel2Categories`: Lấy các nhóm con (Áo, Quần, Váy...).
+ *    - `getLevel3Categories`: Lấy các loại sản phẩm chi tiết (Thun, Sơ mi, Jean...).
  * 
- * 8. Controlled input:
- *    - Không chứa form controls.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Admin mở Modal thêm sản phẩm.
+ *    - Bước 2: Modal gọi `getLevel1Categories` để hiển thị Dropdown đầu tiên.
+ *    - Bước 3: Khi Admin chọn "NAM", Modal gọi `getLevel2Categories("NAM")` để cập nhật Dropdown thứ hai.
+ *    - Bước 4: Tương tự cho cấp 3 để xác định chính xác loại hàng.
  * 
- * 9. Lifting state up:
- *    - Dữ liệu được quản lý cục bộ hoặc đẩy lên Redux store toàn cục.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Không liên quan trực tiếp.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Component Mount -> Chỉ mount giao diện thuần và nhận Props.
- *    - (2) Nhận State/Props và render UI ban đầu.
- *    - (3) End-User tương tác trên component -> Cập nhật State -> Re-render màn hình.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Xử lý mảng rỗng: Các hàm helper luôn trả về `[]` nếu dữ liệu đầu vào không hợp lệ, tránh gây lỗi `undefined` cho giao diện.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Không có.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Cây danh mục này CỰC KỲ QUAN TRỌNG: Nó phải khớp hoàn toàn với các giá trị `category` được lưu trong Database. 
+ *    - Nếu bạn sửa tên một danh mục ở đây (VD: "Áo thun" -> "T-Shirt"), bạn cũng phải chạy script để cập nhật toàn bộ sản phẩm cũ trong Database, nếu không các sản phẩm đó sẽ không thể tìm thấy.
  */
 // Cấu trúc Data Danh mục Sản phẩm (Tree Structure)
 // Dùng cho Cascading Dropdown (Chọn Cấp 1 -> Cấp 2 -> Cấp 3)

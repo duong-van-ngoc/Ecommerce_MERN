@@ -1,6 +1,58 @@
+/**
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là file Định tuyến cho Người dùng (Express Router for Users).
+ * 
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Quản lý toàn bộ các luồng liên quan đến tài khoản người dùng: Đăng ký, Đăng nhập, Đăng xuất.
+ *    - Xử lý đăng nhập bằng mạng xã hội (Google, Facebook) thông qua Passport.js.
+ *    - Cung cấp các đường dẫn để người dùng cập nhật hồ sơ, đổi mật khẩu và khôi phục mật khẩu khi quên.
+ *    - Cung cấp các công cụ cho Admin để quản lý danh sách và quyền hạn của người dùng.
+ * 
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Xác thực (Authentication), Luồng Hồ sơ cá nhân (User Profile) & Luồng Quản trị (Admin).
+ * 
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Passport.js: Thư viện xác thực mạnh mẽ hỗ trợ OAuth 2.0 (Google/Facebook).
+ *    - JWT (JSON Web Token): Tạo mã định danh sau khi đăng nhập thành công.
+ *    - Cookie Management: Lưu trữ Token an toàn trong trình duyệt với các cờ `httpOnly`, `secure`.
+ *    - Express Router: Tổ chức các route theo nhóm (Public, Private, Admin).
+ * 
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Thông tin đăng nhập, Email khôi phục, hoặc yêu cầu từ các mạng xã hội.
+ *    - Output: Điều hướng Request đến Controller hoặc thực hiện chuyển hướng (Redirect) về Frontend sau khi xác thực.
+ * 
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `:token`: Dùng trong URL khôi phục mật khẩu.
+ *    - `:id`: ID của người dùng mà Admin muốn quản lý.
+ * 
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - Đăng nhập/Đăng ký truyền thống.
+ *    - Đăng nhập Google/Facebook: `/auth/google`, `/auth/facebook`.
+ *    - Quản lý Profile: `/profile`, `/profile/update`.
+ *    - Quản lý Admin: Xem danh sách, sửa quyền, xóa người dùng.
+ * 
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: User gửi yêu cầu đăng nhập.
+ *    - Bước 2: Router chuyển đến Controller để kiểm tra thông tin.
+ *    - Bước 3: Nếu đúng, Controller trả về Token. Router này cũng chứa logic Callback để nhận dữ liệu từ Google/Facebook rồi cấp Token.
+ *    - Bước 4: Token được gắn vào Cookie và Frontend nhận thông báo thành công.
+ * 
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - User -> API -> Controller/Passport -> MongoDB -> Cookie/Token -> Client.
+ * 
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Phân quyền theo nhiều cấp độ: Route công khai, Route cần đăng nhập (`verifyUserAuth`), và Route chỉ dành cho Admin (`roleBasedAccess('admin')`).
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Logic callback của mạng xã hội xử lý các thao tác bất đồng bộ như lấy thông tin từ Google API và tạo Token.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Social Login Callback: Lưu ý phần `redirect`. Sau khi đăng nhập thành công qua mạng xã hội, backend sẽ điều hướng về trang `/login/success` của Frontend kèm theo token.
+ *    - Bảo mật Cookie: Cờ `secure: true` chỉ hoạt động trên HTTPS (Production). Trong môi trường phát triển (Local), nó được đặt là `false` để có thể nhận cookie.
+ */
 import express from 'express';
 import passport from 'passport';
-import { registerUser, loginUser, logout, requestPasswordReset, resetPassword, getUserDetails, updatePassword, updateProfile, getUsersList, getSingleUser, updateUserRole, deleteProfile } from '../controllers/userController.js';
+import { registerUser, loginUser, logout, requestPasswordReset, resetPassword, getUserDetails, updatePassword, updateProfile, getUsersList, getSingleUser, updateUserRole, toggleUserStatus } from '../controllers/userController.js';
 import { roleBasedAccess, verifyUserAuth } from '../middleware/userAuth.js';
 
 const router = express.Router();
@@ -57,7 +109,8 @@ router.route("/admin/users").get(verifyUserAuth, roleBasedAccess('admin'), getUs
 router.route("/admin/users/:id")
     .get(verifyUserAuth, roleBasedAccess('admin'), getSingleUser)
     .put(verifyUserAuth, roleBasedAccess('admin'), updateUserRole)
-    .delete(verifyUserAuth, roleBasedAccess('admin'), deleteProfile)
+router.route("/admin/users/:id/toggle-status")
+    .put(verifyUserAuth, roleBasedAccess('admin'), toggleUserStatus)
 
 
 

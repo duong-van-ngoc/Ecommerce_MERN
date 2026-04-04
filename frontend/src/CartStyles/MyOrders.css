@@ -533,6 +533,31 @@
     box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
 }
 
+.btn-cancel-order {
+    display: inline-flex;
+    align-items: center;
+    padding: 9px 16px;
+    background: #fff;
+    color: #ef4444;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    border: 1px solid #fee2e2;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-cancel-order:hover:not(:disabled) {
+    background: #fef2f2;
+    border-color: #fca5a5;
+}
+
+.btn-cancel-order:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 900px) {
     .orders-page-layout {

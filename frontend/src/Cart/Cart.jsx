@@ -1,51 +1,53 @@
 /**
- * ============================================================================
- * COMPONENT: Cart
- * ============================================================================
- * 1. Component là gì: 
- *    - Trang Giỏ hàng hiển thị danh sách sản phẩm người dùng đã chọn mua,
- *      quản lý thao tác đổi số lượng, xóa sản phẩm, và tính toán số tiền.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Trang Giỏ hàng (Cart Page).
  * 
- * 2. Props: 
- *    - Không sử dụng Props truyền từ component cha.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Quản lý danh sách các mặt hàng người dùng đã chọn nhưng chưa thanh toán.
+ *    - Tính toán chi tiết tài chính: Tạm tính, Thuế, Phí vận chuyển và Tổng thanh toán.
+ *    - Kiểm soát biến thể tinh vi: Xử lý đúng sản phẩm dựa trên sự kết hợp ID-Size-Màu.
+ *    - Cầu nối sang luồng Thanh toán: Chuẩn bị dữ liệu `selectedOrderItems` cho bước tiếp theo.
  * 
- * 3. State:
- *    - Global State (Redux): Các state như `cartItems`, `loading`, `success`, `error` lấy từ store `cart`.
- *    - Local State: 
- *      + `selectedItems` (Object): Lưu trạng thái true/false của mỗi checkbox theo ID/bản thể.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Mua sắm & Thanh toán (Checkout Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi Global State `cartItems` thay đổi (do thêm, xóa, cập nhật số lượng).
- *    - Khi người dùng tick chọn checkbox -> Local state `selectedItems` Update.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - `getItemKey`: Một kỹ thuật Custom Key để phân biệt các bản thể khác nhau của cùng một sản phẩm (khác Size/Màu).
+ *    - Functional Programming: Sử dụng `reduce` để cộng dồn tiền, `filter` để lọc hàng và `every` để kiểm tra trạng thái "Chọn tất cả".
+ *    - `sessionStorage`: Dùng để chuyển giao dữ liệu sang trang Shipping mà không cần gọi API trung gian.
+ *    - React LifeCycle: Tự động khởi tạo trạng thái Checkbox ngay khi Component Mount.
  * 
- * 5. Event handling:
- *    - `increaseQuantity` / `decreaseQuantity`: Tăng giảm số lượng sản phẩm, gọi API cập nhật.
- *    - `deleteCartItems`: Xóa hẳn sản phẩm khỏi giỏ hàng.
- *    - `toggleSelectAll` / `handleCheckboxChange`: Bật/tắt trạng thái checkbox.
- *    - `checkoutHandler`: Xử lý định tuyến (navigate) khi bấm "Mua hàng".
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Mảng `cartItems` từ Redux Store.
+ *    - Output: Danh sách các sản phẩm được tích chọn (`selectedOrderItems`) lưu vào Session.
  * 
- * 6. Conditional rendering:
- *    - Nếu `cartItems.length === 0` -> Xuất hiện UI rỗng (`<NoItems>`).
- *    - Điều kiện enabled/disabled của nút Checkout phụ thuộc vào số sản phẩm đang được tick chọn.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `selectedItems`: Một Object đóng vai trò như một "Bản đồ trạng thái" (Map) lưu xem dòng nào đang được tick chọn.
  * 
- * 7. List rendering:
- *    - Lặp qua mảng `cartItems.map()` -> Render ra chuỗi các phần tử (Sản phẩm) trong giỏ hàng.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `toggleSelectAll`: Hàm thông minh giúp bật/tắt toàn bộ Checkbox chỉ với 1 click.
+ *    - `updateQuantity`: Đồng bộ số lượng giữa giao diện và Redux Store, có kiểm soát tồn kho.
+ *    - `checkoutHandler`: Cổng kiểm soát cuối cùng - Đảm bảo khách phải chọn ít nhất 1 món mới được đi tiếp.
  * 
- * 8. Controlled input:
- *    - Checkbox tổng "Chọn Tất Cả" bị kiểm soát hoàn toàn bởi logic state array.
- *    - `<input>` hiển thị số lượng đối với từng sản phẩm bị khóa lại ở readOnly và thao tác qua nút.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Load danh sách hàng từ Redux -> Hiển thị kèm ảnh và thông tin biến thể.
+ *    - Bước 2: Người dùng tick chọn sản phẩm -> UI tính toán lại tiền `subtotal`, `discount`, `shippingCharges`.
+ *    - Bước 3: Người dùng bấm "Tiến hành đặt hàng" -> Lưu mảng sản phẩm đã chọn vào Session Storage.
+ *    - Bước 4: Chuyển hướng sang trang Đăng nhập (nếu chưa có Session) hoặc trang Shipping.
  * 
- * 9. Lifting state up:
- *    - Dữ liệu `cartItems` đã được "Lift" vào Redux (Global Store) cũng như LocalStorage để chia sẻ 
- *      data cho các màn hình khác (Ví dụ: Menu có đếm badge số sản phẩm).
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Giao diện -> Redux Dispatch (Update/Remove) -> Axios -> Backend (Cart Controller) -> MongoDB.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Khởi tạo trang (Mount) -> Đọc danh sách Data (gồm cả biến thể Màu/Size) từ Redux.
- *    - (2) Default: Bỏ trống (false) toàn bộ checkbox của `selectedItems`.
- *    - (3) User Checkbox chọn sản phẩm muốn thanh toán -> Hàm tính toán Tạm tính, Khuyến mãi, Phí vận chuyển được gọi ngay lập tức.
- *    - (4) User thay đổi số lượng hiển thị UI đồng thời Dispatch Update thông qua Redux.
- *    - (5) Bấm Mua hàng -> App chuyển hướng (navigate) sang luồng URL kết hợp redirect shipping.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Free Shipping Logic: Tự động miễn phí vận chuyển nếu khách mua trên 500.000 VNĐ.
+ *    - Empty Template: Hiển thị bộ icon và nút "Tiếp tục mua sắm" nếu giỏ hàng trống.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Các action `addItemsToCart` (để update số lượng) và `removeItemFromCart` là các thunk bất đồng bộ.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Hàm `getItemKey` là "linh hồn" để tránh lỗi logic: Mua áo đỏ Size L và áo xanh Size M phải là 2 dòng khác nhau.
+ *    - Luôn gọi `sessionStorage.removeItem("directBuyItem")` khi vào checkout để tránh nhầm lẫn giữa luồng Giỏ hàng và luồng Mua Ngay.
  */
 import React, { useState, useEffect } from 'react'
 import '../CartStyles/Cart.css'

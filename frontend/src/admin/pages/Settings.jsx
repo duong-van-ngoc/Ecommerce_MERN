@@ -1,44 +1,53 @@
 /**
- * ============================================================================
- * COMPONENT: Settings
- * ============================================================================
- * 1. Component là gì: 
- *    - Màn hình Cài đặt Hệ thống của Admin. Quản lý thông tin Shop và Tùy chỉnh Các cấu hình Nhận thông báo.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Trang Cài Đặt Hệ Thống (Settings Page).
  * 
- * 2. Props: 
- *    - Không có Props truyền từ cha.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Quản lý các thông tin "Meta" của toàn bộ hệ thống E-commerce như Tên cửa hàng, Địa chỉ và Email liên hệ.
+ *    - Cấu hình các loại thông báo (Notifications) mà Admin muốn nhận được: Có đơn hàng mới, Sản phẩm sắp hết hàng, v.v.
+ *    - Là nơi lưu giữ các thiết lập mang tính chất quyết định đến bộ mặt và vận hành của Shop.
  * 
- * 3. State:
- *    - Local State (`useState`): `formData` chứa các field: `adminName`, `email`, `companyName`, `address`, `notifications` (Object con checkboxes).
- *    - Global State (`useSelector`): Lấy dữ liệu Settings gốc đã load được qua `adminSlice`.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Cấu hình Hệ thống & Quản trị trung tâm (Administrative & Config Flow).
  * 
- * 4. Render lại khi nào:
- *    - Gõ input text, check ô Checkbox -> state `formData` thay đổi -> UI Input update real-time.
- *    - Nhận Data mới từ API.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Deeply Nested State Management: Kỹ thuật quản lý State với Object nhiều tầng lớp. Đặc biệt là phần `notifications` nằm bên trong `formData`. Việc cập nhật này đòi hỏi dùng Spread Operator (`...`) cực kỳ khéo léo để không làm mất dữ liệu của các anh em "hàng xóm" trong cùng một Object.
+ *    - Server-to-Local Synchronization Pattern: Sử dụng `useEffect` để "đổ" dữ liệu từ Redux Store (Server data) vào Local State (`formData`) ngay khi dữ liệu vừa được tải về. Đây là cách chuẩn để khởi tạo dữ liệu cho một Form chỉnh sửa.
+ *    - Fully Controlled Components: TẤT CẢ các thành phần từ Input, Textarea cho đến Checkbox đều được React kiểm soát hoàn toàn. Giá trị bạn thấy trên màn hình luôn khớp 100% với giá trị trong State.
+ *    - Functional Update in useState: Kỹ thuật `setFormData(prev => ({ ...prev }))`. Việc sử dụng hàm callback `prev` giúp đảm bảo bạn luôn cập nhật dựa trên dữ liệu mới nhất, tránh tình trạng bị mất dữ liệu do các thay đổi xảy ra dồn dập.
+ *    - Error Handling with Redux Unwrapping: Sử dụng `.unwrap()` sau khi Dispatch. Kỹ thuật này biến Action Redux thành một Promise thực thụ, cho phép bạn sử dụng `try/catch` để hiển thị Toast thông báo thành công hoặc lỗi một cách chuyên nghiệp.
  * 
- * 5. Event handling:
- *    - `handleInputChange`: Bắt sự kiện gõ phím cập nhật object layer ngoài của formData.
- *    - `handleCheckboxChange`: Nested setState cho object `notifications` bên trong formData.
- *    - `handleSave`: Bắt event Submit form, khóa re-load trang và dispatch gọi Thunk API lưu.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Dữ liệu cấu hình hệ thống hiện tại từ Redux.
+ *    - Output: Một Form chỉnh sửa tích hợp sẵn logic lưu trữ và phản hồi người dùng.
  * 
- * 6. Conditional rendering:
- *    - Render màn hình Skeleton Box loading khi `loading && !settings`.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `formData`: Lưu trữ tạm thời các thay đổi trên giao diện trước khi gửi đi. Bao gồm 2 phần: Thông tin văn bản và Cấu hình thông báo (Checkboxes).
  * 
- * 7. List rendering:
- *    - Render tĩnh tĩnh các form block, ko map mảng Array.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `handleInputChange`: Cập nhật các trường văn bản đơn giản.
+ *    - `handleCheckboxChange`: Logic chuyên xử lý các ô tích chọn, cập nhật sâu vào Object `notifications`.
+ *    - `handleSave`: Hành động nén toàn bộ `formData` thành JS Object và đẩy lên Cloud để lưu trữ.
  * 
- * 8. Controlled input:
- *    - TẤT CẢ form input, textarea, checkbox đều Controlled (liên kết cứng value = formData.xyz + onChange Handler).
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Khi mở trang, Dispatch `fetchSettings` để hỏi Server "Cấu hình shop hiện tại là gì?".
+ *    - Bước 2: Server trả về -> Dữ liệu hiện ra trên các ô Input.
+ *    - Bước 3: Admin thay đổi địa chỉ shop hoặc bật/tắt thông báo "Đơn hàng mới".
+ *    - Bước 4: Admin bấm "Lưu thay đổi" -> Một hiệu ứng Loading xuất hiện -> Toast báo "Thành công" hiện lên.
  * 
- * 9. Lifting state up:
- *    - Đẩy config Settings thông tin cấu hình lên API Thunk (`updateSettings`).
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Request: `GET /api/v1/admin/settings` và `PUT /api/v1/admin/settings`.
+ *    - Database: Tác động vào một Document duy nhất chứa toàn bộ Config của hệ thống.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Component mount -> dispatch `fetchSettings` API.
- *    - (2) Nhận dữ liệu `settings` từ Server -> trigger useEffect số 2 -> fill data đè lên local `formData` state ban đầu để hiện ra các input.
- *    - (3) User Gõ / Cập nhật form -> Thay đổi data Form local React Component.
- *    - (4) Bấm submit "Lưu thay đổi" -> trigger `handleSave`. Dispatch `updateSettings` gửi JS Object JSON lên Server Mongoose. Toast Báo Done.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Skeleton Loading: Trong khi chờ dữ liệu Settings từ Server về, hệ thống sẽ hiện vòng quay Loading để tránh việc người dùng gõ vào các ô Input rỗng.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Toàn bộ quá trình FETCH và UPDATE thông tin cài đặt thông qua API.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Phần `handleCheckboxChange`: Luôn nhớ `prev.notifications` phải được spread lại để tránh làm hỏng các cài đặt thông báo khác khi bạn chỉ thay đổi một ô.
+ *    - Phân biệt rõ giữa Thông tin cá nhân Admin và Thông tin của Shop.
  */
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';

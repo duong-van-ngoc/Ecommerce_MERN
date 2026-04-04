@@ -1,32 +1,58 @@
 /**
- * ============================================================================
- * CONTROLLER: paymentController.js
- * ============================================================================
- * 1. Vai trò: 
- *    - Xử lý các yêu cầu liên quan đến thanh toán qua cổng VNPay.
- *    - Tạo URL thanh toán, xác thực kết quả trả về (Return URL) và thông báo từ server (IPN).
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là file Bộ điều khiển Thanh toán VNPay (VNPay Payment Controller).
  * 
- * 2. Thư viện sử dụng:
- *    - `vnpay`: Thư viện Node.js để tương tác với VNPay API (xây dựng URL, verify checksum).
- *    - `crypto`: (Tích hợp sẵn trong vnpay lib) dùng để băm HMAC-SHA512 bảo mật dữ liệu.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Cầu nối cốt lõi giữa hệ thống của bạn và cổng thanh toán VNPay.
+ *    - Chịu trách nhiệm tạo yêu cầu thanh toán (Payment URL), xác thực phản hồi từ ngân hàng (Return URL) và tiếp nhận thông báo kết quả giao dịch ngầm (IPN).
+ *    - Tự động hóa việc cập nhật trạng thái thanh toán đơn hàng và dọn dẹp giỏ hàng sau khi khách trả tiền thành công.
  * 
- * 3. Kiến thức & Khái niệm cốt lõi:
- *    - HMAC-SHA512: Thuật toán mã hóa dùng để tạo chữ ký số (Checksum), đảm bảo dữ liệu không bị thay đổi giữa VNPay và Server.
- *    - IPN (Instant Payment Notification): Cơ chế server-to-server giúp cập nhật trạng thái đơn hàng tin cậy, ngay cả khi người dùng tắt trình duyệt.
- *    - Sanbox: Môi trường thử nghiệm của VNPay (giả lập thanh toán).
- *    - TmnCode & HashSecret: Mã định danh và khóa bí mật do VNPay cung cấp để định danh ứng dụng.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Thanh toán điện tử (E-payment Flow) & Tích hợp bên thứ ba.
  * 
- * 4. Luồng hoạt động:
- *    - (1) Client gọi `createVnpayPayment` -> Server tạo Link VNPay và trả về.
- *    - (2) Người dùng thanh toán trên cổng VNPay -> VNPay redirect về `vnpayReturn`.
- *    - (3) Server xác thực chữ ký -> Cập nhật Database -> Redirect về Frontend.
- *    - (4) VNPay Server gọi `vnpayIPN` (song song) để đảm bảo đồng bộ dữ liệu.
- * ============================================================================
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - vnpay SDK: Thư viện giúp tính toán chữ ký số (Checksum) và xây dựng URL theo đúng chuẩn VNPay.
+ *    - HMAC-SHA512: Thuật toán băm mã để tạo chữ ký bảo mật, chống việc tin tặc can thiệp thay đổi số tiền hoặc kết quả giao dịch.
+ *    - IPN (Instant Payment Notification): Cơ chế Webhook quan trọng giúp Server-to-Server giao tiếp để cập nhật Database tin cậy nhất.
+ *    - Redirect Logic: Chuyển hướng trình duyệt khách hàng giữa Frontend và cổng thanh toán.
+ * 
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Số tiền, ID đơn hàng từ Frontend hoặc các tham số truy vấn (Query string) từ máy chủ VNPay sau giao dịch.
+ *    - Output: Một đường link dẫn đến trang thanh toán hoặc các phản hồi JSON thông báo kết quả cập nhật Database.
+ * 
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - Không áp dụng.
+ * 
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `createVnpayPayment`: Tạo mã băm và URL thanh toán dẫn khách sang trang ngân hàng.
+ *    - `vnpayReturn`: Tiếp nhận khách hàng khi họ hoàn tất thanh toán và quay lại website để hiển thị thông báo.
+ *    - `vnpayIPN`: Đầu nhận thông báo tự động từ VNPay Server để cập nhật trạng thái đơn hàng "vĩnh viễn".
+ *    - `updateOrderPaymentStatus`: Hàm xử lý nghiệp vụ dùng chung để kiểm tra số tiền, cập nhật cờ `isPaid` và xóa sản phẩm trong giỏ hàng.
+ * 
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: User chọn thanh toán VNPay -> `createVnpayPayment` trả về URL.
+ *    - Bước 2: User thanh toán xong -> VNPay gọi song song `vnpayReturn` (cho User thấy kết quả) và `vnpayIPN` (cho hệ thống lưu dữ liệu).
+ *    - Bước 3: Cả hai đầu callback đều gọi `updateOrderPaymentStatus` để xác thực chữ ký (Checksum) và cập nhật DB.
+ * 
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Client -> Backend -> VNPay Gateway -> Backend (IPN/Return) -> MongoDB (Order & User Cart) -> Client (Page Success/Fail).
+ * 
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Chống gian lận: Kiểm tra số tiền nhận được từ VNPay có khớp hoàn toàn với số tiền trong Đơn hàng hay không.
+ *    - Kiểm tra chữ ký: `verifyReturnUrl` và `verifyIpnCall` đảm bảo dữ liệu đến từ VNPay thật chứ không phải giả mạo.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Sử dụng `async/await` dày đặc cho các thao tác cập nhật trạng thái đơn hàng và lọc giỏ hàng.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Tại sao cần cả Return và IPN? Vì khách hàng có thể tắt trình duyệt ngay sau khi trả tiền (Return không chạy), lúc này IPN là "cứu cánh" duy nhất để hệ thống biết tiền đã về.
+ *    - Logic dọn dẹp giỏ hàng: Chỉ xóa các món hàng có trong đơn hàng vừa thanh toán, giữ lại các món khác nếu khách chưa mua.
  */
 import { VNPay, ProductCode, VnpCurrCode, VnpLocale } from 'vnpay';
 import handleAsyncError from '../middleware/handleAsyncError.js';
 import Order from '../models/orderModel.js';
 import Cart from '../models/cartModel.js';
+import CartItem from '../models/cartItemModel.js';
 import HandleError from '../utils/handleError.js';
 
 // Khởi tạo VNPay instance (lazy loading để tránh lỗi hoisting env)
@@ -114,7 +140,7 @@ const updateOrderPaymentStatus = async (query) => {
     const order = await Order.findById(orderId);
     if (!order) return { success: false, code: '01', message: 'Order not found' };
     
-    // Kiểm tra số tiền (VNPay vnp_Amount đã nhân 100)
+    // Check amount (VNPay vnp_Amount is multiplied by 100)
     if (Number(query.vnp_Amount) / 100 !== order.totalPrice) {
         return { success: false, code: '04', message: 'Invalid amount' };
     }
@@ -124,29 +150,48 @@ const updateOrderPaymentStatus = async (query) => {
     }
 
     if (responseCode === '00') {
+        // Payment successful - update order status
         order.isPaid = true;
         order.paidAt = Date.now();
-        order.paymentInfo.status = "PAID";
-        order.paymentInfo.transId = query.vnp_TransactionNo;
-        order.paymentInfo.method = "VNPAY";
-        order.orderStatus = "Chờ xử lý"; // Đảm bảo trạng thái đơn hàng là chờ xử lý (hoặc Đang xử lý tùy logic)
+        order.paymentMethod = "VNPAY";
+        order.paymentStatus = "Paid";
+        order.paymentInfo = {
+            ...order.paymentInfo,
+            provider: "VNPAY",
+            transId: query.vnp_TransactionNo,
+            resultCode: responseCode,
+            message: "Thanh toán thành công",
+            amount: Number(query.vnp_Amount) / 100,
+        };
+        order.orderStatus = "Chờ xử lý";
         await order.save();
 
-        // --- MỚI: XÓA SẢN PHẨM KHỎI GIỎ HÀNG Ở BACKEND ---
+        // --- CLEAR CART ITEMS (New normalized schema) ---
         try {
-            const cart = await Cart.findOne({ user: order.user });
+            // Use user_id (new schema) instead of user (old schema)
+            const userId = order.user_id;
+            const cart = await Cart.findOne({ user_id: userId });
+            
             if (cart) {
-                const paidProductKeys = order.orderItems.map(item => 
-                    `${item.product.toString()}-${item.size || ''}-${item.color || ''}`
-                );
-
-                cart.items = cart.items.filter(cartItem => {
-                    const cartKey = `${cartItem.product.toString()}-${cartItem.size || ''}-${cartItem.color || ''}`;
-                    return !paidProductKeys.includes(cartKey);
+                // Build product keys from order items using product_id (new field)
+                const paidProductKeys = order.orderItems.map(item => {
+                    const pId = item.product_id ? item.product_id.toString() : '';
+                    return `${pId}-${item.size || ''}-${item.color || ''}`;
                 });
 
-                await cart.save();
-                console.log(`[VNPay] Đã dọn dẹp giỏ hàng cho user ${order.user} sau khi thanh toán thành công.`);
+                // Find and delete matching CartItem documents (separate collection)
+                const cartItems = await CartItem.find({ cart_id: cart._id });
+                const itemsToDelete = cartItems.filter(cartItem => {
+                    const cartKey = `${cartItem.product_id.toString()}-${cartItem.size || ''}-${cartItem.color || ''}`;
+                    return paidProductKeys.includes(cartKey);
+                });
+
+                if (itemsToDelete.length > 0) {
+                    await CartItem.deleteMany({
+                        _id: { $in: itemsToDelete.map(item => item._id) }
+                    });
+                    console.log(`[VNPay] Đã xóa ${itemsToDelete.length} sản phẩm khỏi giỏ hàng user ${userId}`);
+                }
             }
         } catch (err) {
             console.error("[VNPay] Lỗi dọn dẹp giỏ hàng:", err.message);
@@ -154,8 +199,13 @@ const updateOrderPaymentStatus = async (query) => {
 
         return { success: true, code: '00', message: 'Success' };
     } else {
-        order.paymentInfo.status = "FAILED";
-        order.paymentInfo.resultCode = responseCode;
+        // Payment failed
+        order.paymentStatus = "Failed";
+        order.paymentInfo = {
+            ...order.paymentInfo,
+            resultCode: responseCode,
+            message: "Thanh toán thất bại",
+        };
         order.orderStatus = "Đã hủy";
         await order.save();
         return { success: true, code: '00', message: 'Payment Failed recorded' };

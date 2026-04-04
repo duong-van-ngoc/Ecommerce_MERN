@@ -1,46 +1,50 @@
-/////////////////////sssssssssssssssss//////////////
-
-
-
 /**
- * ============================================================================
- * COMPONENT: ForgotPassword
- * ============================================================================
- * 1. Component là gì: 
- *    - Màn hình Quên Mật khẩu dành cho người dùng vãng lai (nhập email để server gởi link Đặt lại qua token).
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Trang Quên mật khẩu (Forgot Password Page).
  * 
- * 2. Props: 
- *    - Component Route page cấp độ Root.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Hỗ trợ người dùng khôi phục quyền truy cập khi họ không nhớ mật khẩu.
+ *    - Là điểm khởi đầu của quy trình Reset Password an toàn: Nhập Email -> Nhận Link Reset qua Hộp thư điện tử.
+ *    - Đóng vai trò cầu nối giữa giao diện người dùng và dịch vụ gửi Email (SMTP) của Backend.
  * 
- * 3. State:
- *    - Local State (useState):
- *      + `email` (string): Trạng thái control input email.
- *    - Global State (useSelector): Lấy `user` store chứa error, success message.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Khôi phục Tài khoản (Account Recovery Flow).
  * 
- * 4. Render lại khi nào:
- *    - Gõ email text; Redux trạng thái thay đổi.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - State Management (useState): Quản lý giá trị Email duy nhất một cách tập trung.
+ *    - UI/UX Aesthetics: Sử dụng các thẻ `div` tạo hiệu ứng quả cầu phát sáng (`forgot-password-orb`) để tạo giao diện hiện đại, cao cấp theo phong cách Glassmorphism.
+ *    - Redux Integration: Sử dụng `useSelector` để bắt được thông điệp (`message`) từ Server - đây thường là thông báo dạng: "Vui lòng kiểm tra email của bạn".
+ *    - Form Validation: Tận dụng thuộc tính `type="email"` của HTML5 để kiểm tra định dạng email hợp lệ ngay tại trình duyệt.
  * 
- * 5. Event handling:
- *    - `ForgotPasswordEmail(e)`: Xử lý nút Click submit Email quên mật khẩu `dispatch(forgotPassword)`.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Địa chỉ Email cần khôi phục mật khẩu.
+ *    - Output: Một yêu cầu tạo "Reset Token" gửi đến hệ thống và thông báo xác nhận gửi email thành công.
  * 
- * 6. Conditional rendering:
- *    - Conditional Spinner `<Loader />`.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `email`: State cục bộ kiểm soát ô nhập liệu.
+ *    - `loading`, `error`, `success`, `message`: Các biến trạng thái từ Redux Store.
  * 
- * 7. List rendering:
- *    - Không render array.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `ForgotPasswordEmail`: Hàm xử lý logic khi nhấn nút Gửi. Nó đóng gói Email vào `FormData` và kích hoạt luồng xử lý của Backend thông qua Redux.
  * 
- * 8. Controlled input:
- *    - Cột Input Email Form.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Người dùng nhập Email chính xác đã dùng đăng ký tài khoản.
+ *    - Bước 2: Nhấn "Gửi yêu cầu" -> Hệ thống hiện màn hình chờ (Loader).
+ *    - Bước 3: Backend kiểm tra Email -> Nếu đúng, tạo Token bí mật -> Gửi Email kèm Link chứa Token đó.
+ *    - Bước 4: UI nhận thông báo thành công -> Hiện Toast báo check mail -> Tự động quay về trang Đăng nhập.
  * 
- * 9. Lifting state up:
- *    - Cập nhật Redux store (forgotPassword logic).
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - UI -> POST Request -> API (forgotPassword) -> Backend (Tìm User & Tạo Token) -> SMTP Server (Gửi Email thực tế) -> Response.
  * 
- * 10. Luồng hoạt động:
- *    - (1) User input mail phục vụ reset pass.
- *    - (2) Click Gửi yêu cầu -> `ForgotPasswordEmail` action bắn đi.
- *    - (3) BE check mail nếu đúng gởi mail SMTP chứa Reset Token, trả về Redux Success.
- *    - (4) UI show "Đã gởi email thành công" qua Toast, `useEffect(success)` dọn dẹp biến success rồi điều hướng quay về trang Login.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - `loading ? <Loader /> : Content`: Vì thao tác gửi Email thực tế qua SMTP server thường mất vài giây, việc hiển thị Loader là cực kỳ quan trọng để người dùng không cảm thấy ứng dụng bị "treo".
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Gọi hành động `dispatch(forgotPassword(myForm))` là một tác vụ bất đồng bộ xuyên suốt từ Store đến Server.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - `setEmail("")`: Dọn dẹp input sau khi nhấn giúp ngăn chặn hành vi spam hoặc gửi email trùng lặp.
+ *    - Biến `message` ở đây rất đặc biệt: Nó chứa thông tin phản hồi từ Server về việc email cụ thể nào đã được gửi đi.
  */
 import React, { useEffect, useState } from 'react'
 import '../UserStyles/ForgotPassword.css'

@@ -1,31 +1,58 @@
 /**
- * ============================================================================
- * COMPONENT: VnpayResult.jsx
- * ============================================================================
- * 1. Vai trò: 
- *    - Hiển thị kết quả thanh toán sau khi người dùng được VNPay redirect về website.
- *    - Xử lý dọn dẹp các sản phẩm đã đặt khỏi giỏ hàng nếu thanh toán thành công.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Trang kết quả thanh toán VNPAY (VNPAY Result Page).
  * 
- * 2. Thư viện sử dụng:
- *    - `react-router-dom`: Dùng `useSearchParams` để lấy tham số từ URL và `useNavigate` để điều hướng.
- *    - `react-redux`: Dùng `useDispatch` để gọi action Redux.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Điểm tiếp nhận phản hồi (Callback URL) sau khi người dùng thực hiện thanh toán trên cổng VNPAY.
+ *    - Giải mã mã phản hồi (`vnp_ResponseCode`) để thông báo cho khách hàng biết giao dịch có thành công hay không.
+ *    - Đồng bộ hóa trạng thái ứng dụng: Làm mới giỏ hàng (refetch) và dọn dẹp các dữ liệu tạm thời (Session Storage) sau khi mua hàng thành công.
  * 
- * 3. Kiến thức & Khái niệm:
- *    - Query Parameters: Các thông số VNPay gửi về qua URL (vnp_ResponseCode, vnp_TxnRef...).
- *    - Side Effect (useEffect): Dùng để thực hiện hành động xóa sản phẩm ngay khi component mount và xác định thành công.
- *    - Redux Action (removeOrderedItems): Chỉ xóa những sản phẩm đã được đặt hàng thành công, giữ lại các sản phẩm khác trong giỏ.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Thanh toán (Payment Flow) - Giai đoạn cuối cùng.
  * 
- * 4. Luồng hoạt động:
- *    - (1) Component lấy `vnp_ResponseCode` từ URL.
- *    - (2) Nếu mã là `00` (Thành công) -> Lấy danh sách sản phẩm từ `sessionStorage`.
- *    - (3) Gọi dispatch `removeOrderedItems(items)` để dọn dẹp giỏ hàng một cách có chọn lọc.
- *    - (4) Hiển thị giao diện Chúc mừng hoặc Thông báo lỗi tương ứng.
- * ============================================================================
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - `useSearchParams`: Hook của React Router dùng để bóc tách các tham số phức tạp mà VNPAY gửi về trên URL (ví dụ: mã giao dịch, số tiền, mã phản hồi).
+ *    - Status Code Mapping: Kỹ thuật tra cứu từ điển (Dictionary) để chuyển đổi các mã số khô khan (00, 24, 51...) thành thông báo Tiếng Việt thân thiện.
+ *    - State Synchronization: Phối hợp giữa `useEffect` và Redux để đảm bảo khi khách hàng quay lại web, giỏ hàng của họ đã được tự động dọn sạch món hàng vừa mua.
+ *    - Session Storage Cleanup: Dọn dẹp "rác" dữ liệu tạm để tránh xung đột cho các đơn hàng tiếp theo.
+ * 
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Các tham số Query String từ VNPAY.
+ *    - Output: Giao diện thông báo trạng thái (Thành công/Thất bại) và các nút điều hướng (Xem đơn hàng/Về trang chủ).
+ * 
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `orderId`: Mã đơn hàng được lấy từ URL để hiển thị cho khách đối chiếu.
+ *    - `responseCode`: Mã trạng thái giao dịch từ VNPAY.
+ *    - `isSuccess`: Biến cờ (flag) xác định nhanh giao dịch thành công (mã 00).
+ * 
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `getVnpayMessage`: Hàm "phiên dịch" mã lỗi VNPAY sang ngôn ngữ người dùng.
+ *    - `useEffect`: Nơi xử lý các tác vụ "dọn dẹp" (Side Effects) quan trọng ngay sau khi khách quay lại website.
+ * 
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: VNPAY Redirect người dùng về URL này kèm theo các mã kết quả.
+ *    - Bước 2: Component đọc mã -> Xác định `isSuccess`.
+ *    - Bước 3: Nếu thành công -> Dispatch `fetchCart()` để Backend trả về giỏ hàng mới (đã xóa món đã mua).
+ *    - Bước 4: Xóa triệt để các dữ liệu tạm trong `sessionStorage`.
+ *    - Bước 5: Render UI tương ứng (Màu xanh: Vui vẻ / Màu đỏ: Cảnh báo).
+ * 
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Luồng này chủ yếu nhận dữ liệu (GET Params) và gửi 1 yêu cầu `fetchCart` để đồng bộ UI.
+ * 
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Validation: Chỉ tiến hành dọn dẹp giỏ hàng nếu `isAuthenticated` là true và `userId` đã sẵn sàng.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Quá trình gọi `dispatch(fetchCart())` để lấy lại giỏ hàng là bất đồng bộ.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - `orderId` và `vnp_ResponseCode` là hai thông tin quan trọng nhất để đối soát giao dịch.
+ *    - Việc dọn dẹp Session Storage là bắt buộc để tránh tình trạng khách hàng bấm "Thanh toán lại" mà vẫn dính dữ liệu đơn hàng cũ.
  */
 import React, { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCart } from '../features/cart/cartSlice';
+import { fetchCart, removeOrderedItems } from '../features/cart/cartSlice';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import '../CartStyles/PaymentSuccess.css';
@@ -61,19 +88,31 @@ const VnpayResult = () => {
     const { isAuthenticated } = useSelector((state) => state.user);
 
     useEffect(() => {
-        // Chỉ thực hiện xóa khi:
-        // 1. Thanh toán thành công (isSuccess)
-        // 2. User đã được load (isAuthenticated)
-        // 3. UserId trong cart đã được đồng bộ (userId !== null) - trừ khi là guest
+        // Only clear cart when:
+        // 1. Payment succeeded (isSuccess)
+        // 2. User is authenticated
+        // 3. UserId in cart is synced (userId !== null)
         if (isSuccess && isAuthenticated && userId !== null) {
-            // Sau khi thanh toán thành công, gọi Backend để lấy lại giỏ hàng đã được dọn dẹp
-            // (Backend đã xử lý $pull các sản phẩm đã thanh toán trong paymentController)
+            // Step 1: Remove ordered items from Redux state + LocalStorage
+            const vnpayOrderedItems = sessionStorage.getItem('vnpayOrderedItems');
+            if (vnpayOrderedItems) {
+                try {
+                    const orderedItems = JSON.parse(vnpayOrderedItems);
+                    dispatch(removeOrderedItems(orderedItems));
+                } catch (e) {
+                    console.error('Error parsing vnpayOrderedItems:', e);
+                }
+            }
+
+            // Step 2: Fetch fresh cart from Backend (backend also cleaned up)
             dispatch(fetchCart());
             
-            // Dọn dẹp các session tạm
+            // Step 3: Clean up all temp session data
             sessionStorage.removeItem('vnpayOrderedItems');
             sessionStorage.removeItem("directBuyItem");
             sessionStorage.removeItem("selectedOrderItems");
+            sessionStorage.removeItem("orderInfo");
+            sessionStorage.removeItem("paymentMethod");
         }
     }, [isSuccess, isAuthenticated, userId, dispatch]);
 

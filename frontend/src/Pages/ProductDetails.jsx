@@ -1,58 +1,55 @@
 /**
- * ============================================================================
- * COMPONENT: ProductDetails
- * ============================================================================
- * 1. Component là gì: 
- *    - Trang hiển thị chi tiết của một sản phẩm, cho phép người dùng xem thông tin,
- *      đánh giá, chọn các biến thể (Màu sắc, Kích thước), số lượng và thêm vào giỏ hàng.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Trang chi tiết sản phẩm (Product Details Page).
  * 
- * 2. Props: 
- *    - Không nhận trực tiếp props từ cha, lấy `id` sản phẩm từ params của react-router-dom.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Là nơi khách hàng đưa ra quyết định mua sắm cuối cùng sau khi xem kỹ thông tin.
+ *    - Quản lý cấu hình biến thể sản phẩm: Cho phép chọn Màu sắc, Kích thước và Số lượng.
+ *    - Kết nối lòng tin: Hiển thị Đánh giá (Reviews) và Thông số kỹ thuật chi tiết.
+ *    - Điều hướng mua nhanh: Cung cấp tính năng "Mua Ngay" bỏ qua bước vào giỏ hàng.
  * 
- * 3. State:
- *    - Local State: 
- *      + `quantity` (number): Số lượng sản phẩm muốn mua.
- *      + `activeTab` (number): Quản lý tab đang mở (Mô tả, Thông số, Đánh giá).
- *      + `selectedImage` (number): Index của ảnh đang được focus hiển thị.
- *      + `selectedColor` (number | null): Index của màu sắc đang chọn.
- *      + `selectedSize` (number | null): Index của kích thước đang chọn.
- *      + `selectionError` (boolean): Cờ báo lỗi khi người dùng chưa chọn phân loại (size/color).
- *    - Global State (Redux): Lấy từ `product` slice và `cart` slice.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Mua sắm (Shopping Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi Redux fetch xong dữ liệu `productDetails` (loading -> success/error).
- *    - Khi Local State thay đổi (người dùng click chọn size, màu, đổi số lượng, chuyển tab ảnh).
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - `useParams`: Để bóc tách ID sản phẩm từ thanh địa chỉ URL.
+ *    - Complex Local State: Quản lý cùng lúc nhiều trạng thái hiển thị (Tab, Gallery ảnh, Lựa chọn thuộc tính).
+ *    - Mapping Logic: Sử dụng `colorMap` để chuyển đổi tên màu từ Backend (ví dụ: "Đen") sang mã màu Hex chuẩn CSS (#000000).
+ *    - Session Storage: Lưu trữ tạm thời vật phẩm "Mua Ngay" để chuyển tiếp qua trang thanh toán.
  * 
- * 5. Event handling:
- *    - `increaseQuantity` / `decreaseQuantity`: Nút (+)/(-) thay đổi số lượng.
- *    - `addToCart`: Nút "Thêm vào giỏ hàng", kiểm tra điều kiện rồi dispatch action.
- *    - `handleBuyNow`: Xử lý click nút Mua Ngay.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: ID sản phẩm từ URL và dữ liệu từ Global Store.
+ *    - Output: Một giao diện hiển thị chi tiết và các Action tương tác (Thêm giỏ / Mua ngay).
  * 
- * 6. Conditional rendering:
- *    - Nếu `loading` là true -> Hiển thị `<Loader />`.
- *    - Nếu % giảm giá > 0 -> Hiển thị badge giảm giá.
- *    - Ẩn/hiện khối cảnh báo thiếu màu/size phụ thuộc biến `selectionError`.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `selectedColor`, `selectedSize`: Lưu trữ lựa chọn cụ thể của người dùng.
+ *    - `selectionError`: Biến cờ (flag) để hiển thị cảnh báo đỏ nếu người dùng quên chọn biến thể.
+ *    - `quantity`: Số lượng món hàng khách muốn lấy.
  * 
- * 7. List rendering:
- *    - Dùng `.map()` lặp `productImages` -> Hiển thị list ảnh thumbnail.
- *    - Dùng `.map()` lặp `productColors` -> Hiển thị danh sách các ô màu sắc.
- *    - Dùng `.map()` lặp `productSizes` -> Hiển thị danh sách nút chọn kích thước.
- *    - Dùng `.map()` lặp `product.reviews` -> Hiển thị comment của người dùng.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `addToCart`: Tổng hợp mọi thông tin (ID, Qty, Size, Màu) và gửi về Redux Cart Slice.
+ *    - `handleBuyNow`: Quy trình mua siêu tốc - đóng gói dữ liệu vào Session và đẩy người dùng đi thanh toán luôn.
+ *    - `increaseQuantity / decreaseQuantity`: Các hàm kiểm soát số lượng mua, đảm bảo không vượt quá tồn kho (Stock).
  * 
- * 8. Controlled input:
- *    - `<input>` hiển thị số lượng (readOnly) bị kiểm soát bởi state `quantity`.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Lấy ID từ URL -> Dispatch `getProductDetails`.
+ *    - Bước 2: Render dữ liệu -> Khách chọn Size/Màu/Số lượng.
+ *    - Bước 3: Click "Thêm vào giỏ" -> Validate lựa chọn -> Dispatch `addItemsToCart`.
+ *    - Bước 4: Hiển thị thông báo thành công hoặc yêu cầu đăng nhập nếu chưa có Session.
  * 
- * 9. Lifting state up:
- *    - Việc quản lý dữ liệu giỏ hàng được đẩy thẳng qua Redux (Global Store) 
- *      thay vì đẩy state ngược lên Header để chia sẻ số lượng sản phẩm.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - UI -> API Request (GET /api/v1/products/:id) -> MongoDB -> Response -> Update State.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Component Mount -> Dùng useEffect gọi API `getProductDetails(id)`.
- *    - (2) Lấy dữ liệu thành công -> Tự động ánh xạ mã màu (hex) từ array string.
- *    - (3) Render UI -> Người dùng xem chi tiết, tuỳ chọn màu và size.
- *    - (4) Click "Thêm vào giỏ" -> Nếu thiếu biến thể bắt buộc: Bật cảnh báo lỗi đỏ (`selectionError = true`).
- *    - (5) Nếu đủ -> Gọi Dispatch action `addItemsToCart(id, qty, size, color)`.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Kiểm tra `stock`: Nếu hết hàng (stock = 0), các nút Mua/Thêm giỏ sẽ tự biến mất/vô hiệu hóa.
+ *    - Validate `isAuthenticated`: Đảm bảo chỉ người dùng đã đăng nhập mới có thể mua hàng hoặc đánh giá.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Việc chờ đợi dữ liệu sản phẩm từ API và các thao tác thêm vào giỏ hàng là bất đồng bộ.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Chú ý logic `cleanColor` và `cleanSize`: Dữ liệu thô từ DB đôi khi chứa dấu `[]` hoặc `"` thừa, cần lọc sạch trước khi render.
+ *    - Mobile Sticky CTA: File này có một thanh nút mua luôn dính ở dưới màn hình điện thoại để tối ưu tỷ lệ chuyển đổi.
  */
 import React, { useEffect, useState } from 'react'
 import '../pageStyles/ProductDetails.css';

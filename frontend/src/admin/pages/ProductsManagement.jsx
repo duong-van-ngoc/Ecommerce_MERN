@@ -1,51 +1,57 @@
 /**
- * ============================================================================
- * COMPONENT: ProductsManagement
- * ============================================================================
- * 1. Component là gì: 
- *    - Giao diện Admin quản lý Sản phẩm chính, bao gồm: Danh sách Sản phẩm, Tab Nhập Hàng (Stock) và các nút thao tác Thêm/Sửa/Xóa, Import.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Trang Quản Lý Sản Phẩm Toàn Diện (Products Management Page).
  * 
- * 2. Props: 
- *    - Không nhận Props từ cha.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Là trung tâm điều phối mọi hoạt động liên quan đến hàng hóa trong cửa hàng.
+ *    - Quản lý hai phân hệ chính thông qua các Tab: "Danh sách sản phẩm" (Để chỉnh sửa thông tin) và "Nhập hàng" (Để quản lý tồn kho).
+ *    - Tích hợp các công cụ mạnh mẽ: Tìm kiếm nâng cao, Lọc theo phong cách (Style), và Nhập dữ liệu hàng loạt từ Excel (Import).
  * 
- * 3. State:
- *    - Local State: 
- *      + `showModal`, `showImportModal`: Boolean bật/tắt các Popup Modal.
- *      + `selectedProduct`: Lưu Object SP đang chọn để bind vào Form khi bấm Sửa.
- *      + `activeTab`: String ('list' | 'stock') quản lý đang ở Tab Danh sách hay Tab Kho.
- *    - Global State: `products`, `loading`, `error` từ `adminSlice`.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Quản trị Hàng hóa & Kho vận (Product & Inventory Management Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi chuyển đổi Tab, bật/tắt hộp thoại (Modal).
- *    - Khi Call API (Fetch list sp, add/edit/delete thành công).
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Tab-based UI Architecture: Sử dụng trạng thái `activeTab` để thay đổi nội dung trang mà không cần tải lại hoặc nhảy Route. Giúp Admin làm việc tập trung hơn.
+ *    - Advanced Multi-layer Filtering: Logic lọc sản phẩm cực kỳ thông minh. Nó có thể tìm kiếm cùng lúc theo Tên, Phong cách (Style), Vibe (tâm trạng) và thậm chí là theo từng cấp danh mục (Category names).
+ *    - Component Composition: File này là "nhạc trưởng" lắp ghép các thành phần lại với nhau. Nó gọi đến `ProductFormModal` để sửa, `ImportProductModal` để nhập hàng loạt, và `StockManagement` để soi kho.
+ *    - Redux Thunk & Promise Unwrapping: Sử dụng `unwrap()` khi Dispatch Action xóa. Đây là cách hiện đại để xử lý logic "Nếu xóa thành công ở Server thì báo Toast xanh, lỗi thì báo Toast đỏ" ngay tại chỗ mà không cần viết quá nhiều `useEffect`.
+ *    - Dynamic Visual Cues: Sử dụng màu sắc để "cảnh báo" Admin: Chữ đỏ cho sản phẩm sắp hết hàng (`stock < 10`), nhãn "HOT" cho sản phẩm xu hướng, và ảnh Placeholder SVG nếu sản phẩm bị thiếu ảnh.
  * 
- * 5. Event handling:
- *    - `handleDelete`: Click -> Confirm window -> Dispatch xóa SP khỏi backend -> Báo Alert toast.
- *    - `handleEdit`, `handleAddNew`: Set state `selectedProduct` và bật popup Form.
- *    - `handleImportSuccess`: Callback sau khi upload file Excel thành công -> Tải lại Redux list Products.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Mảng `products` từ Redux và từ khóa tìm kiếm (`globalSearchQuery`).
+ *    - Output: Một hệ thống quản lý kho hàng đa năng và trực quan.
  * 
- * 6. Conditional rendering:
- *    - `activeTab === 'list'`: Hiển thị Table các Sản phẩm, ngược lại mount Component `<StockManagement>`.
- *    - Check logic Show Modal: `showModal && <ProductFormModal...>` 
- *    - Table render dòng rỗng nếu `products.length === 0`.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `showModal`, `showImportModal`: Điều khiển việc đóng/mở các cửa sổ Popup.
+ *    - `activeTab`: Quyết định đang xem danh sách hay đang làm việc với kho hàng.
+ *    - `filterStyle`: Bộ lọc theo phong cách thời trang (Minimalist, Streetwear,...).
  * 
- * 7. List rendering:
- *    - Duyệt `products.map()` tạo các `<tr>` với hình ảnh, tên, giá, số lượng tồn kho...
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `handleDelete`: Xử lý xóa sản phẩm kèm bước xác nhận bảo mật.
+ *    - `filteredProducts`: Hàm "lọc dầu" dữ liệu, đảm bảo Admin luôn nhìn thấy đúng thứ mình đang tìm.
+ *    - `handleImportSuccess`: Hành động "làm mới" (refresh) lại toàn bộ danh sách ngay sau khi nạp file Excel thành công.
  * 
- * 8. Controlled input:
- *    - Tab navigation (`activeTab`) giống behavior Radio Button quản lý qua onClick setter.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Khi mở trang, tự động gọi API lấy toàn bộ danh sách sản phẩm.
+ *    - Bước 2: Hiển thị bảng danh sách sản phẩm kèm ảnh Thumbnail.
+ *    - Bước 3: Admin có thể lọc, tìm kiếm hoặc chuyển sang Tab "Nhập hàng" để xem biểu đồ kho.
+ *    - Bước 4: Khi bấm Sửa hoặc Thêm, một Modal sẽ hiện lên để thao tác mà không làm mất trạng thái của trang hiện tại.
  * 
- * 9. Lifting state up:
- *    - Quản lý Dispatch API qua Admin Redux Slice (Lấy danh sách, Xóa).
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Request: `GET /api/v1/admin/products` và `DELETE /api/v1/admin/product/:id`.
+ *    - Database: Tác động trực tiếp vào Collection `Products` trong MongoDB.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Mount Component -> Redux gọi API fetchAllProducts. Trạng thái Loading spinner hiện.
- *    - (2) API trả Data -> Rendering Tab mặc định 'list'. Hiển thị Table SP.
- *    - (3) End-user thao tác:
- *        + Click Sửa/Thêm -> Bật File components Modal `ProductFormModal`, truyền Props.
- *        + Click Import -> Bật Component `ImportProductModal`.
- *        + Chuyển Tab "Nhập Hàng" -> Hide Table list, unmount/mount Element `StockManagement`.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Empty State Handling: Nếu không tìm thấy kết quả, hệ thống hiển thị thông báo "Không tìm thấy" thay vì để bảng trắng trơn.
+ *    - Thumbnail Guard: Sử dụng hàm `onError` và chuỗi `placeholder` SVG để đảm bảo giao diện không bao giờ bị "vỡ" nếu ảnh từ server gặp sự cố.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Quá trình Fetching dữ liệu sản phẩm.
+ *    - Quá trình nộp file Import Excel (Bất đồng bộ thông qua Componet con).
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - `filteredProducts` là trái tim của file. Nếu bạn thêm thuộc tính mới cho sản phẩm (ví dụ: `material`), hãy thêm nó vào logic tìm kiếm ở đây.
+ *    - `btn-clear-filter`: Luôn cung cấp nút "Xóa lọc" để Admin quay về trạng thái ban đầu nhanh nhất.
  */
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';

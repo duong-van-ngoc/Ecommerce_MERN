@@ -1,18 +1,56 @@
 /**
- * ============================================================================
- * REDUX SLICE: cartSlice
- * ============================================================================
- * 1. Vai trò: 
- *    - Quản lý trạng thái giỏ hàng (sản phẩm, số lượng, biến thể) và thông tin vận chuyển.
- *    - Hỗ trợ lưu trữ riêng biệt cho từng người dùng thông qua LocalStorage.
- *    - Đồng bộ hóa dữ liệu với Backend Cart (Database).
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là file Mảnh quản lý trạng thái Giỏ hàng (Cart Redux Slice).
  * 
- * 2. Luồng hoạt động (Mới):
- *    - (1) Ứng dụng khởi chạy (App.jsx) -> Kiểm tra thông tin người dùng.
- *    - (2) Nhận diện User ID -> Dispatch `syncCartWithUser(userId)`.
- *    - (3) Nếu đã đăng nhập -> Dispatch `fetchCart()` để lấy dữ liệu từ DB.
- *    - (4) Khi thêm/xóa/sửa: Cập nhật song song LocalStorage và DB (qua API).
- * ============================================================================
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Quản lý toàn bộ vòng đời của các mặt hàng trong giỏ: Thêm mới, cập nhật số lượng, xóa bỏ.
+ *    - Lưu trữ thông tin vận chuyển (Shipping Info) của người dùng.
+ *    - Điểm đặc biệt: Quản lý giỏ hàng "riêng tư" cho từng User trong LocalStorage bằng cách gắn ID User vào Key lưu trữ.
+ *    - Đảm bảo tính đồng bộ tuyệt đối giữa bộ nhớ trình duyệt và cơ sở dữ liệu trên Server.
+ * 
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Mua sắm (Shopping Flow) & Thanh toán (Checkout Flow).
+ * 
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - createAsyncThunk: Thực hiện các cuộc gọi API để đồng bộ giỏ hàng với máy chủ (`fetchCart`, `syncCartWithDB`).
+ *    - Dynamic LocalStorage Keys: Kỹ thuật tạo khóa lưu trữ động (VD: `cartItems_123` thay vì `cartItems` chung) để tránh lộ giỏ hàng của người này sang người kia khi dùng chung trình duyệt.
+ *    - Cross-slice Logic: Sử dụng `extraReducers` để lắng nghe sự kiện từ `user/logout`, giúp dọn dẹp hoặc chuyển đổi giỏ hàng về trạng thái Guest ngay lập tức.
+ *    - getState: Truy cập vào trạng thái của Slice khác (User Slice) ngay trong Thunk để kiểm tra quyền đăng nhập.
+ * 
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Thông tin sản phẩm (ID, số lượng, phân loại màu sắc/kích cỡ) và địa chỉ nhận hàng.
+ *    - Output: Mảng `cartItems` đã được tính toán lại và thông tin `shippingInfo` hoàn chỉnh.
+ * 
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `cartItems`: Danh sách các món hàng (với đầy đủ ảnh, giá, số lượng, tồn kho).
+ *    - `shippingInfo`: Đối tượng chứa địa chỉ chi tiết (Tỉnh/Thành, Quận/Huyện, Phường/Xã).
+ *    - `userId`: Định danh người dùng hiện tại để xác định đúng "kho hàng" cục bộ.
+ * 
+ * 7. CÁC HÀM / CHỨC NƠNG CHÍNH:
+ *    - `addItemsToCart`: Thêm món mới. Nếu trùng ID+Size+Color thì cộng dồn số lượng, nếu khác thì thêm dòng mới.
+ *    - `syncCartWithUser`: Hàm chuyển đổi ngữ cảnh, giúp người nạp đúng giỏ hàng của họ ngay khi vừa mở web hoặc đăng nhập.
+ *    - `removeItemFromCart`: Xóa sản phẩm khỏi cả LocalStorage và Database.
+ *    - `saveShippingInfo`: Lưu lại thông tin nhận hàng để dùng cho bước xác nhận đơn.
+ * 
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Ứng dụng khởi chạy (`App.jsx`) -> Dispatch `syncCartWithUser`.
+ *    - Bước 2: Slice đọc dữ liệu từ LocalStorage tương ứng với User ID hiện tại.
+ *    - Bước 3: Nếu đã Login, gọi `fetchCart` để cập nhật dữ liệu mới nhất từ Server.
+ *    - Bước 4: Khi User thay đổi giỏ, cập nhật Store -> Lưu LocalStorage -> Gọi API cập nhật Database.
+ * 
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - UI -> Dispatch -> Slice (Update Local) -> API /api/v1/cart -> MongoDB (Cart Collection) -> Response.
+ * 
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Logic "Item Identity": Một sản phẩm chỉ được gọi là "trùng" khi thỏa mãn cả 3 điều kiện: ID sản phẩm giống, Size giống và Color giống.
+ *    - Validate số lượng: Đảm bảo số lượng mua không vượt quá `stock` (tồn kho) của sản phẩm.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Các Thunk (`fetchCart`, `addItemsToCart`) gọi API Backend bất đồng bộ.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Đây là nơi xử lý logic "Guest Cart vs User Cart". Khi Logout, giỏ hàng phải được chuyển về trạng thái của `cartItems_guest`.
+ *    - Cờ `isUpdate` trong `addItemsToCart` giúp phân biệt giữa việc "Thêm mới" (cộng thêm) và "Sửa số lượng" (thay thế hoàn toàn) trong trang giỏ hàng.
  */
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "../../api/http.js";
@@ -20,6 +58,26 @@ import axios from "../../api/http.js";
 // Hàm hỗ trợ lấy Key LocalStorage động dựa trên ID người dùng
 const getCartKey = (userId) => userId ? `cartItems_${userId}` : 'cartItems_guest';
 const getShippingKey = (userId) => userId ? `shippingInfo_${userId}` : 'shippingInfo_guest';
+
+// Normalize cart items: ensure both "product" and "product_id" exist
+// This bridges the gap between old Frontend format (product) and new Backend format (product_id)
+const normalizeCartItems = (items) => {
+    if (!Array.isArray(items)) return [];
+    return items.map(item => {
+        const rawProduct = item.product_id || item.product;
+        const isPopulated = typeof rawProduct === 'object' && rawProduct !== null && rawProduct._id;
+        
+        const productId = isPopulated ? rawProduct._id : rawProduct;
+        const stock = isPopulated && rawProduct.stock !== undefined ? rawProduct.stock : item.stock;
+
+        return {
+            ...item,
+            product: productId,
+            product_id: productId,
+            stock: stock
+        };
+    });
+};
 
 // Thunk: Lấy giỏ hàng từ Backend
 export const fetchCart = createAsyncThunk('cart/fetchCart', async (_, { rejectWithValue }) => {
@@ -46,7 +104,8 @@ export const addItemsToCart = createAsyncThunk('cart/addItemsToCart', async ({ i
     try {
         const { data } = await axios.get(`/api/v1/products/${id}`);
         const item = {
-            product: data.product._id,
+            product_id: data.product._id,  // Updated to match new backend field name
+            product: data.product._id,     // Keep for local state compatibility
             name: data.product.name,
             price: data.product.price,
             image: data.product.images[0].url,
@@ -159,12 +218,12 @@ const cartSlice = createSlice({
             };
         })
         .addCase(fetchCart.fulfilled, (state, action) => {
-            state.cartItems = action.payload || [];
+            state.cartItems = normalizeCartItems(action.payload);
             state.loading = false;
             localStorage.setItem(getCartKey(state.userId), JSON.stringify(state.cartItems));
         })
         .addCase(syncCartWithDB.fulfilled, (state, action) => {
-            state.cartItems = action.payload || [];
+            state.cartItems = normalizeCartItems(action.payload);
             state.loading = false;
             localStorage.setItem(getCartKey(state.userId), JSON.stringify(state.cartItems));
         })

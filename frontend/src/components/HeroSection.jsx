@@ -1,40 +1,48 @@
 /**
- * ============================================================================
- * COMPONENT: HeroSection
- * ============================================================================
- * 1. Component là gì: 
- *    - Khu vực Banner chính lớn nhất ngay dưới Navigation trên Trang chủ. 
- *    - Mời gọi các thông điệp Marketing chiến lược (Campaign Drop 02) để tăng Sale.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Thành Phần Banner Chính (Hero Section).
  * 
- * 2. Props: 
- *    - Stateless nên không nhận props control logic.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Là "bộ mặt" của trang chủ. Xuất hiện ngay lập tức khi khách hàng truy cập website.
+ *    - Chịu trách nhiệm truyền tải thông điệp thương hiệu, các chiến dịch khuyến mãi mới (Drop 02 - S/S Collection).
+ *    - Chứa các nút kêu gọi hành động (Call To Action - CTA) chính để dẫn dắt người dùng vào luồng mua hàng.
  * 
- * 3. State:
- *    - Không sử dụng Local/Global state.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Trải nghiệm Người dùng đầu phễu (Upper Funnel UX Flow).
  * 
- * 4. Render lại khi nào:
- *    - Bản thân không bị Re-render từ bên trong do không có state bound.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Responsive Grid Layout: Sử dụng `hero-grid` để phân tách nội dung văn bản (bên trái) và hình ảnh (bên phải) một cách cân đối trên Desktop và tự động xếp chồng trên Mobile.
+ *    - CSS Animation Sequencing: Áp dụng các class `fade-up` kết hợp với `delay-X00`. Đây là kỹ thuật tạo hiệu ứng "thác đổ" (Staggered Animation), giúp các thành phần trôi lên theo thứ tự thời gian khác nhau, tạo cảm giác cao cấp (Premium Feel).
+ *    - Aspect Ratio Management: Sử dụng các class như `aspect-3-4` để đảm bảo khung hình ảnh luôn giữ đúng tỷ lệ vàng, không bị méo hay vỡ giao diện trên các thiết bị khác nhau.
+ *    - Semantic Typography: Sử dụng cặp thẻ `<h1>` cho tiêu đề chính (giúp SEO tốt nhất) và `<p>` cho mô tả.
  * 
- * 5. Event handling:
- *    - Có Call-to-action (CTA) bằng `<Link>` trigger URL redirect.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Dữ liệu tĩnh (Hardcoded content).
+ *    - Output: Khối giao diện Banner bắt mắt.
  * 
- * 6. Conditional rendering:
- *    - Render 100% markup thuần cố định.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - Component này hoàn toàn Stateless (không trạng thái) để tối ưu hóa tốc độ load trang đầu tiên.
  * 
- * 7. List rendering:
- *    - Không có Data Array.
+ * 7. CÁC HÀM / CHỨC NƠNG CHÍNH:
+ *    - Không có logic hàm phức tạp, chủ yếu trả về cấu trúc JSX tĩnh.
  * 
- * 8. Controlled input:
- *    - Không có Data fields.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Render khung Container chuẩn Bootstrap/Tailwind style.
+ *    - Bước 2: Kích hoạt các Animation CSS khi component mount vào DOM.
+ *    - Bước 3: Người dùng nhấn vào các nút Link -> Điều hướng sang trang Danh sách sản phẩm kèm tham số filter.
  * 
- * 9. Lifting state up:
- *    - Không.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Không tương tác trực tiếp với Database.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Render ngay frame đầu tiên ở đầu Trang chủ (First View). 
- *    - (2) Áp dụng các class CSS Delay animation như `fade-up delay-200` để các khung chữ và khối ảnh trôi lên mượt mà theo tuần tự.
- *    - (3) Hai nút bấm "Mua Hàng Mới" và "Khám Phá Phụ Kiện" chứa cứng Link dẫn sang query filter của `/products` tương ứng nhằm thúc giục khách hàng nhấn vào Cửa hàng.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Render đồng nhất cho mọi khách truy cập.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Không có.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Chú ý phần `vertical-text-content`: Đây là một kỹ thuật thiết kế Typography theo chiều dọc (Vertical Text) giúp layout trông như một tạp chí thời trang chuyên nghiệp.
+ *    - Các Link dẫn đến `/products?sort=newest` và `/products?category=accessories` là những "điểm chạm" quan trọng để tăng tỷ lệ chuyển đổi (Conversion Rate).
  */
 import React from 'react';
 import { Link } from 'react-router-dom';

@@ -1,50 +1,53 @@
 /**
- * ============================================================================
- * COMPONENT: UpdateProfile
- * ============================================================================
- * 1. Component là gì: 
- *    - Màn hình Cập nhật thông tin Hồ sơ người dùng (Name, Email, Ảnh đại diện).
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Trang Cập nhật Hồ sơ (Update Profile Page).
  * 
- * 2. Props: 
- *    - Không nhận trực tiếp props truyền từ cha.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Cung cấp giao diện cho phép người dùng thay đổi: Họ tên, Email và Ảnh đại diện (Avatar).
+ *    - Đảm bảo tính nhất quán dữ liệu: Sau khi cập nhật thành công, thông tin mới sẽ được tự động đồng bộ vào Redux Store và hiển thị trên toàn bộ ứng dụng (như Header, Profile...).
  * 
- * 3. State:
- *    - Local State (useState):
- *      + `name` (string): Tên user nhập vào.
- *      + `email` (string): Email user nhập vào.
- *      + `avatar` (Base64 String): Nội dung file ảnh đại diện upload lên.
- *      + `avatarPreview` (string URL/Base64): Đường dẫn hiển thị preview ảnh đại diện.
- *    - Global State (useSelector): Lấy từ `state.user` (`user`, `error`, `success`, `message`, `loading`).
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Quản lý Tài khoản (Account Management Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi người dùng gõ thay đổi `name`, `email` hoặc upload `avatar`.
- *    - Khi Global State (loading, success) thay đổi để render Loader hoặc Redirect.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Multiple `useEffect`: Sử dụng nhiều Hook `useEffect` tách biệt để xử lý các logic khác nhau: Một cái để kiểm tra lỗi, một cái để xử lý thành công, và một cái để đổ dữ liệu cũ (Pre-fill) vào form ngay khi trang tải xong.
+ *    - Controlled Components: Quản lý Form một cách chặt chẽ thông qua React State (`value={name}`, `onChange={...}`).
+ *    - `FileReader API`: Cho phép người dùng nhìn thấy ảnh mới của mình ngay khi vừa chọn tệp (Preview) mà không cần chờ dữ liệu gửi lên Server thành công.
+ *    - `FormData`: Công cụ mạnh mẽ để gửi dữ liệu form phức tạp, đặc biệt là khi có chứa các chuỗi Base64 ảnh dung lượng lớn.
  * 
- * 5. Event handling:
- *    - `profileImageUpdate(e)`: Xử lý file input, fetch ra FileReader đổi về chuỗi Base64 gán vào `avatar`.
- *    - `updateSubmit(e)`: Bọc Form Submit vào object `FormData`, gọi action `dispatch(updateProfile)`.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Thông tin chỉnh sửa từ người dùng.
+ *    - Output: Yêu cầu cập nhật gửi đến Backend và trạng thái phản hồi (Success/Fail).
  * 
- * 6. Conditional rendering:
- *    - Render loading skeleton/spinner `<Loader />` hoặc Form UI phụ thuộc vào trạng thái `loading` từ Redux.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - Local states (`name`, `email`, `avatar`): Lưu trữ dữ liệu tạm thời người dùng đang gõ trên form.
+ *    - Global state (`user`, `loading`, `success`): Lấy từ Redux để kiểm soát trạng thái toàn cục.
  * 
- * 7. List rendering:
- *    - Không mảng dữ liệu.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `profileImageUpdate`: Xử lý logic chọn file và chuyển đổi sang định dạng Base64.
+ *    - `updateSubmit`: "Đóng gói" toàn bộ dữ liệu vào `FormData` và gửi đi.
  * 
- * 8. Controlled input:
- *    - Name, Email được bound chặt qua `value={state}` và `onChange={setState}`.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Mở trang -> Hệ thống tự điền Name/Email/Avatar hiện tại vào các ô nhập.
+ *    - Bước 2: Người dùng thay đổi thông tin -> UI cập nhật xem trước (Preview ảnh).
+ *    - Bước 3: Nhấn nút Cập nhật -> Gửi yêu cầu qua Redux Thunk.
+ *    - Bước 4: Nếu thành công -> Hiện Toast thông báo -> Tự động điều hướng quay lại trang `/profile`.
  * 
- * 9. Lifting state up:
- *    - `updateProfile` Action đẩy FormData lên Redux Global xử lý call network.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - UI -> PUT Request -> API Endpoint -> Backend Middleware (Xác thực) -> Cloudinary (Lưu ảnh mới) -> MongoDB Update -> Response.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Component render -> `useEffect` điền thông tin `user` đang đăng nhập (nếu có) vào các `useState` input tương ứng (tự động load Name/Email/Avatar cũ).
- *    - (2) Người dùng sửa fields -> Local state React cập nhật lập tức -> UI Preview thay đổi (đặc biệt Image file input).
- *    - (3) Click Update -> Form Trigger action cập nhật trên BE thông qua Redux `updateProfile`.
- *    - (4) `useEffect` trigger khi `success=true` -> Toast báo mực thành công, clear state, Redirect quay về `/profile`.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Loader Screen: Chặn người dùng thao tác thừa trong lúc hệ thống đang đợi phản hồi từ Server.
+ *    - Custom File Input: Kỹ thuật ẩn `input type="file"` thô kệch và thay bằng một giao diện chọn ảnh chuyên nghiệp (Avatar và Icon máy ảnh).
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - `FileReader.readAsDataURL` và các API call thông qua Redux.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - `dispatch(removeSuccess())`: Rất quan trọng, nếu quên lệnh này, biến `success` sẽ mãi là `true`, dẫn đến việc người dùng bị "mắc kẹt" trong luồng redirect mỗi khi quay lại trang.
+ *    - `encType='multipart/form-data'`: Đảm bảo form được chuẩn bị đúng cách để xử lý tệp tin.
  */
 import React, { useEffect, useState } from 'react'
-import '../UserStyles/UpdateProfile.css'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { toast } from 'react-toastify';
@@ -64,6 +67,7 @@ function UpdateProfile() {
 
     const dispatch = useDispatch()
     const navigate = useNavigate()
+
     const profileImageUpdate = (e) => {
         const reader = new FileReader();
         reader.onload = () => {
@@ -73,8 +77,7 @@ function UpdateProfile() {
             }
         }
         reader.onerror = (error) => {
-             toast.error('Lỗi tải file', error);
-
+            toast.error('Lỗi tải file', error);
         }
         reader.readAsDataURL(e.target.files[0])
     }
@@ -108,7 +111,6 @@ function UpdateProfile() {
             setName(user.name)
             setEmail(user.email)
             setAvatarPreview(user.avatar?.url || './images/profile.png')
-
         }
     }, [user])
 
@@ -117,85 +119,221 @@ function UpdateProfile() {
             {loading ? (<Loader />) : (
                 <>
                     <Navbar />
-                    <main className="update-profile-page">
-                        <section className="update-profile-card">
-                            <form
-                                className="update-profile-form"
-                                encType='multipart/form-data'
-                                onSubmit={updateSubmit}
-                            >
+                    <main
+                        className="flex-grow flex items-center justify-center pt-24 pb-12 px-6 relative overflow-hidden"
+                        style={{
+                            minHeight: '100vh',
+                            background: '#ffffff',
+                            fontFamily: "'Manrope', sans-serif"
+                        }}
+                    >
+                        {/* Abstract Background Decoration */}
+                        <div className="absolute top-1/4 -right-20 w-96 h-96 opacity-[0.04] pointer-events-none">
+                            <svg viewBox="0 0 400 400" fill="none">
+                                <circle cx="200" cy="200" r="180" stroke="#702e36" strokeWidth="1" />
+                                <circle cx="200" cy="200" r="140" stroke="#702e36" strokeWidth="0.5" />
+                                <circle cx="200" cy="200" r="100" stroke="#702e36" strokeWidth="0.3" />
+                            </svg>
+                        </div>
+
+                        <div className="w-full max-w-[480px] space-y-8 relative z-10">
+                            {/* Avatar Upload Section */}
+                            <div className="flex flex-col items-center space-y-4">
                                 <input
                                     id="update-profile-avatar"
                                     type="file"
                                     name="avatar"
                                     accept="image/*"
-                                    className="update-profile-file-input"
+                                    className="hidden"
                                     onChange={profileImageUpdate}
                                 />
-
-                                <label htmlFor="update-profile-avatar" className="update-profile-avatar-upload hover-scale-up">
-                                    <div className="update-profile-avatar-frame">
+                                <label
+                                    htmlFor="update-profile-avatar"
+                                    className="relative cursor-pointer group"
+                                >
+                                    <div
+                                        className="w-28 h-28 rounded-full overflow-hidden transition-all duration-300"
+                                        style={{
+                                            border: '3px solid #e5e7eb',
+                                            boxShadow: '0 8px 24px -8px rgba(0,0,0,0.1)'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.borderColor = '#702e36'
+                                            e.currentTarget.style.boxShadow = '0 8px 32px -8px rgba(112, 46, 54, 0.3)'
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.borderColor = '#e5e7eb'
+                                            e.currentTarget.style.boxShadow = '0 8px 24px -8px rgba(0,0,0,0.1)'
+                                        }}
+                                    >
                                         <img
                                             src={avatarPreview}
                                             alt="User Profile"
-                                            className="update-profile-avatar-image"
+                                            className="w-full h-full object-cover"
                                         />
-                                        <div className="update-profile-avatar-overlay">
-                                            <svg
-                                                className="update-profile-avatar-icon"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="1.5"
-                                                viewBox="0 0 24 24"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                />
-                                                <path
-                                                    d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                />
-                                            </svg>
-                                            <span>Đổi ảnh</span>
-                                        </div>
+                                    </div>
+                                    {/* Camera overlay */}
+                                    <div
+                                        className="absolute bottom-0 right-0 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300"
+                                        style={{
+                                            background: 'linear-gradient(135deg, #702e36 0%, #8b3a42 100%)',
+                                            boxShadow: '0 2px 8px rgba(112, 46, 54, 0.3)',
+                                            border: '2px solid #ffffff'
+                                        }}
+                                    >
+                                        <span className="material-symbols-outlined text-white" style={{ fontSize: '16px' }}>
+                                            photo_camera
+                                        </span>
                                     </div>
                                 </label>
+                                <p style={{ color: '#9ca3af', fontSize: '12px', fontWeight: 500 }}>
+                                    Nhấn vào ảnh để thay đổi
+                                </p>
+                            </div>
 
-                                <h1 className="update-profile-title">Cập nhật hồ sơ</h1>
-
-                                <div className="update-profile-field">
-                                    <label htmlFor="update-profile-name">Họ và tên</label>
-                                    <input
-                                        id="update-profile-name"
-                                        type="text"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        name="name"
-                                        placeholder="VD: Nguyễn Văn A"
-                                    />
-                                </div>
-
-                                <div className="update-profile-field">
-                                    <label htmlFor="update-profile-email">Địa chỉ Email</label>
-                                    <input
-                                        id="update-profile-email"
-                                        type="text"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        name="email"
-                                        placeholder="VD: nguyenvana@gmail.com"
-                                    />
-                                </div>
-
-                                <button className="update-profile-submit hover-btn-gradient" type="submit">
+                            {/* Header */}
+                            <div className="text-center space-y-2">
+                                <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: '#1a1a1a' }}>
                                     Cập nhật hồ sơ
+                                </h1>
+                                <p style={{ color: '#6b7280', fontSize: '14px' }}>
+                                    Chỉnh sửa thông tin cá nhân của bạn
+                                </p>
+                            </div>
+
+                            {/* Main Card */}
+                            <div
+                                className="rounded-xl p-8"
+                                style={{
+                                    background: '#fafafa',
+                                    border: '1px solid #e5e7eb',
+                                    boxShadow: '0 20px 60px -15px rgba(0,0,0,0.08)'
+                                }}
+                            >
+                                <form
+                                    className="space-y-6"
+                                    encType='multipart/form-data'
+                                    onSubmit={updateSubmit}
+                                >
+                                    {/* Name Field */}
+                                    <div className="space-y-2">
+                                        <label
+                                            className="text-xs font-bold tracking-wider uppercase ml-1"
+                                            style={{ color: '#6b7280' }}
+                                        >
+                                            Họ và tên
+                                        </label>
+                                        <div
+                                            className="relative flex items-center rounded-xl group transition-all"
+                                            style={{
+                                                background: '#ffffff',
+                                                border: '1.5px solid #e5e7eb',
+                                            }}
+                                            onFocus={(e) => {
+                                                e.currentTarget.style.borderColor = 'rgba(112, 46, 54, 0.5)'
+                                                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(112, 46, 54, 0.1)'
+                                            }}
+                                            onBlur={(e) => {
+                                                e.currentTarget.style.borderColor = '#e5e7eb'
+                                                e.currentTarget.style.boxShadow = 'none'
+                                            }}
+                                        >
+                                            <span
+                                                className="material-symbols-outlined absolute left-4 transition-colors"
+                                                style={{ color: '#9ca3af' }}
+                                            >person</span>
+                                            <input
+                                                id="update-profile-name"
+                                                className="w-full bg-transparent border-none py-4 pl-12 pr-4 focus:ring-0 font-medium"
+                                                style={{ color: '#1a1a1a', outline: 'none' }}
+                                                type="text"
+                                                value={name}
+                                                onChange={(e) => setName(e.target.value)}
+                                                name="name"
+                                                placeholder="VD: Nguyễn Văn A"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Email Field */}
+                                    <div className="space-y-2">
+                                        <label
+                                            className="text-xs font-bold tracking-wider uppercase ml-1"
+                                            style={{ color: '#6b7280' }}
+                                        >
+                                            Địa chỉ Email
+                                        </label>
+                                        <div
+                                            className="relative flex items-center rounded-xl group transition-all"
+                                            style={{
+                                                background: '#ffffff',
+                                                border: '1.5px solid #e5e7eb',
+                                            }}
+                                            onFocus={(e) => {
+                                                e.currentTarget.style.borderColor = 'rgba(112, 46, 54, 0.5)'
+                                                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(112, 46, 54, 0.1)'
+                                            }}
+                                            onBlur={(e) => {
+                                                e.currentTarget.style.borderColor = '#e5e7eb'
+                                                e.currentTarget.style.boxShadow = 'none'
+                                            }}
+                                        >
+                                            <span
+                                                className="material-symbols-outlined absolute left-4 transition-colors"
+                                                style={{ color: '#9ca3af' }}
+                                            >mail</span>
+                                            <input
+                                                id="update-profile-email"
+                                                className="w-full bg-transparent border-none py-4 pl-12 pr-4 focus:ring-0 font-medium"
+                                                style={{ color: '#1a1a1a', outline: 'none' }}
+                                                type="text"
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                name="email"
+                                                placeholder="VD: nguyenvana@gmail.com"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Submit Button */}
+                                    <button
+                                        type="submit"
+                                        className="w-full text-white font-bold py-4 rounded-xl transition-all duration-300"
+                                        style={{
+                                            background: 'linear-gradient(135deg, #702e36 0%, #8b3a42 100%)',
+                                            boxShadow: '0 8px 24px -4px rgba(112, 46, 54, 0.35)',
+                                            letterSpacing: '0.05em'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.transform = 'scale(1.02)'
+                                            e.currentTarget.style.boxShadow = '0 12px 32px -4px rgba(112, 46, 54, 0.45)'
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.transform = 'scale(1)'
+                                            e.currentTarget.style.boxShadow = '0 8px 24px -4px rgba(112, 46, 54, 0.35)'
+                                        }}
+                                        onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
+                                        onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                                    >
+                                        Cập nhật hồ sơ
+                                    </button>
+                                </form>
+                            </div>
+
+                            {/* Cancel Link */}
+                            <div className="text-center">
+                                <button
+                                    type="button"
+                                    onClick={() => navigate('/profile')}
+                                    className="text-xs font-bold uppercase tracking-widest transition-colors"
+                                    style={{ color: '#9ca3af' }}
+                                    onMouseEnter={(e) => e.currentTarget.style.color = '#1a1a1a'}
+                                    onMouseLeave={(e) => e.currentTarget.style.color = '#9ca3af'}
+                                >
+                                    Hủy bỏ và quay lại
                                 </button>
-                            </form>
-                        </section>
+                            </div>
+                        </div>
                     </main>
                     <Footer />
                 </>
