@@ -175,6 +175,18 @@
     opacity: 0.8;
 }
 
+.cancel-reason-hint {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #ef4444;
+    font-style: italic;
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: help;
+}
+
 /* Action Buttons */
 .action-buttons {
     display: flex;

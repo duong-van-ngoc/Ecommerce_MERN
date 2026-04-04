@@ -1,45 +1,53 @@
 /**
- * ============================================================================
- * COMPONENT: Payment
- * ============================================================================
- * 1. Component là gì: 
- *    - Màn hình xử lý Thanh toán (Bước cuối tùy chỉnh độc lập). Submit giỏ hàng COD lên Backend.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Trang Xử lý Thanh toán Độc lập (Standalone Payment Page).
  * 
- * 2. Props: 
- *    - Component độc lập Route. Không prop parent.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Cung cấp giao diện thanh toán tinh gọn, tập trung hoàn toàn vào việc thực thi lệnh (Action).
+ *    - Cho phép người dùng chọn nhanh giữa "Thanh toán khi nhận hàng (COD)" và "Thanh toán điện tử (VNPAY)".
+ *    - Đóng vai trò là "chốt chặn cuối cùng" để dọn dẹp giỏ hàng (LocalStorage/Session) sau khi đặt hàng thành công.
  * 
- * 3. State:
- *    - Local State (useState):
- *      + `loading` (boolean): Trạng thái xoay hiển thị nút Submit.
- *      + `error` (string): Text string báo lỗi bắt validate response từ Server.
- *    - Global State (useSelector/Session): Load `shippingInfo`, `cartItems` và `orderInfo` (Tổng tiền trên session cache).
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Thanh toán & Đặt hàng (Checkout Flow) - Giai đoạn Thực thi.
  * 
- * 4. Render lại khi nào:
- *    - Bật tắt bool `loading` sẽ re-render `<button>`. Set chuỗi `error` sẽ toggle thẻ `<p>` báo lỗi.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - `useMemo`: Một kỹ thuật tối ưu quan trọng. Nó tính toán lại các con số tài chính (Giá hàng, Thuế, Ship) và ghi nhớ kết quả, chỉ tính lại khi Giỏ hàng thay đổi, giúp UI mượt mà hơn.
+ *    - Direct API Integration: Sử dụng Axios gọi trực tiếp đến Backend thay vì thông qua Redux Global Action. Cách này giúp xử lý các phản hồi nhạy cảm (như Payment URL) một cách tức thời và dễ kiểm soát lỗi (Try/Catch) hơn.
+ *    - Payload Formatting: Kỹ thuật "xây dựng" lại cấu trúc dữ liệu (`orderPayload`) từ nhiều nguồn (Redux + Session + Local) để khớp hoàn toàn với Schema của Mongoose ở phía Backend.
+ *    - Manual Redirect: Sử dụng `window.location.href` để thực hiện cú "nhảy" sang các hệ thống thanh toán của Ngân hàng.
  * 
- * 5. Event handling:
- *    - `placeOrderCOD()`: Bắt Click button [Thanh Toán] call Axios gởi POST payload.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Thông tin tài chính từ SessionStorage và Danh sách sản phẩm từ Redux.
+ *    - Output: Một yêu cầu tạo đơn hàng gửi tới Database và chuyển hướng trang.
  * 
- * 6. Conditional rendering:
- *    - Chữ hiển thị Button toggle qua lại giữa Default Text / Loading... (Dựa vào boolean state loading).
- *    - Alert paragraph báo Error chỉ xuất hiện khi biến string `error` có tồn tại.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `loading`: State boolean để ngăn chặn việc người dùng nhấn nút "Thanh toán" nhiều lần liên tục (Double submission).
+ *    - `error`: Lưu trữ chuỗi thông báo lỗi trả về từ API (ví dụ: "Sản phẩm đã hết hàng").
  * 
- * 7. List rendering:
- *    - Lồng vòng qua `cartItems.map()` để generate Item schema trước khi API Payload đóng gói, không đẩy lên DOM để render List.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `placeOrderCOD`: Logic xử lý dành riêng cho đơn hàng trả tiền mặt.
+ *    - `placeOrderVnpay`: Logic xử lý phức tạp hơn, bao gồm việc tạo đơn hàng tạm và lấy Link từ cổng VNPay.
+ *    - `totals`: Biến tính toán tổng hợp sử dụng `useMemo`.
  * 
- * 8. Controlled input:
- *    - Bỏ qua, không chứa label form/công cụ edit.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Người dùng truy cập trang -> UI tính toán lại số tiền lần cuối.
+ *    - Bước 2: Nhấn nút thanh toán -> Bật hiệu ứng Loading.
+ *    - Bước 3: Gửi dữ liệu đơn hàng tới `/api/v1/order/new`.
+ *    - Bước 4: Nếu thành công -> Dọn dẹp `localStorage.removeItem("cartItems")` -> Chuyển sang trang Success kèm ID đơn hàng.
  * 
- * 9. Lifting state up:
- *    - Gọi Axios POST đẩy sang Controller `/api/v1/order/new` backend.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - UI (Axios) -> POST Request -> API Controller -> MongoDB.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Component mount, tổng hợp Memo hook `totals` tính (Tiền khoản, VAT, Ship, Total) phòng khi F5 làm văng params session.
- *    - (2) User click Nút xác nhận thanh toán `placeOrderCOD`. Cờ Status đổi sang pending tải API.
- *    - (3) Component map Object Payload format chuẩn yêu cầu từ Backend (dạng OrderSchema object) -> API tạo đơn Order Document Mongoose.
- *    - (4) Khi Result Axios OK -> LocalStorage/SessionStorage giỏ hàng bị delete (để trống Carts).
- *    - (5) Điều hướng (navigate) Router Push sang trang success với params link chứa `?orderId=...`.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - `setError`: Hiển thị thông báo lỗi ngay trên giao diện nếu Backend báo lỗi xác thực hoặc hết hàng.
+ *    - `disabled={loading}`: Vô hiệu hóa nút nhấn khi đang xử lý để đảm bảo tính toàn vẹn của giao dịch.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Các lời gọi hàm `placeOrderCOD` và `placeOrderVnpay` là các tác vụ bất đồng bộ tiêu biểu.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Chú ý hàm `getItemImage`: Đây là một hàm helper "phòng thủ", giúp lấy ảnh sản phẩm từ nhiều cấu trúc dữ liệu khác nhau mà không làm ứng dụng bị crash.
+ *    - Trình tự dọn dẹp: Việc xóa giỏ hàng chỉ nên thực hiện SAU KHI API trả về kết quả thành công (`data.success`).
  */
 import React, { useMemo, useState } from "react";
 import "../CartStyles/Payment.css";

@@ -1,39 +1,52 @@
 /**
- * ============================================================================
- * COMPONENT: OrderDetails
- * ============================================================================
- * 1. Component là gì: 
- *    - Đảm nhiệm vai trò hiển thị và xử lý logic cho vùng phần tử `OrderDetails` trong ứng dụng.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Trang Chi tiết Đơn hàng (Order Details Page).
  * 
- * 2. Props: 
- *    - Không nhận trực tiếp props truyền từ cha.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Hiển thị toàn bộ "lịch sử" và thông tin định danh của một đơn hàng cụ thể.
+ *    - Cung cấp cái nhìn minh bạch về: Địa chỉ giao hàng, Hình thức thanh toán (COD/VNPAY), Trạng thái vận chuyển và Danh sách món đồ.
+ *    - Tích hợp tính năng chuyên nghiệp: Xuất Hóa đơn PDF (In-browser Invoice Generation).
  * 
- * 3. State:
- *    - Global State (lấy từ Redux qua useSelector).
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Quản lý Đơn hàng (Order Management Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi Global State (Redux) cập nhật.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - PDF Generation (Client-side): Sử dụng `html-to-image` để "chụp ảnh" giao diện và `jsPDF` để đóng gói thành tệp tài liệu PDF mà không cần Backend can thiệp.
+ *    - Dynamic CSS Injection: Một thủ thuật nâng cao. Trước khi xuất PDF, mã nguồn tự động nhúng thêm các đoạn CSS tạm thời để ẩn đi các nút bấm (như nút "Quay lại") và tinh chỉnh layout sao cho đẹp nhất khi in ra giấy.
+ *    - CORS Handling: Sử dụng `crossOrigin="anonymous"` và ảnh Placeholder an toàn để tránh lỗi bảo mật khi chuyển đổi hình ảnh từ Cloudinary sang Canvas.
+ *    - Smart Path Switching: Sử dụng logic `user?.role === 'admin'` để quyết định xem nút "Quay lại" sẽ dẫn người dùng về trang Dashboard của Admin hay trang cá nhân của User.
  * 
- * 5. Event handling:
- *    - Có tương tác sự kiện (onClick, onChange, onSubmit...).
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Tham số `id` từ URL (ví dụ: `/order/67890`) và dữ liệu từ Global Store.
+ *    - Output: Giao diện chi tiết trực quan và tệp PDF hóa đơn tải xuống.
  * 
- * 6. Conditional rendering:
- *    - Sử dụng toán tử 3 ngôi (? :) hoặc `&&` để ẩn/hiện element hoặc component.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `id`: Lấy từ `useParams()`, dùng để định danh đơn hàng cần truy vấn.
+ *    - `orderDetails`: Chứa tất cả thông tin về đơn hàng từ API trả về.
  * 
- * 7. List rendering:
- *    - Sử dụng `.map()` để render danh sách elements.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `exportToPDF`: Hàm xử lý chuyển đổi HTML -> Image -> PDF với logic tính toán tỷ lệ (Scaling) để nội dung luôn nằm gọn trong 1 trang A4.
+ *    - `formattedDate`: Biến đổi chuỗi thời gian khô khan thành định dạng tiếng Việt gần gũi.
  * 
- * 8. Controlled input:
- *    - Không chứa form controls.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: User click vào một đơn hàng bất kỳ trong danh sách.
+ *    - Bước 2: Component nạp `id` từ URL và gọi API lấy dữ liệu chi tiết.
+ *    - Bước 3: Render toàn bộ thông tin đơn hàng lên UI.
+ *    - Bước 4 (Admin): Click "Xuất PDF" -> Hệ thống ẩn thanh cuộn -> Chụp ảnh giao diện -> Lưu PDF -> Hiện thông báo thành công.
  * 
- * 9. Lifting state up:
- *    - Dữ liệu được quản lý cục bộ hoặc đẩy lên Redux store toàn cục.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - UI -> GET Request -> API `/api/v1/order/:id` -> MongoDB -> Trả về chi tiết Đơn hàng.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Component Mount -> Chạy useEffect (gọi API hoặc thiết lập timer/listener).
- *    - (2) Nhận State/Props và render UI ban đầu.
- *    - (3) End-User tương tác trên component -> Cập nhật State -> Re-render màn hình.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Color-coded Status: Sử dụng các class CSS động (Green cho Đã giao, Red cho Đã hủy) giúp người dùng nhận diện trạng thái chỉ trong 0.5 giây.
+ *    - `isPaid`: Kiểm tra trạng thái thanh toán từ thuộc tính Database để hiển thị nhãn "Đã thanh toán" hoặc "Chưa thanh toán".
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Quá trình lấy thông tin đơn hàng và quá trình sinh tệp PDF là các tác vụ nặng chạy bất đồng bộ.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Biến `SAFE_PLACEHOLDER_IMAGE`: Đây là giải pháp dự phòng cực kỳ quan trọng. Nếu ảnh gốc sản phẩm bị lỗi hoặc bị chặn bởi chính sách bảo mật (CORS), Placeholder này sẽ xuất hiện để đảm bảo file PDF không bị lỗi.
+ *    - Logic `element.style.overflow = 'visible'`: Nhớ rằng PDF không có thanh cuộn, nên ta phải ép nội dung giãn ra hết mức trước khi "chụp ảnh".
  */
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -181,13 +194,13 @@ const OrderDetails = () => {
     <main id="order-details-content" className="container mx-auto px-4 py-8 max-w-5xl">
       {/* NavigationHeader */}
       <nav className="no-print mb-6 flex items-center justify-between">
-        <Link className="flex items-center text-sm font-medium text-blue-600 hover-link-slide transition-colors" to={user?.role === 'admin' ? '/admin/orders' : '/orders/user'}>
+        <Link className="flex items-center text-sm font-medium text-blue-600 hover-link-slide transition-colors" to={(user?.role_id?.name || user?.role) === 'admin' ? '/admin/orders' : '/orders/user'}>
           <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
           </svg>
           Quay lại danh sách đơn hàng
         </Link>
-        {user && user.role === 'admin' && (
+        {user && (user?.role_id?.name || user?.role) === 'admin' && (
           <button className="inline-flex items-center px-4 py-2 bg-slate-800 text-white text-sm font-semibold rounded-lg hover-btn-gradient transition-all shadow-sm" onClick={exportToPDF}>
             <span className="material-symbols-outlined mr-2">picture_as_pdf</span>
             Xuất PDF (Hóa đơn)
@@ -220,6 +233,19 @@ const OrderDetails = () => {
             </span>
           </div>
         </div>
+
+        {/* Cancellation Reason (Shopee Style) */}
+        {orderDetails.orderStatus === 'Đã hủy' && orderDetails.cancellationReason && (
+          <div className="mt-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg">
+            <h4 className="text-sm font-bold text-red-800 flex items-center">
+              <span className="material-symbols-outlined mr-2 text-lg">info</span>
+              Lý do hủy đơn hàng:
+            </h4>
+            <p className="text-sm text-red-700 mt-1 italic">
+              "{orderDetails.cancellationReason}"
+            </p>
+          </div>
+        )}
       </section>
 
       {/* InfoGrid */}
@@ -372,7 +398,7 @@ const OrderDetails = () => {
             </div>
           </div>
           {/* Action Button */}
-          {user && user.role === 'admin' && (
+          {user && (user?.role_id?.name || user?.role) === 'admin' && (
             <button className="no-print mt-6 w-full py-3 bg-blue-600 text-white rounded-lg font-bold hover-btn-gradient transition-colors shadow-md flex items-center justify-center" onClick={exportToPDF}>
               <span className="material-symbols-outlined mr-2">picture_as_pdf</span>
               Xuất PDF (Biên nhận)

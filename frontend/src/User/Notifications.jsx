@@ -1,39 +1,51 @@
 /**
- * ============================================================================
- * COMPONENT: Notifications
- * ============================================================================
- * 1. Component là gì: 
- *    - Đảm nhiệm vai trò hiển thị và xử lý logic cho vùng phần tử `Notifications` trong ứng dụng.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component "Trang Thông báo" (Notifications Page).
  * 
- * 2. Props: 
- *    - Không nhận trực tiếp props truyền từ cha.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Hiển thị tất cả các thông tin cập nhật liên quan đến vận hành: Đơn hàng, Khuyến mãi, Ví xu, và Tin tức hệ thống.
+ *    - Phân loại thông báo thành các nhóm (Tabs) giúp người dùng dễ dàng theo dõi.
+ *    - Cung cấp trải nghiệm đồng nhất với phong cách Shopee/E-commerce chuyên nghiệp.
  * 
- * 3. State:
- *    - Local State (quản lý nội bộ qua useState).
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Thông tin người dùng & Chăm sóc khách hàng (User Notifications & CRM Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi Local State thay đổi.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Routing Integration: Sử dụng `useLocation` để thay đổi `filter` (bộ lọc) dựa trên đường dẫn URL hiện tại.
+ *    - Mock Data Pattern: Sử dụng dữ liệu mẫu (`mockNotifications`) để xây dựng giao diện trước khi kết nối chính thức với API Socket/Backend.
+ *    - Dynamic Title UI: Hàm `getTitle()` xử lý tiêu đề linh hoạt tùy theo tab người dùng đang xem.
+ *    - List Rendering: Duyệt mảng và render các khối thông báo kèm icon cảm xúc (Emoji).
  * 
- * 5. Event handling:
- *    - Không có event controls phức tạp.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Đường dẫn URL (ví dụ: `/notifications/order`).
+ *    - Output: Danh sách thông báo tương ứng với bộ lọc đã chọn.
  * 
- * 6. Conditional rendering:
- *    - Sử dụng toán tử 3 ngôi (? :) hoặc `&&` để ẩn/hiện element hoặc component.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `filter`: Trạng thái quyết định nhóm thông báo nào sẽ được ưu tiên hiển thị.
  * 
- * 7. List rendering:
- *    - Sử dụng `.map()` để render danh sách elements.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `useEffect`: Theo dõi sự thay đổi của URL (`location`) để cập nhật bộ lọc `filter`.
+ *    - `filteredNotifications`: Một mảng được tạo ra "nóng" (on-the-fly) từ dữ liệu gốc sau khi áp dụng điều kiện lọc.
  * 
- * 8. Controlled input:
- *    - Không chứa form controls.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Người dùng nhấn vào menu Thông báo -> URL chuyển sang `/notifications/...`.
+ *    - Bước 2: `useEffect` bắt được thay đổi -> Cập nhật `setFilter`.
+ *    - Bước 3: Mảng thông báo được lọc lại -> Re-render giao diện danh sách.
+ *    - Bước 4: Click vào từng item -> Link dẫn tới trang chi tiết đơn hàng hoặc khuyến mãi.
  * 
- * 9. Lifting state up:
- *    - Dữ liệu được quản lý cục bộ hoặc đẩy lên Redux store toàn cục.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - (Dự kiến) UI -> GET /api/v1/notifications -> MongoDB -> UI. Hiện tại đang sử dụng Mock Data.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Component Mount -> Chạy useEffect (gọi API hoặc thiết lập timer/listener).
- *    - (2) Nhận State/Props và render UI ban đầu.
- *    - (3) End-User tương tác trên component -> Cập nhật State -> Re-render màn hình.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Conditional Styling: Thêm class `.unread` cho các thông báo chưa đọc để làm nổi bật (màu nền đậm hơn).
+ *    - Empty State: Hiển thị hình ảnh minh họa khi "Chưa có thông báo nào" để tránh màn hình bị trống trải.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Hiện tại chưa có (đang dùng mock), dự kiến sẽ là API fetch trong `useEffect`.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - `AccountSidebar` được nhúng vào đây để duy trì cấu trúc Menu trái nhất quán cho trang cá nhân.
+ *    - Chú ý phần `mark-read-btn`: Hiện tại chỉ là UI tĩnh/nút chờ logic "Đã đọc tất cả".
  */
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";

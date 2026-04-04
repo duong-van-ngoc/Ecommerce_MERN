@@ -1,48 +1,51 @@
 /**
- * ============================================================================
- * COMPONENT: Register
- * ============================================================================
- * 1. Component là gì: 
- *    - Màn hình Đăng ký User Account có chứa upload hình ảnh Avatar người dùng.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Trang Đăng ký (Register Page).
  * 
- * 2. Props: 
- *    - Component điều hướng URL không thao tác Props cha.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Cho phép người dùng mới tạo tài khoản tham gia hệ thống.
+ *    - Xử lý nghiệp vụ phức tạp: Kết hợp nhập liệu văn bản và Tải lên hình ảnh (Avatar).
+ *    - Tạo ra trải nghiệm người dùng mượt mà thông qua việc xem trước (Preview) ảnh đại diện ngay lập tức.
  * 
- * 3. State:
- *    - Local State (useState):
- *      + `user` (Object: name, email, password): quản lí thông tin đăng ký cơ bản.
- *      + `avatar` (Blob/File String Base64): Ảnh upload từ local.
- *      + `avatarPreview` (string Base64): Ảnh preview avatar hiển thị.
- *      + `showPassword` (boolean): Trạng thái hiển thị mật khẩu bằng mắt.
- *    - Global State (useSelector): 
- *      + `success`, `loading`, `error` lấy từ `state.user` store.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Xác thực (Authentication Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi input gõ phím, khi load xong File Ảnh -> cập nhật Image preview UI.
- *    - Khi status (loading) đổi từ Store để show/hide text trạng thái button Submit.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - `FileReader API`: Một API cực hay của trình duyệt dùng để đọc file từ máy tính người dùng mà không cần upload lên server ngay.
+ *    - Base64 Encoding: Kỹ thuật chuyển đổi hình ảnh thành một chuỗi ký tự dài để dễ dàng đính kèm vào mảng JSON gửi lên Backend.
+ *    - `FormData`: Đối tượng chuẩn để gói dữ liệu form, đặc biệt hữu ích khi làm việc với các tệp tin (Files).
+ *    - Local State Management: Quản lý trạng thái lồng nhau (Object `user`) và các trạng thái ảnh riêng biệt.
  * 
- * 5. Event handling:
- *    - `registerDataChange(e)`: Lắng nghe Image Selection File Input (nếu target = 'avatar') HOẶC Text Input để set Local State.
- *    - `registerSubmit(e)`: Gom FormData và Validation (null check), gọi action `register(myForm)`.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Thông tin cá nhân và tệp tin hình ảnh từ người dùng.
+ *    - Output: Một tài khoản mới được ghi danh vào Database và điều hướng về trang đăng nhập.
  * 
- * 6. Conditional rendering:
- *    - Dùng Ternary `loading ? 'Registering...' : 'Register Now'` để hiện trạng thái đang tải dữ liệu.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `user` (object): Lưu trữ đồng thời name, email, password để tối ưu code (thay vì dùng 3 state rời rạc).
+ *    - `avatarPreview`: Chuỗi Base64 dùng để hiển thị ảnh lên khung tròn "Avatar Shell".
  * 
- * 7. List rendering:
- *    - Không sử dụng list render array.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `registerDataChange`: Hàm điều phối thông minh - vừa xử lý gõ phím, vừa xử lý chọn file ảnh.
+ *    - `registerSubmit`: Hàm validation và đóng gói dữ liệu cuối cùng trước khi chuyển cho Redux xử lý.
  * 
- * 8. Controlled input:
- *    - Dùng Pattern truyền thống cho Username, Email, Password gắn với state nội tại của Object `user`.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Người dùng chọn ảnh -> JavaScript dùng `FileReader` đọc file -> Hiển thị ảnh xem trước.
+ *    - Bước 2: Người dùng điền thông tin -> State `user` cập nhật liên tục.
+ *    - Bước 3: Nhấn Đăng ký -> Kiểm tra trống dữ liệu -> `dispatch` hành động register.
+ *    - Bước 4: Chờ Backend phản hồi -> Hiện thông báo thành công -> Chuyển sang `/login`.
  * 
- * 9. Lifting state up:
- *    - Component tự gánh vác xử lý file Base64 cho đến khi `dispatch` lên Redux.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - UI -> FormData (Name, Email, Pass, Base64 Image) -> API Post -> Backend (xử lý Cloudinary để lưu ảnh) -> MongoDB.
  * 
- * 10. Luồng hoạt động:
- *    - (1) User điền Input Name/Email/Password -> State `user` thay đổi.
- *    - (2) User điền File Avatar Image -> Local File Reader converts thành Base64 -> Cập nhật hiển thị lên UI `avatarPreview`.
- *    - (3) Nhấn Submit -> Gói vào Class `FormData` vì có chứa File Ảnh/Base64 để form body Backend Multi-part xử lý -> `dispatch(register(FormData))`.
- *    - (4) `useEffect` lắng nghe thành công -> Show Toast -> Chuyển về màn `/login`.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Kiểm tra `!name || !email || !password`: Chặn ngay tại Client nếu khách hàng "quên" điền thông tin trước khi phiền đến Server.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Đọc file (`reader.onload`) và gửi yêu cầu đăng ký API là các tác vụ bất đồng bộ.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - `accept="image/*"` ở thẻ input giúp giới hạn người dùng chỉ chọn được ảnh, tránh chọn nhầm file thực thi nguy hiểm.
+ *    - `DEFAULT_AVATAR_PREVIEW`: Luôn có một ảnh mặc định để giao diện không bị "vỡ" khi người dùng chưa chọn ảnh.
  */
 import React, { useState , useEffect} from 'react'
 import '../UserStyles/Register.css'

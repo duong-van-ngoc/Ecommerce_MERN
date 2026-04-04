@@ -1,3 +1,54 @@
+/**
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Biểu Đ Đồ Phân Tích Doanh Thu (Revenue Analytics Chart).
+ * 
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Trực quan hóa dữ liệu kinh doanh thô thành các cột biểu đồ dễ hiểu.
+ *    - Cho phép Admin so sánh hiệu suất bán hàng qua các mốc thời gian khác nhau (Tuần/Tháng/Năm).
+ *    - Giúp phát hiện các "điểm rơi" hoặc "điểm bùng nổ" doanh số để đưa ra chiến lược marketing kịp thời.
+ * 
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Báo cáo Dữ liệu & Trực quan hóa (Data Visualization Flow).
+ * 
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Recharts Library: Thư viện biểu đồ mạnh mẽ nhất cho React. Sử dụng `BarChart`, `Bar`, `XAxis` và `ResponsiveContainer`.
+ *    - useMemo Pattern: Tối ưu hiệu năng bằng cách chỉ tính toán lại dữ liệu biểu đồ khi Admin thay đổi bộ lọc (`filter`). Điều này giúp biểu đồ mượt mà, không bị lag.
+ *    - Custom React Tooltip: Tự viết giao diện hiển thị khi Admin di chuột vào các cột (Tooltips) để đồng bộ với phong cách thiết kế sang trọng của dự án.
+ *    - SVG Linear Gradient: Sử dụng thẻ `<defs>` để định nghĩa một dải màu gradient từ `#ff6b6b` (đỉnh cột) xuống mờ dần ở chân cột, tạo hiệu ứng thị giác hiện đại (Modern UI Chart).
+ *    - Responsive Container: Đảm bảo biểu đồ tự co giãn 100% chiều rộng của thẻ bọc ngoài mà không bị vỡ SVG.
+ * 
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Filter state (Tuần/Tháng/Năm) do Admin chọn.
+ *    - Output: Biểu đồ cột SVG động với dữ liệu tương ứng.
+ * 
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `filter`: Lưu trạng thái hiện tại (Tuần, Tháng hoặc Năm). 
+ *    - `data`: Mảng dữ liệu đã qua xử lý lọc (`mockDataWeek`, `mockDataMonth`...).
+ * 
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `setFilter`: Thay đổi bộ lọc thời gian.
+ *    - `useMemo`: Quyết định mảng dữ liệu nào sẽ được nạp vào biểu đồ dựa trên `filter`.
+ *    - `CustomTooltip`: Component chức năng để render hộp thông tin khi di chuột.
+ * 
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Khởi tạo mặc định xem theo "Tuần".
+ *    - Bước 2: Admin bấm chọn "Tháng".
+ *    - Bước 3: `filter` state cập nhật -> `useMemo` kích hoạt nạp `mockDataMonth`.
+ *    - Bước 4: Recharts thực hiện hoạt cảnh (Animation) vẽ lại các cột biểu đồ.
+ * 
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Hiện đang dùng Mock Data để minh họa UI. Trong thực tế, mảng dữ liệu này sẽ được lấy từ API thống kê tổng hợp của Server.
+ * 
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Active State Styling: Thay đổi màu nền trắng và đổ bóng cho nút Filter đang được chọn.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Animation của Recharts diễn ra bất đồng bộ trên lớp SVG.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - `id="colorBar"`: ID này được dùng để liên kết giữa định nghĩa Gradient và thuộc tính `fill` của thẻ `Bar`. Đừng đổi tên ID nếu không muốn cột bị mất màu.
+ *    - Font Family: Trục X (`XAxis`) sử dụng font 'Outfit' đồng bộ với toàn bộ hệ thống Dashboard.
+ */
 import React, { useState, useMemo } from 'react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 

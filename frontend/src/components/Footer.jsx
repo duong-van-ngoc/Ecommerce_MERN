@@ -1,38 +1,47 @@
 /**
- * ============================================================================
- * COMPONENT: Footer
- * ============================================================================
- * 1. Component là gì: 
- *    - Vùng chân trang (Footer) của toàn bộ các màn hình hiển thị. Cung cấp thông tin
- *      liên hệ, các kênh kết nối bên ngoài (Social links) và dòng bản quyền.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Chân Trang (Footer).
  * 
- * 2. Props: 
- *    - Không sử dụng props truyền từ component cha.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Là điểm kết thúc của mọi trang web, cung cấp thông tin "về đích" cho người dùng.
+ *    - Chứa các thông tin pháp lý, liên hệ và các liên kết mạng xã hội để tăng độ uy tín (Brand Trust) cho cửa hàng.
+ *    - Hỗ trợ tốt cho SEO nhờ cấu trúc thẻ HTML5 chuẩn.
  * 
- * 3. State:
- *    - Component ở dạng Stateless (Hoàn toàn không cần state).
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Giao diện Chung (Shared UI Layout Flow).
  * 
- * 4. Render lại khi nào:
- *    - Rất hiếm khi re-render vì đây là thành phần tĩnh, chỉ render theo Root App.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Stateless Functional Component: Đây là một Component "câm", không chứa logic hay state phức tạp. Nó chỉ nhận lệnh và render nội dung cố định, giúp React chạy cực nhẹ và nhanh.
+ *    - Material UI Icons: Sử dụng thư viện icon `@mui/icons-material` (Phone, Mail, GitHub...) để giao diện trông hiện đại và chuyên nghiệp thay vì dùng ảnh bitmap nặng nề.
+ *    - Semantic HTML5: Sử dụng thẻ `<footer>` thay vì thẻ `<div>` thông thường. Điều này cực kỳ quan trọng cho các công cụ tìm kiếm (Google, Bing) và các thiết bị đọc màn hình dành cho người khiếm thị.
+ *    - CSS Micro-interactions: Sử dụng các class như `hover-scale-up` và `hover-icon-btn` để tạo hiệu ứng phóng to nhẹ khi người dùng rà chuột qua, tăng tính tương tác sinh động.
  * 
- * 5. Event handling:
- *    - Không có bất kỳ event handler hay form control nào. Các CTA hoàn toàn bằng thẻ `<a>` tĩnh.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Không có (Thành phần tĩnh).
+ *    - Output: Đoạn mã HTML hiển thị thông tin ở cuối trang.
  * 
- * 6. Conditional rendering:
- *    - Không sử dụng conditional rendering. Render 100% markup cố định.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - Không sử dụng State hay Props vì dữ liệu của Footer thường ít thay đổi.
  * 
- * 7. List rendering:
- *    - Không sử dụng array `.map()`, các list social icon được code thủ công để tối ưu tốc độ.
+ * 7. CÁC HÀM / CHỨC NƠNG CHÍNH:
+ *    - Chỉ thực hiện hàm `render()` (trả về JSX).
  * 
- * 8. Controlled input:
- *    - Không tồn tại Input fields trong Footer này.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Được nạp vào trang chủ (`App.jsx`).
+ *    - Bước 2: Luôn nằm ở dưới cùng của Viewport nhờ vào cấu trúc Flexbox/Grid của layout tổng.
  * 
- * 9. Lifting state up:
- *    - Hoàn toàn tách biệt khỏi cấu trúc state chung của ứng dụng.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Không có tương tác với Server.
  * 
- * 10. Luồng hoạt động:
- *    - Component thuần tuý mount vào cuối thẻ `div#root` và hiển thị UI cố định, hỗ trợ HTML5 semantic `<footer>` cho SEO.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Không có logic rẽ nhánh. Render đồng nhất cho mọi đối tượng người dùng (Khách, Thành viên, Admin).
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Không có.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Dòng bản quyền `&copy; 2025 DuongNgoc`: Nếu bạn muốn cập nhật năm tự động, có thể dùng `new Date().getFullYear()`.
+ *    - Các liên kết `<a>`: Nhớ thêm `target='_blank'` và `rel='noopener noreferrer'` khi liên kết ra trang ngoài để bảo mật thông tin người dùng.
  */
 import React from 'react'
 import '../componentStyles/Footer.css'

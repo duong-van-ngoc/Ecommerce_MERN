@@ -1,42 +1,51 @@
 /**
- * ============================================================================
- * COMPONENT: Home
- * ============================================================================
- * 1. Component là gì: 
- *    - Đảm nhiệm vai trò hiển thị và xử lý logic cho trang chủ (`Home`).
- *    - Gom nhóm các component UI (Hero, CategoryGrid, NewArrivals) ghép lại thành giao diện trang chủ chính.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Trang chủ (Home Page) - "Trái tim" hiển thị của ứng dụng.
  * 
- * 2. Props: 
- *    - Không nhận trực tiếp props từ cha.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Là điểm chạm đầu tiên của người dùng khi truy cập website (Landing Page).
+ *    - Đóng vai trò là "Người điều phối" (Orchestrator): Lấy dữ liệu sản phẩm từ Redux và phân phối xuống các Component con.
+ *    - Kết hợp các Section lớn: Banner chào mừng (Hero), Lưới danh mục (Category) và Sản phẩm mới về (New Arrivals).
  * 
- * 3. State:
- *    - Không có Local State.
- *    - Quản lý Global State từ Redux qua useSelector (kéo state `product` gồm `loading`, `error`, `products`).
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Khám phá (Discovery Flow) & Duyệt hàng hóa (Browsing Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi Global State `product` thay đổi (đang tải API, có lỗi, có danh sách sản phẩm mới trả về).
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - `useSelector` & `useDispatch`: Cặp bài trùng của Redux Toolkit để đọc và ghi dữ liệu vào Store toàn cục.
+ *    - `useEffect`: React Hook dùng để thực thi các hiệu ứng phụ (ở đây là gọi API lấy dữ liệu) ngay khi trang vừa được "nâng" lên (Mount).
+ *    - Component Composition: Kỹ thuật lắp ghép các mảnh giao diện nhỏ thành một trang lớn hoàn chỉnh.
+ *    - React-Toastify: Thư viện hiển thị thông báo (Popup) chuyên nghiệp.
  * 
- * 5. Event handling:
- *    - Chạy tự động `dispatch(getProduct(keyword))` qua `useEffect` khi mount.
- *    - Hiển thị Toast Error khi có error từ Global State.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: State từ Redux (danh sách sản phẩm, trạng thái loading).
+ *    - Output: Một giao diện trang chủ lộng lẫy và đầy đủ thông tin hàng hóa.
  * 
- * 6. Conditional rendering:
- *    - Chưa có điều kiện ẩn hiện phức tạp trên component layout này (đẩy logic loader xuống <NewArrivals />).
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - Lấy ra `loading`, `error`, `products` từ mảng trạng thái `state.product`.
  * 
- * 7. List rendering:
- *    - Không sử dụng list render trực tiếp (đẩy products qua property của component con để loop array).
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - Tự động gọi `getProduct` với keyword rỗng để lấy về danh sách sản phẩm mới nhất/tất cả.
+ *    - Lắng nghe và xử lý lỗi (`error`) tập trung: Nếu có lỗi từ Server, trang chủ sẽ hiển thị thông báo Toast ngay lập tức.
  * 
- * 8. Controlled input:
- *    - Không có Input UI elements.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: User vào trang chủ -> React render khung giao diện ban đầu.
+ *    - Bước 2: `useEffect` chạy -> Dispatch hành động lấy sản phẩm.
+ *    - Bước 3: Redux cập nhật `loading = true` -> Hiện Loader.
+ *    - Bước 4: API trả về data -> Redux cập nhật `products` -> Trang chủ đẩy data này xuống `<NewArrivals />`.
  * 
- * 9. Lifting state up:
- *    - Phân chia lấy data list `products` từ Redux và đẩy mảng đó xuống props cho `<NewArrivals products={products}/>`.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Browser -> Home.jsx -> Redux Thunk -> Backend API -> MongoDB -> JSON Response -> Redux Store -> Home.jsx UI.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Component mount -> `useEffect` gọi dispatch action fetch List Sản phẩm (getProduct "Tất Cả").
- *    - (2) Nhận mảng `products` từ Redux -> tự động truyền qua các Section bên dưới.
- *    - (3) Dựng các thẻ cơ bản và Section Layout `<HeroSection />`, `<CategoryGrid />`, `<NewArrivals />` vào DOM.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Sử dụng Component `<PageTitle />` để thay đổi tiêu đề trang trên tab trình duyệt (Tốt cho SEO).
+ *    - Truyền `loading` và `products` xuống component con để xử lý hiển thị có điều kiện (Hiện sản phẩm hoặc hiện Skeleton).
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Việc gọi API thông qua Dispatch là một tiến trình bất đồng bộ (Async), dữ liệu sẽ không có ngay mà phải chờ phản hồi từ Server.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Chú ý hàm `dispatch(removeErrors())`: Đây là bước "dọn dẹp" (Cleanup) cực kỳ quan trọng để lỗi không bị hiển thị lặp đi lặp lại khi người dùng chuyển trang.
+ *    - File này tập trung vào Layout (bố cục), nếu muốn sửa giao diện chi tiết từng sản phẩm, hãy vào component `NewArrivals` hoặc `ProductCard`.
  */
 import React, { useEffect } from 'react';
 import Navbar from '../components/Navbar';

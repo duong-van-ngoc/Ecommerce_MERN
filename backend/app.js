@@ -1,3 +1,59 @@
+/**
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là file Cấu hình ứng dụng Express (Express Application Configuration).
+ * 
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Là trung tâm điều phối mọi Request đi vào hệ thống Backend.
+ *    - Thiết lập các "lớp lọc" (Middleware) như bảo mật CORS, đọc dữ liệu JSON, quản lý Cookie và File Upload.
+ *    - Gắn kết các Endpoint (Route) với logic xử lý tương ứng (Product, User, Order...).
+ *    - Thiết lập hệ thống xử lý lỗi tập trung cho toàn bộ ứng dụng.
+ * 
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Hệ thống Core / Routing / Middleware.
+ * 
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Express.js Framework.
+ *    - CORS (Cross-Origin Resource Sharing): Cho phép Frontend (React) giao tiếp với Backend.
+ *    - Passport.js: Thư viện hỗ trợ nhiều chiến lược xác thực (JWT, Google, v.v.).
+ *    - Middleware Pattern: Cách Express xử lý request qua các hàm trung gian.
+ *    - Error Handling Middleware: Hàm bắt lỗi cuối cùng trong chuỗi xử lý.
+ * 
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Các Request HTTP thô từ Client (thông qua server.js).
+ *    - Output: Instance `app` chứa đầy đủ cấu hình để server.js có thể chạy được.
+ * 
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - Không áp dụng trực tiếp.
+ * 
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `configurePassport()`: Khởi tạo các cấu hình bảo mật/xác thực.
+ *    - `isAllowedOrigin()`: Logic kiểm tra xem Client nào (URL nào) được phép gọi API.
+ *    - `app.use()`: Các câu lệnh đăng ký middleware và route.
+ * 
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Load biến môi trường.
+ *    - Bước 2: Khởi tạo ứng dụng Express.
+ *    - Bước 3: Cấu hình CORS (Bảo mật truy cập giữa các domain).
+ *    - Bước 4: Cấu hình Parsers (Đọc JSON, URL-encoded, Cookies).
+ *    - Bước 5: Đăng ký các Route API chính (tiền tố `/api/v1`).
+ *    - Bước 6: Đăng ký `errorHandleMiddleware` ở cuối cùng để bắt mọi lỗi phát sinh.
+ * 
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Request -> server.js -> app.js -> CORS Check -> Parsers -> API Route -> Controller -> Database.
+ *    - Response trả ngược lại qua các lớp middleware và về Client.
+ * 
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Có phân quyền API theo route (ví dụ: các route admin được tách riêng).
+ *    - Các header quan trọng như Authorization được cấu hình cho phép qua CORS.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Bản thân file này chạy đồng bộ để thiết lập cấu hình, các xử lý bất đồng bộ nằm sâu bên trong các route/controller.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Thứ tự của `app.use` rất quan trọng! Error handler luôn phải ở dưới cùng.
+ *    - Nếu muốn thêm một module mới (ví dụ: Chatbot, Voucher), bạn phải đăng ký route ở đây.
+ *    - Phần `limit: '50mb'` là để hỗ trợ upload ảnh/file dung lượng lớn, hãy cẩn thận với bảo mật.
+ */
 import { loadEnvironment } from "./config/loadEnv.js";
 
 loadEnvironment();

@@ -1,46 +1,54 @@
 /**
- * ============================================================================
- * COMPONENT: OrderConfirm
- * ============================================================================
- * 1. Component là gì: 
- *    - Màn hình Xác nhận Đơn hàng (Bước 2 Checkout). Tóm tắt các mặt hàng, địa chỉ, tổng tiền, phương thức thành toán.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Trang Xác nhận Đơn hàng (Order Confirmation Page).
  * 
- * 2. Props: 
- *    - Component Route. Không props.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Là bước kiểm duyệt cuối cùng (Step 2/3) trước khi đơn hàng thực sự được tạo.
+ *    - Tóm tắt "bức tranh toàn cảnh": Bạn mua cái gì, ship đi đâu, trả bao nhiêu tiền và trả bằng cách nào.
+ *    - Thực hiện logic "Rẽ nhánh thanh toán": Quyết định xem sẽ hiện Popup đặt hàng thành công (COD) hay chuyển hướng người dùng sang Cổng thanh toán (VNPAY).
  * 
- * 3. State:
- *    - Local State (useState):
- *      + `showSuccessPopup`: Cờ hiển thị popup `OrderSuccess` sau khi đặt thành công.
- *      + `createdOrderId`: Lưu giữ ID đơn tạo thành công đẩy cho popup.
- *      + `paymentMethod`: Enum 'cod' hoặc thẻ (được gọi từ sessionStorage).
- *    - Global State (useSelector): Pull `shippingInfo`, `cartItems`, `user`.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Thanh toán & Đặt hàng (Checkout & Order Flow).
  * 
- * 4. Render lại khi nào:
- *    - Redux đổi cart item/shipping.
- *    - Trạng thái `showSuccessPopup` bật tắt. Mở Modal đè lên layout.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - SessionStorage Logic: Xử lý dữ liệu "tạm thời" cực kỳ linh hoạt. Check xem người dùng đang mua cả giỏ hàng hay chỉ mua một sản phẩm duy nhất qua tính năng "Mua ngay" (`directBuyItem`).
+ *    - Data Refinement (Chuẩn hóa dữ liệu): Gom các mẩu thông tin rời rạc từ bước Shipping thành một chuỗi `fullAddress` hoàn chỉnh và Map các thuộc tính sản phẩm sang định dạng mà Database yêu cầu.
+ *    - Conditional Orchestration: Điều khiển việc hiển thị Modal `OrderSuccess` (Popup) đè lên giao diện chính mà không cần chuyển trang.
+ *    - Business Logic trong UI: Tính toán Thuế VAT (10%), Phí vận chuyển (Miễn phí cho đơn từ 500k) trực tiếp trên giao diện để người dùng thấy minh bạch.
  * 
- * 5. Event handling:
- *    - `proceesToPayment()`: Click [Xác nhận đặt hàng]. Parse obj -> Gởi HTTP/Dispatch -> Lưu SessionStorage -> Show Popup.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Dữ liệu giỏ hàng (`cartItems`) và thông tin giao hàng (`shippingInfo`) từ Redux Store.
+ *    - Output: Một bản ghi Order mới trong CSDL và điều hướng luồng thanh toán tương ứng.
  * 
- * 6. Conditional rendering:
- *    - Nếu `showSuccessPopup` == true thì render form Modal `<OrderSuccess />`.
- *    - Rỗng `cartItems`: In text thông báo "Không có sản phẩm trong đơn hàng".
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `paymentMethod`: Quản lý lựa chọn hình thức trả tiền (COD hoặc VNPAY).
+ *    - `showSuccessPopup`: Cờ (Flag) boolean để điều khiển việc hiện/ẩn thông báo thành công.
+ *    - `createdOrderId`: Lưu lại ID của đơn hàng vừa tạo để hiển thị cho người dùng biết.
  * 
- * 7. List rendering:
- *    - `.map` qua mảng `cartItems` xuất ra list Card UI (Tên, Image, Size, Color, Giá, Số lượng). 
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `proceesToPayment`: "Trái tim" của file. Nó gửi yêu cầu tạo đơn hàng lên Server, sau đó tùy vào `paymentMethod` mà thực hiện gọi tiếp API VNPAY hoặc kết thúc đơn tại chỗ.
  * 
- * 8. Controlled input:
- *    - Không xài Input/Select box form. Chủ yếu hiển thị tĩnh.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: User kiểm tra kỹ các món đồ và địa chỉ (nếu sai có thể quay lại bước cũ).
+ *    - Bước 2: Chọn phương thức thanh toán -> State `paymentMethod` cập nhật.
+ *    - Bước 3: Nhấn "Xác nhận đặt hàng" -> Gọi API `createOrder`.
+ *    - Bước 4 (Nhánh COD): Hiện Popup cảm ơn -> Click đóng Popup -> Về trang "Đơn hàng của tôi".
+ *    - Bước 5 (Nhánh VNPAY): Nhận link thanh toán từ Server -> Chuyển sang website VNPAY.
  * 
- * 9. Lifting state up:
- *    - Tổng tiền/Sản phẩm gởi qua API `dispatch(createOrder)`. Nếu request thành công chạy `removeOrderedItems` lên Redux.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - UI -> POST (createOrder) -> API -> MongoDB (Tạo bản ghi đơn hàng với trạng thái `PENDING`).
+ *    - UI -> POST (createVnpayUrl) -> VNPAY Gateway (Nếu chọn thanh toán thẻ).
  * 
- * 10. Luồng hoạt động:
- *    - (1) Router mount Component -> Lấy Redux + SessionStorage.
- *    - (2) Check nếu BuyNow (`directBuyItem` trong session) đổi cấu trúc Data rỗng của `cartItems`. (Hỗ trợ luồng Mua ngay bỏ qua Cart gốc).
- *    - (3) Click [Xác nhận] -> Map thông tin JSON đẩy xuống CSDL thông qua tính năng Thunk `createOrder()`.
- *    - (4) Nếu API ok -> Dọn dẹp Array khỏi giỏ Redux, Mở Popup Success chứa `orderId`. Ngược lại Toast báo thất bại.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Bảo mật giỏ hàng: `window.location.href = data.paymentUrl;` - Redirect rời khỏi trang chỉ khi đã lưu thông tin đơn hàng an toàn.
+ *    - Logic Xóa giỏ: Chỉ thực hiện `dispatch(removeOrderedItems)` cho đơn COD ngay tại đây. Đơn VNPAY sẽ đợi xác nhận từ Server sau.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Quá trình "đợi" tạo đơn hàng và lấy link thanh toán từ Backend.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Logic xử lý `directBuyItem` và `selectedOrderItems`: Rất quan trọng để phân biệt người dùng đang thanh toán "một phần" hay "toàn bộ" giỏ hàng.
+ *    - Trình tự gọi API: Phải tạo đơn hàng trong DB trước (`createOrder`) rồi mới lấy ID đó đi thanh toán VNPAY, nếu không sẽ không có ID để Map kết quả thanh toán sau này.
  */
 import React, { useEffect, useState } from 'react'
 import '../CartStyles/OrderConfirm.css'
@@ -153,7 +161,8 @@ function OrderConfirm() {
         image: item.image || item.images?.[0]?.url || item.images?.[0],
         size: item.size,
         color: item.color,
-        product: item.product
+        product_id: item.product_id || item.product, // Support both new (product_id) and old (product) field
+        product: item.product_id || item.product     // Keep for backward compat
       })) : [],
       paymentInfo: {
         method: paymentMethod,
@@ -296,7 +305,7 @@ function OrderConfirm() {
                 <div className="space-y-8">
                   {cartItems.length > 0 ? (
                     cartItems.map((item) => (
-                      <div key={item.product || item._id || item.name} className="flex items-center gap-6">
+                      <div key={item.product_id || item.product || item._id || item.name} className="flex items-center gap-6">
                         <div className="h-32 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100 shadow-sm">
                           <img
                             alt={item.name}

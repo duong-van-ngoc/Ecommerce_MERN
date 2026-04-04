@@ -1,9 +1,65 @@
+/**
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là file Bộ điều khiển Sản phẩm (Product Controller).
+ * 
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Là trung tâm xử lý mọi logic liên quan đến Sản phẩm - "linh hồn" của trang thương mại điện tử.
+ *    - Quản lý vòng đời sản phẩm: Từ lúc nhập hàng (Excel), tạo lẻ, upload ảnh lên Cloudinary, đến khi hiển thị cho người dùng và đánh giá sản phẩm.
+ *    - Cung cấp các tính năng tìm kiếm, lọc và phân trang chuyên nghiệp cho Frontend.
+ * 
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Mua sắm (Shopping Flow): Lấy danh sách, chi tiết sản phẩm.
+ *    - Luồng Quản trị (Admin Flow): Quản lý kho, import hàng loạt, thống kê.
+ * 
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Mongoose (CRUD): Thao tác dữ liệu với MongoDB (ProductModel).
+ *    - Cloudinary SDK: Tải và quản lý hình ảnh trên đám mây (Cloud storage).
+ *    - APIFunctionality: Class tiện ích tùy chỉnh để thực hiện Search, Filter (lọc theo giá, danh mục), Sort và Pagination (phân trang).
+ *    - XLSX Library: Đọc và xử lý tệp tin Excel cho tính năng Import sản phẩm hàng loạt.
+ *    - HandleError & handleAsyncError: Hệ thống xử lý lỗi tập trung giúp code sạch hơn (không cần quá nhiều try-catch).
+ * 
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Dữ liệu từ Client gửi lên qua body (JSON/Form-data), params (ID), query (keyword, price, page), hoặc file (.xlsx).
+ *    - Output: Phản hồi JSON chứa danh sách sản phẩm, chi tiết sản phẩm hoặc các báo cáo kết quả (số lượng đã import thành công/thất bại).
+ * 
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - Không áp dụng cho Backend.
+ * 
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `createProducts`: Tạo sản phẩm mới + upload ảnh.
+ *    - `getAllProducts`: Lấy sản phẩm cho người dùng (có tích hợp Search & Filter).
+ *    - `updateProduct`: Cập nhật thông tin (có logic xử lý ảnh cũ/mới và dữ liệu AI Stylist).
+ *    - `createReviewProduct`: Xử lý đánh giá (Rating/Comment) - Chỉ cho phép người đã nhận hàng thành công mới được đánh giá.
+ *    - `importProducts`: Tính năng "siêu cấp" cho Admin: Đọc file Excel, tự động nhận diện cột, xử lý trùng SKU (ghi đè hoặc cộng dồn tồn kho).
+ * 
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Tiếp nhận Request từ Route.
+ *    - Bước 2: `handleAsyncError` bao bọc để bắt lỗi bất ngờ.
+ *    - Bước 3: Kiểm tra tính hợp lệ của dữ liệu (Validate) hoặc sự tồn tại của sản phẩm.
+ *    - Bước 4: Tương tác với Database hoặc Cloudinary.
+ *    - Bước 5: Trả kết quả JSON chuẩn hóa về cho Frontend.
+ * 
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Frontend -> Route -> Controller -> APIFunctionality (xử lý query) -> MongoDB -> Cloudinary (nếu có ảnh) -> Controller -> Response.
+ * 
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Kiểm tra đơn hàng "Đã giao" trước khi cho phép Review.
+ *    - Phân tích và convert dữ liệu từ Excel (chuẩn hóa các trường Price, Stock, Category).
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Toàn bộ các hàm đều là `async` do phải đợi phản hồi từ Database và Cloudinary. Đặc biệt là các vòng lặp upload ảnh hoặc import hàng nghìn dòng Excel.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Đây là file lớn nhất và phức tạp nhất Backend: Hãy lưu ý hàm `importProducts` và `updateProduct` vì chúng chứa nhiều logic xử lý dữ liệu phức tạp.
+ *    - `SKU`: Là mã định danh duy nhất để hệ thống nhận biết sản phẩm khi nhập hàng từ Excel.
+ *    - `APIFunctionality`: Nếu muốn thay đổi cách Search (ví dụ tìm theo mô tả thay vì chỉ theo tên), hãy vào file utils tương ứng.
+ */
 import Product from '../models/productModel.js';
 import Order from '../models/orderModel.js';
+import Review from '../models/reviewModel.js';
 import HandleError from '../utils/handleError.js';
 import handleAsyncError from '../middleware/handleAsyncError.js';
 import APIFunctionality from '../utils/apiFunctionality.js';
-import { response } from 'express';
 
 
 
@@ -216,14 +272,14 @@ export const getSingleProduct = handleAsyncError(async (req, res, next) => {
     })
 })
 
-// tạo và cập nhật đánh giá san phẩm 
+// Tạo hoặc cập nhật đánh giá sản phẩm (lưu vào Collection Review riêng biệt)
 export const createReviewProduct = handleAsyncError(async (req, res, next) => {
     const { rating, comment, productId } = req.body;
 
-    // Kiểm tra xem người dùng đã mua sản phẩm này và đơn hàng đã được giao chưa
+    // Only allow users who purchased AND received the product to review
     const orders = await Order.find({
-        user: req.user._id,
-        "orderItems.product": productId,
+        user_id: req.user._id,
+        "orderItems.product_id": productId,
         orderStatus: "Đã giao"
     });
 
@@ -231,127 +287,91 @@ export const createReviewProduct = handleAsyncError(async (req, res, next) => {
         return next(new HandleError("Bạn chỉ có thể đánh giá sản phẩm sau khi đã mua và nhận hàng thành công.", 400));
     }
 
-    // Xử lý upload ảnh mới cho đánh giá
-    let imagesLinks = [];
-
-    // Nếu có giữ lại ảnh cũ
-    if (req.body.oldImages) {
-        try {
-            const oldImages = JSON.parse(req.body.oldImages);
-            if (Array.isArray(oldImages)) {
-                imagesLinks = [...oldImages];
-            }
-        } catch (e) {
-            console.error("Error parsing oldImages", e);
-        }
+    const product = await Product.findById(productId);
+    if (!product) {
+        return next(new HandleError("Sản phẩm không tồn tại", 404));
     }
 
-    if (req.files && req.files.images) {
-        const files = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
+    // Check if review already exists for this user + product
+    const existingReview = await Review.findOne({
+        user_id: req.user._id,
+        product_id: productId
+    });
 
-        for (let i = 0; i < files.length; i++) {
-            const result = await new Promise((resolve, reject) => {
-                const uploadStream = cloudinary.uploader.upload_stream(
-                    {
-                        folder: "reviews",
-                        resource_type: "auto"
-                    },
-                    (error, result) => {
-                        if (error) reject(error);
-                        else resolve(result);
-                    }
-                );
-                uploadStream.end(files[i].data);
-            });
-
-            imagesLinks.push({
-                public_id: result.public_id,
-                url: result.secure_url,
-            });
-        }
-    }
-
-    const review = {
-        user: req.user._id,
-        name: req.user.name,
-        rating: Number(rating),
-        comment,
-        images: imagesLinks
-    }
-    const product = await Product.findById(productId)
-    // console.log(product);
-
-    const reviewExist = product.reviews.find(review => review.user.toString() === req.user._id.toString())
-    if (reviewExist) {
-        product.reviews.forEach(review => {
-            if (review.user.toString() === req.user._id.toString()) {
-                review.rating = rating;
-                review.comment = comment;
-                review.images = imagesLinks;
-            }
-        })
+    let isUpdate = false;
+    if (existingReview) {
+        // Update existing review
+        existingReview.rating = Number(rating);
+        existingReview.comment = comment;
+        await existingReview.save();
+        isUpdate = true;
     } else {
-        product.reviews.push(review)
-        product.numOfReviews = product.reviews.length
+        // Create new review document
+        await Review.create({
+            user_id: req.user._id,
+            product_id: productId,
+            rating: Number(rating),
+            comment,
+            status: "approved"
+        });
     }
 
-    let sum = 0;
-    product.reviews.forEach(review => {
-        sum += review.rating
-    })
-    product.ratings = sum / product.reviews.length
+    // Recalculate product ratings from Review collection
+    const allReviews = await Review.find({ product_id: productId, status: "approved" });
+    const totalRating = allReviews.reduce((sum, r) => sum + r.rating, 0);
+    product.ratings = allReviews.length > 0 ? totalRating / allReviews.length : 0;
+    product.numOfReviews = allReviews.length;
+    await product.save({ validateBeforeSave: false });
 
-    await product.save({ validateBeforeSave: false })
     res.status(200).json({
-        succes: true,
-        message: reviewExist ? "Cập nhật đánh giá thành công!" : "Thêm đánh giá thành công",
-        product
-    })
-
-
+        success: true,
+        message: isUpdate ? "Cập nhật đánh giá thành công!" : "Thêm đánh giá thành công"
+    });
 })
 
-// lấy đánh giá sản phẩm 
+// Lấy các đánh giá của một sản phẩm (từ Collection Review)
 export const getReviewProduct = handleAsyncError(async (req, res, next) => {
-    const product = await Product.findById(req.query.id)
+    const productId = req.query.id;
+    const product = await Product.findById(productId);
     if (!product) {
-        return next(new HandleError("Sản phẩn không tồn tại", 400))
+        return next(new HandleError("Sản phẩm không tồn tại", 400));
     }
+
+    const reviews = await Review.find({ product_id: productId, status: "approved" })
+        .populate("user_id", "name avatar")
+        .sort({ createdAt: -1 });
+
     res.status(200).json({
-        succes: true,
-        review: product.reviews
-    })
+        success: true,
+        reviews
+    });
 })
 
-//  xóa đánh giá sản phẩm 
-
+// Xóa đánh giá sản phẩm (từ Collection Review, rồi cập nhật lại ratings)
 export const deleteReviewProduct = handleAsyncError(async (req, res, next) => {
-    const product = await Product.findById(req.query.productId)
-    if (!product) {
-        return next(new HandleError("Không tìm thấy id sản phẩm", 400))
+    const { id: reviewId, productId } = req.query;
+
+    const review = await Review.findById(reviewId);
+    if (!review) {
+        return next(new HandleError("Không tìm thấy đánh giá", 400));
     }
-    const reviews = product.reviews.filter(review => review._id.toString() !== req.query.id.toString())
-    let sum = 0
-    reviews.forEach(review => {
-        sum += review.rating
-    })
-    const ratings = reviews.length > 0 ? sum / reviews.length : 0;
-    const numOfReviews = reviews.length
-    await Product.findByIdAndUpdate(req.query.productId, {
-        reviews,
-        ratings,
-        numOfReviews
-    }, {
-        new: true,
-        runValidators: true
-    })
 
+    await Review.findByIdAndDelete(reviewId);
 
+    // Recalculate product ratings after deletion
+    const product = await Product.findById(productId);
+    if (product) {
+        const allReviews = await Review.find({ product_id: productId, status: "approved" });
+        const totalRating = allReviews.reduce((sum, r) => sum + r.rating, 0);
+        product.ratings = allReviews.length > 0 ? totalRating / allReviews.length : 0;
+        product.numOfReviews = allReviews.length;
+        await product.save({ validateBeforeSave: false });
+    }
 
     res.status(200).json({
         success: true,
         message: "Xóa thành công đánh giá sản phẩm"
-    })
+    });
 })
 
 // Admin - lấy tất cả sản phẩm 

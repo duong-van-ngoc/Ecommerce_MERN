@@ -1,41 +1,47 @@
 /**
- * ============================================================================
- * COMPONENT: CategoryGrid
- * ============================================================================
- * 1. Component là gì: 
- *    - Vùng "Bento Layout" trên trang chủ hiển thị lưới các danh mục sản phẩm 
- *      nổi bật nhất (Quần áo, Phụ kiện, Túi xách, Đồng hồ) để người dùng có thể nhấp vào.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Thành Phần Lưới Danh Mục (Category Grid).
  * 
- * 2. Props: 
- *    - Không nhận trực tiếp props nào. Dùng Hardcode tĩnh.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Cung cấp các "lối tắt" (Shortcuts) trực quan để người dùng truy cập nhanh vào từng nhóm sản phẩm (Quần áo, Phụ kiện, Túi xách, Đồng hồ).
+ *    - Sử dụng kiểu thiết kế "Bento Grid" hiện đại, giúp trang chủ trông sinh động và phân cấp thông tin rõ ràng.
  * 
- * 3. State:
- *    - Stateless Component. Tối ưu performance.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Khám phá Sản phẩm (Product Discovery Flow).
  * 
- * 4. Render lại khi nào:
- *    - Rất hiếm khi re-render vì bản thân nó cấu tạo hoàn toàn từ cấu trúc HTML cố định.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Custom Grid Layout: Kết hợp CSS Grid và Flexbox để tạo ra một bố cục không đối xứng (Asymmetric Layout). Các khối có kích thước khác nhau (`aspect-3-4`, `aspect-16-9`, `aspect-square`) tạo hiệu ứng thị giác mạnh.
+ *    - React Router Navigation: Sử dụng `<Link>` với các `query parameters` (ví dụ: `?category=Quần áo`). Đây là cách truyền dữ liệu giữa các trang thông qua URL mà không cần Redux.
+ *    - Hover Effects: Sử dụng `gradient-overlay` và `hover-accent-overlay` để tạo phản hồi thị giác khi người dùng rà chuột, tăng tính tương tác.
+ *    - Placeholder Icons: Tích hợp các icon SVG inline để đảm bảo giao diện vẫn chuyên nghiệp ngay cả khi ảnh thật chưa load xong hoặc bị lỗi.
  * 
- * 5. Event handling:
- *    - Bọc bởi các thẻ `<Link>`, việc click sẽ trigger chuyển đổi route URL.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Không có (Sử dụng dữ liệu tĩnh).
+ *    - Output: Khối danh mục sản phẩm dạng lưới.
  * 
- * 6. Conditional rendering:
- *    - Tĩnh 100%, không theo điều kiện data.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - Không sử dụng State hay Props.
  * 
- * 7. List rendering:
- *    - Mặc dù bản chất là một Lưới Danh mục, nhưng dev đã chia tay việc dùng `.map()` để dễ dàng 
- *      tuỳ biến khung grid phức tạp và class riêng cho từng vùng (Ví dụ khối wide và khối tall).
+ * 7. CÁC HÀM / CHỨC NƠNG CHÍNH:
+ *    - Render cấu trúc các ô danh mục.
  * 
- * 8. Controlled input:
- *    - Không có input form fields.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Hiển thị tiêu đề và link "Xem Tất Cả".
+ *    - Bước 2: Render các khối danh mục với hình ảnh và nhãn (Label) tương ứng.
+ *    - Bước 3: Người dùng click -> React Router đẩy sang `/products` kèm theo bộ lọc category tương ứng.
  * 
- * 9. Lifting state up:
- *    - Không xử lý Logic State.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Không tương tác trực tiếp với API.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Render trực tiếp ở giữa Trang Home.
- *    - (2) Nếu click vào ô "Quần Áo", `<Link>` kích hoạt router đẩy sang đường dẫn `/products?category=Quần áo`.
- *    - (3) Trang Sản phẩm (`/products`) sẽ bắt đọc Query Parameter này và tự động Lọc lưới API.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Mọi người dùng đều thấy cùng một danh mục.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Không có.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Lưu ý các class `delay-100`, `delay-200`...: Chúng phối hợp với thư viện AOS (hoặc CSS animation) để các ô xuất hiện tuần tự khi cuộn trang.
+ *    - Tên category trong URL (`?category=Quần áo`) phải khớp chính xác với `name` trong Database để filter hoạt động đúng.
  */
 import React from 'react';
 import { Link } from 'react-router-dom';

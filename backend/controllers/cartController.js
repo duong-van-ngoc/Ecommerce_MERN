@@ -1,101 +1,154 @@
+/**
+ * Cart Controller - Updated for Referencing Architecture
+ * Cart (parent) + CartItem (child) are now separate collections.
+ * Every cart operation touches both Cart and CartItem models.
+ */
 import Cart from "../models/cartModel.js";
+import CartItem from "../models/cartItemModel.js";
 import handleAsyncError from "../middleware/handleAsyncError.js";
 import HandleError from "../utils/handleError.js";
 
-// Lấy giỏ hàng của người dùng hiện tại
-export const getCart = handleAsyncError(async (req, res, next) => {
-    let cart = await Cart.findOne({ user: req.user.id });
-
+// Helper: Find or create a cart for the current user
+const findOrCreateCart = async (userId) => {
+    let cart = await Cart.findOne({ user_id: userId });
     if (!cart) {
-        // Nếu chưa có giỏ hàng, tạo mới một giỏ hàng trống
-        cart = await Cart.create({
-            user: req.user.id,
-            items: []
-        });
+        cart = await Cart.create({ user_id: userId });
     }
+    return cart;
+};
+
+// Helper: Build the full cart response (cart + its items)
+const buildCartResponse = async (cart) => {
+    const items = await CartItem.find({ cart_id: cart._id }).populate("product_id", "name price images stock");
+    return { ...cart.toObject(), items };
+};
+
+// GET /api/v1/cart — Lấy giỏ hàng của người dùng hiện tại
+export const getCart = handleAsyncError(async (req, res, next) => {
+    const cart = await findOrCreateCart(req.user.id);
+    const cartWithItems = await buildCartResponse(cart);
 
     res.status(200).json({
         success: true,
-        cart
+        cart: cartWithItems
     });
 });
 
-// Đồng bộ giỏ hàng từ Frontend lên Backend (Dùng khi Login)
+// POST /api/v1/cart/sync — Đồng bộ giỏ hàng từ LocalStorage khi đăng nhập
 export const syncCart = handleAsyncError(async (req, res, next) => {
     const { items } = req.body;
 
-    let cart = await Cart.findOne({ user: req.user.id });
+    const cart = await findOrCreateCart(req.user.id);
 
-    if (!cart) {
-        cart = await Cart.create({
-            user: req.user.id,
-            items: items || []
-        });
-    } else {
-        // Logic đồng bộ: Có thể gộp hoặc ghi đè. Ở đây ta chọn ghi đè để Frontend quản lý logic gộp trước khi gởi lên.
-        cart.items = items || [];
-        await cart.save();
+    if (items && Array.isArray(items) && items.length > 0) {
+        // Delete old items and replace with synced items from client
+        await CartItem.deleteMany({ cart_id: cart._id });
+
+        const cartItems = items.map(item => ({
+            cart_id: cart._id,
+            product_id: item.product_id || item.product,
+            name: item.name,
+            price: item.price,
+            image: item.image,
+            quantity: item.quantity,
+            size: item.size || null,
+            color: item.color || null,
+        }));
+
+        await CartItem.insertMany(cartItems);
     }
+
+    const cartWithItems = await buildCartResponse(cart);
 
     res.status(200).json({
         success: true,
-        cart
+        cart: cartWithItems
     });
 });
 
-// Thêm hoặc cập nhật sản phẩm trong giỏ hàng
+// PUT /api/v1/cart — Thêm hoặc cập nhật số lượng một mặt hàng trong giỏ
 export const updateCartItem = handleAsyncError(async (req, res, next) => {
-    const { product, quantity, size, color, name, price, image, stock } = req.body;
+    // Support both "product_id" (new) and "product" (legacy from frontend)
+    const product_id = req.body.product_id || req.body.product;
+    const { quantity, size, color, name, price, image } = req.body;
 
-    let cart = await Cart.findOne({ user: req.user.id });
-
-    if (!cart) {
-        cart = await Cart.create({
-            user: req.user.id,
-            items: [{ product, quantity, size, color, name, price, image, stock }]
-        });
-    } else {
-        // Tìm sản phẩm trùng khớp (ID, Size, Color)
-        const itemIndex = cart.items.findIndex(item => 
-            item.product.toString() === product && 
-            (item.size || "") === (size || "") && 
-            (item.color || "") === (color || "")
-        );
-
-        if (itemIndex > -1) {
-            // Cập nhật số lượng nếu tìm thấy
-            cart.items[itemIndex].quantity = quantity;
-        } else {
-            // Thêm mới nếu không tìm thấy
-            cart.items.push({ product, quantity, size, color, name, price, image, stock });
-        }
-
-        await cart.save();
+    if (!product_id || !quantity || !name || !price || !image) {
+        return next(new HandleError("Thiếu thông tin sản phẩm (product_id, quantity, name, price, image)", 400));
     }
+
+    const cart = await findOrCreateCart(req.user.id);
+
+    // Find existing item by product + variant (size, color)
+    const existingItem = await CartItem.findOne({
+        cart_id: cart._id,
+        product_id,
+        size: size || null,
+        color: color || null,
+    });
+
+    if (existingItem) {
+        // Update quantity of existing item
+        existingItem.quantity = quantity;
+        await existingItem.save();
+    } else {
+        // Create a new CartItem
+        await CartItem.create({
+            cart_id: cart._id,
+            product_id,
+            name,
+            price, // Snapshot price at the time of adding
+            image,
+            quantity,
+            size: size || null,
+            color: color || null,
+        });
+    }
+
+    const cartWithItems = await buildCartResponse(cart);
 
     res.status(200).json({
         success: true,
-        cart
+        cart: cartWithItems
     });
 });
 
-// Xóa một sản phẩm cụ thể khỏi giỏ hàng
+// DELETE /api/v1/cart — Xóa một mặt hàng cụ thể khỏi giỏ
 export const removeCartItem = handleAsyncError(async (req, res, next) => {
-    const { product, size, color } = req.body;
+    // Support both "product_id" (new) and "product" (legacy from frontend)
+    const product_id = req.body.product_id || req.body.product;
+    const { size, color } = req.body;
 
-    let cart = await Cart.findOne({ user: req.user.id });
+    const cart = await Cart.findOne({ user_id: req.user.id });
+
+    if (!cart) {
+        return next(new HandleError("Không tìm thấy giỏ hàng", 404));
+    }
+
+    await CartItem.findOneAndDelete({
+        cart_id: cart._id,
+        product_id,
+        size: size || null,
+        color: color || null,
+    });
+
+    const cartWithItems = await buildCartResponse(cart);
+
+    res.status(200).json({
+        success: true,
+        cart: cartWithItems
+    });
+});
+
+// DELETE /api/v1/cart/clear — Xóa toàn bộ giỏ hàng sau khi checkout
+export const clearCart = handleAsyncError(async (req, res, next) => {
+    const cart = await Cart.findOne({ user_id: req.user.id });
 
     if (cart) {
-        cart.items = cart.items.filter(item => 
-            !(item.product.toString() === product && 
-              (item.size || "") === (size || "") && 
-              (item.color || "") === (color || ""))
-        );
-        await cart.save();
+        await CartItem.deleteMany({ cart_id: cart._id });
     }
 
     res.status(200).json({
         success: true,
-        cart
+        message: "Giỏ hàng đã được làm trống"
     });
 });

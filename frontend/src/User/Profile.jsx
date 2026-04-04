@@ -1,39 +1,51 @@
 /**
- * ============================================================================
- * COMPONENT: Profile
- * ============================================================================
- * 1. Component là gì: 
- *    - Màn hình Thông tin cá nhân của người dùng (Profile Main View).
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Trang Hồ sơ cá nhân (User Profile Page).
  * 
- * 2. Props: 
- *    - Không có props từ component cha.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Là trung tâm điều khiển của người dùng sau khi đăng nhập thành công.
+ *    - Hiển thị thông tin định danh: Tên, Email và Ngày tham gia hệ thống.
+ *    - Cung cấp các lối tắt điều hướng quan trọng: Xem lại Đơn hàng, Đổi mật khẩu, và Cập nhật hồ sơ.
+ *    - Đóng vai trò là một "Protected View" - Chặn người lạ xâm nhập vào thông tin riêng tư.
  * 
- * 3. State:
- *    - Global State (useSelector): Kéo data `user`, `loading`, `isAuthenticated` từ Redux.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Quản lý Tài khoản (Account Management Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi thông tin `user` thay đổi hoặc trạng thái `loading` từ Redux cập nhật.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Protected Route Logic: Kỹ thuật bảo vệ trang web bằng cách kiểm tra biến `isAuthenticated`. Nếu chưa đăng nhập, lập tức "tống" người dùng về trang `/login`. 
+ *    - Component Composition: Sử dụng `<AccountSidebar />` để tái sử dụng thanh Menu bên trái cho nhiều trang quản lý khác nhau (Đơn hàng, Mật khẩu...).
+ *    - String Manipulation: Sử dụng `.substring(0, 10)` để xử lý chuỗi ngày tháng ISO từ Backend (ví dụ: `2023-10-27T...` thành `2023-10-27`).
+ *    - Redux Integration: Đọc dữ liệu `user` trực tiếp từ Global Store thay vì gọi lại API (vì thông tin đã được tải từ lúc App khởi chạy).
  * 
- * 5. Event handling:
- *    - Không có xử lý Event form (chỉ đơn thuần redirect).
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Dữ liệu Object `user` từ Redux Store.
+ *    - Output: Giao diện quản lý tài khoản cá nhân trực quan.
  * 
- * 6. Conditional rendering:
- *    - `loading ? <Loader/> : <div className="profile-page">...</div>`.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `loading`, `isAuthenticated`, `user`: Ba biến cốt lõi lấy từ Redux để điều khiển luồng hiển thị.
  * 
- * 7. List rendering:
- *    - Render layout tĩnh, không có mapping Array ở root class.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `useEffect`: Dùng để thực hiện "Kiểm tra tính chính danh" (Authentication Check) ngay khi trang vừa được mở.
  * 
- * 8. Controlled input:
- *    - Không chứa input field.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Người dùng nhấn vào "Profile" -> `useEffect` kiểm tra login.
+ *    - Bước 2: Nếu chưa Login -> Redirect tới `/login`.
+ *    - Bước 3: Nếu đã Login -> Redux Store cung cấp dữ liệu User.
+ *    - Bước 4: Render giao diện kèm Sidebar và các thông tin cá nhân.
  * 
- * 9. Lifting state up:
- *    - Không có thao tác lifting state up (Data đọc 1 chiều từ Context/Redux store).
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Dữ liệu ở đây thường là dữ liệu "tĩnh" từ Store sau khi đã Login thành công.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Mở trang, `useEffect` check `isAuthenticated`. Nếu `false`, redirect ngay về `/login` bảo vệ route.
- *    - (2) Nếu hợp lệ, load component layout, gắn component `<AccountSidebar />` phía trái.
- *    - (3) Show thông tin chi tiết: Name, Email, Mã ngày tạo acc, Links thay đổi Mật khẩu/Đơn hàng.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Loader Screen: Hiển thị màn hình chờ nếu Redux vẫn đang bận tải dữ liệu User.
+ *    - Optional Chaining (`user?.name`): Kỹ thuật an toàn giúp code không bị chết nếu object `user` vô tình bị trống.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Gián tiếp phụ thuộc vào tiến trình `loadUser` bất đồng bộ ở cấp độ App.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Trang này là "người cầm lái" cho bộ khung Account DashBoard. Mọi sự thay đổi về giao diện ở đây thường phải đi đôi với sự đồng bộ trong `AccountSidebar`.
+ *    - Chú ý phần hiển thị Avatar (hiện đang được comment lại để chờ logic Database hoàn thiện).
  */
 import React, { useEffect } from 'react'
 import '../UserStyles/Profile.css'

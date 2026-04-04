@@ -1,56 +1,62 @@
 /**
- * ============================================================================
- * COMPONENT: OrdersManagement
- * ============================================================================
- * 1. Component là gì: 
- *    - Trang quản lý toàn bộ Đơn hàng của Admin. Cung cấp tính năng xem danh sách, lọc, tìm kiếm, cập nhật trạng thái đơn (chờ, đang giao, đã giao, hủy) và xóa đơn hàng.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Trang Quản Lý Đơn Hàng (Orders Management Page).
  * 
- * 2. Props: 
- *    - Không Props. Lấy dữ liệu 100% từ Redux adminSlice.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Là trung tâm điều phối và theo dõi toàn bộ quá trình mua sắm của khách hàng.
+ *    - Cho phép Admin thay đổi trạng thái đơn hàng (từ Chờ xử lý -> Đang giao -> Đã giao) để hoàn tất quy trình bán hàng.
+ *    - Cung cấp công cụ lọc và tìm kiếm đơn hàng theo Mã đơn hoặc Tên khách hàng để xử lý khiếu nại hoặc đối soát nhanh chóng.
  * 
- * 3. State:
- *    - Local State: 
- *      + `searchTerm`: Chuỗi text Keyword tìm kiếm theo mã đơn / Tên KH.
- *      + `statusFilter`: Dropdown giá trị Màng Lọc Status (mặc định 'all').
- *    - Global State (useSelector): `orders` (Mảng List Đơn Hàng API) , `loading`, `error`.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Vận hành & Thực thi Đơn hàng (Order Fulfillment & Operations Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi nhập ô Search/ Chọn select box Dropdown Status.
- *    - Redux Store sync dữ liệu sau khi Load / Update Tình Trạng / Xoá Đơn Hàng.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Inline Status Update Logic: Một kỹ thuật UX tuyệt vời. Thay vì phải vào trang chi tiết, Admin có thể đổi trạng thái đơn hàng ngay tại thẻ `<select>` trên bảng. Hệ thống sẽ tự động gọi API và cập nhật giao diện ngay lập tức mà không cần tải lại trang.
+ *    - Multi-criteria Filtering: Kết hợp lọc theo từ khóa (Search) và lọc theo trạng thái (Dropdown) để tạo ra danh sách `filteredOrders`. Đây là cách xử lý dữ liệu phía Client (Client-side filtering) điển hình.
+ *    - Dynamic Status Styling: Hàm `getStatusClass` sẽ gán các màu sắc đặc trưng cho từng trạng thái: Màu xanh lá cho "Đã giao" (thành công), màu đỏ cho "Đã hủy" (thất bại), giúp Admin nhận diện nhanh tình trạng đơn hàng bằng mắt thường.
+ *    - String Manipulation (`slice`): Vì ID của MongoDB rất dài, file này sử dụng `.slice(-6)` để chỉ hiển thị 6 ký tự cuối của mã đơn (ví dụ: #A1B2C3), giúp bảng dữ liệu trông gọn gàng và chuyên nghiệp hơn.
+ *    - Nested Data Rendering: Kỹ thuật render lồng nhau. Vì một đơn hàng có thể có nhiều sản phẩm, ta sử dụng `.map()` bên trong một `.map()` khác để hiển thị danh sách tên và số lượng sản phẩm ngay trong bảng.
  * 
- * 5. Event handling:
- *    - `onChange` trên Ô Search và Select box.
- *    - `handleStatusChange`: Gọi Thunk Update status DB theo value người chọn. Kèm báo Toast báo ok/error.
- *    - `handleDelete`: Fire alert window Confirm trước khi Dispatch hành động Delete Order backend. 
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Mảng `orders` từ Redux và các dữ liệu lọc từ người dùng.
+ *    - Output: Một bảng điều khiển đơn hàng linh hoạt với khả năng cập nhật thời gian thực.
  * 
- * 6. Conditional rendering:
- *    - Return Loading Screen khi call initial Fetch API `if (loading)`.
- *    - Mảng filter rỗng thì render thẻ `<tr>` Thông báo "Không tìm thấy". Có list thì map table.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `searchTerm`: Lưu từ khóa tìm kiếm (Mã đơn hoặc Tên khách).
+ *    - `statusFilter`: Lưu trạng thái đơn hàng đang muốn lọc.
  * 
- * 7. List rendering:
- *    - JS xử filter Logic `filteredOrders` trước -> Gọi Map `filteredOrders.map()` render list. 
- *    - Nested Map: Bóc mảng list items/quantity nhỏ bên trong 1 Đơn lớn `order.orderItems.map()`.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `handleStatusChange`: Gửi yêu cầu cập nhật trạng thái mới xuống Backend.
+ *    - `handleDelete`: Xóa vĩnh viễn một đơn hàng (kèm cảnh báo).
+ *    - `getStatusClass`: Hàm helper quyết định màu sắc nhãn trạng thái.
  * 
- * 8. Controlled input:
- *    - Khung Search `searchTerm` và Select Bộ Lọc `statusFilter` 2 chiều React.
- *    - Dynamic Select value trên Từng Row table: thẻ Select trạng thái bị map bởi `order.orderStatus`.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Khi vào trang, tự động lấy toàn bộ đơn hàng từ Database.
+ *    - Bước 2: Hiển thị danh sách đơn hàng kèm thông tin khách hàng, tổng tiền và trạng thái.
+ *    - Bước 3: Admin có thể gõ tìm kiếm hoặc chọn lọc theo "Đã hủy" để xem các đơn lỗi.
+ *    - Bước 4: Admin chọn "Đang giao" từ menu thả xuống -> API chạy -> Trạng thái đổi màu cam.
  * 
- * 9. Lifting state up:
- *    - Gọi Fetch data `fetchAllOrders` , Update `updateOrderStatus` , Delete `deleteOrder` qua Redux Admin actions.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Request: `GET /api/v1/admin/orders` và `PUT /api/v1/admin/order/:id`.
+ *    - Database: Tác động vào Collection `Orders`, có thể kích hoạt logic trừ kho hàng ở Backend.
  * 
- * 10. Luồng hoạt động:
- *    - (1) User truy cập URL orders admin -> Component Mount gọi dispatch fetch all Order.
- *    - (2) Nhận Payload list orders -> Component pass qua biến computed `filteredOrders` (dựa theo Input Search Textbox).
- *    - (3) Render Mảng list Array HTML Table.
- *    - (4) Tương tác Action Update Trạng thái -> Call Thunk Update Backend. Update xong Backend tự Dispatch re-sync Component Render lại Row.
- *    - (5) Tương tác Xóa Order -> Hỏi confirm UI Native -> Xóa Redux State -> Render mất row bị xóa khỏi View.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Empty Results: Nếu không tìm thấy đơn hàng nào khớp, hệ thống hiện thông báo "Không tìm thấy" thay vì để bảng trống.
+ *    - Date Formatting: Sử dụng `toLocaleDateString('vi-VN')` để hiển thị ngày tháng theo định dạng Việt Nam (Ngày/Tháng/Năm).
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Quá trình lấy danh sách đơn hàng.
+ *    - Quá trình cập nhật trạng thái (Sử dụng Redux Thunk).
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Chú ý phần `order.orderItems?.map`: Dấu `?.` cực kỳ quan trọng để tránh lỗi ứng dụng bị "văng" nếu một đơn hàng cũ bị thiếu dữ liệu sản phẩm.
+ *    - Link `👁️`: Dẫn sang trang Chi tiết đơn hàng để Admin xem được địa chỉ giao hàng và số điện thoại khách.
  */
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { fetchAllOrders, updateOrderStatus, deleteOrder } from '../adminSLice/adminSlice';
+import { fetchAllOrders, updateOrderStatus } from '../adminSLice/adminSlice';
 import '../styles/OrdersManagement.css';
 
 /**
@@ -84,17 +90,6 @@ function OrdersManagement() {
         }
     };
 
-    // Xử lý xóa đơn hàng
-    const handleDelete = async (id) => {
-        if (window.confirm('Bạn có chắc muốn xóa đơn hàng này?')) {
-            try {
-                await dispatch(deleteOrder(id)).unwrap();
-                toast.success('Xóa đơn hàng thành công!');
-            } catch (err) {
-                toast.error(err || 'Xóa đơn hàng thất bại');
-            }
-        }
-    };
 
     // Filter orders
     const filteredOrders = orders?.filter(order => {
@@ -220,6 +215,11 @@ function OrdersManagement() {
                                             <option value="Đã giao">Đã giao</option>
                                             <option value="Đã hủy">Đã hủy</option>
                                         </select>
+                                        {order.orderStatus === 'Đã hủy' && order.cancellationReason && (
+                                            <div className="cancel-reason-hint" title={order.cancellationReason}>
+                                                Lý do: {order.cancellationReason.slice(0, 15)}{order.cancellationReason.length > 15 ? '...' : ''}
+                                            </div>
+                                        )}
                                     </td>
                                     <td>{new Date(order.createdAt).toLocaleDateString('vi-VN')}</td>
                                     <td>
@@ -227,13 +227,7 @@ function OrdersManagement() {
                                             <Link to={`/order/${order._id}`} className="btn-view" title="Xem">
                                                 👁️
                                             </Link>
-                                            <button
-                                                className="btn-delete"
-                                                onClick={() => handleDelete(order._id)}
-                                                title="Xóa"
-                                            >
-                                                🗑️
-                                            </button>
+
                                         </div>
                                     </td>
                                 </tr>

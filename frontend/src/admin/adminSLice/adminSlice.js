@@ -1,39 +1,56 @@
 /**
- * ============================================================================
- * COMPONENT: adminSlice
- * ============================================================================
- * 1. Component là gì: 
- *    - Đảm nhiệm vai trò hiển thị và xử lý logic cho vùng phần tử `adminSlice` trong ứng dụng.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là file Mảnh quản lý trạng thái Quản trị (Admin Redux Slice).
  * 
- * 2. Props: 
- *    - Không nhận trực tiếp props truyền từ cha.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Đóng vai trò là "Trung tâm điều khiển" (Command Center) cho các tính năng dành riêng cho Admin.
+ *    - Quản lý dữ liệu Thống kê (Dashboard), Danh sách Sản phẩm, Đơn hàng, Người dùng và Cấu hình hệ thống (Settings).
+ *    - Hỗ trợ các tác vụ phức tạp như: Import sản phẩm từ Excel, Kiểm tra tồn kho hàng loạt, Tìm kiếm sản phẩm nâng cao.
  * 
- * 3. State:
- *    - Không sử dụng state (Stateless component).
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Quản trị (Back-office / Admin Management Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi component cha re-render.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - `createAsyncThunk`: Xử lý hàng chục tác vụ bất đồng bộ liên quan đến CRUD (Create, Read, Update, Delete) trên Server.
+ *    - Optimistic Updates (Cập nhật lạc quan): Tự động cập nhật mảng `products` hoặc `orders` ngay trong Slice sau khi API thành công mà không cần tải lại toàn bộ trang.
+ *    - Excel/CSV Data Handling: Xử lý mảng dữ liệu lớn gửi từ Frontend lên để thực hiện Import hàng loạt.
+ *    - Multi-case Handling: Một Slice duy nhất nhưng xử lý rất nhiều thực thể khác nhau (Products, Orders, Users, Stats).
  * 
- * 5. Event handling:
- *    - Không có event controls phức tạp.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Dữ liệu từ các form Admin (Thông tin sản phẩm, file Excel, trạng thái đơn hàng...).
+ *    - Output: Một State phình to chứa toàn bộ "vũ trụ" dữ liệu của trang Admin.
  * 
- * 6. Conditional rendering:
- *    - Sử dụng toán tử 3 ngôi (? :) hoặc `&&` để ẩn/hiện element hoặc component.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `stats`: Chứa các con số tổng quan (Doanh thu, số lượng đơn, số lượng khách).
+ *    - `products/orders/users`: Các mảng chứa danh sách đối tượng tương ứng.
+ *    - `importResult`: Lưu thông báo kết quả sau khi thực hiện Import Excel (số dòng thành công, số dòng lỗi).
+ *    - `loading`: Trạng thái xử lý chung cho toàn bộ trang Dashboard Admin.
  * 
- * 7. List rendering:
- *    - Không sử dụng list rendering.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `fetchDashboardStats`: Lấy dữ liệu biểu đồ và thống kê tổng hợp.
+ *    - `importProducts/importStock`: Bộ đôi xử lý file Excel cực kỳ quan trọng cho khâu vận hành.
+ *    - `updateOrderStatus/updateUserRole`: Các hàm thay đổi trạng thái thực thể.
+ *    - `searchAdminProducts`: Công cụ tìm kiếm sản phẩm nhanh theo tên dành cho Admin.
  * 
- * 8. Controlled input:
- *    - Không chứa form controls.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Admin thực hiện một hành động (VD: Xóa sản phẩm).
+ *    - Bước 2: Dispatch `deleteProduct(id)`.
+ *    - Bước 3: Slice gọi API Server -> DB xóa bản ghi -> Trả về ID vừa xóa.
+ *    - Bước 4: Slice dùng ID đó lọc (filter) mảng `products` hiện tại để xóa đi phần tử đó mà không cần load lại trang.
  * 
- * 9. Lifting state up:
- *    - Dữ liệu được quản lý cục bộ hoặc đẩy lên Redux store toàn cục.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Admin UI -> Dispatch Thunk -> Axios -> Admin Controllers (Backend) -> MongoDB -> Response -> Slice Update.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Component Mount -> Chỉ mount giao diện thuần và nhận Props.
- *    - (2) Nhận State/Props và render UI ban đầu.
- *    - (3) End-User tương tác trên component -> Cập nhật State -> Re-render màn hình.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Phân quyền: Toàn bộ API gọi từ file này đều được Backend bảo vệ bằng middleware `authorizeRoles('admin')`.
+ *    - Validate: Xử lý thông báo lỗi chi tiết khi Admin nhập sai định dạng sản phẩm hoặc file Excel không hợp lệ.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Sử dụng `createAsyncThunk` cho toàn bộ các chức năng tương tác dữ liệu.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Chú ý hàm `importProducts.fulfilled`: Đây là nơi logic "Merging" diễn ra (Cập nhật nếu có rồi, thêm mới nếu chưa có).
+ *    - File này rất dài vì nó gom nhiều tính năng Admin vào một nơi để dễ quản lý "Phân vùng dữ liệu Admin".
  */
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../api/http.js';
@@ -327,18 +344,19 @@ export const updateUserRole = createAsyncThunk(
 );
 
 /**
- * Async Thunk - Xóa user
+ * Async Thunk - Toggle user status (Khóa/Mở khóa tài khoản)
  */
-export const deleteUser = createAsyncThunk(
-    'admin/deleteUser',
-    async (id, { rejectWithValue }) => {
+export const toggleUserStatus = createAsyncThunk(
+    'admin/toggleUserStatus',
+    async ({ id, reason }, { rejectWithValue }) => {
         try {
-            await axios.delete(`/api/v1/admin/users/${id}`, {
-                withCredentials: true
-            });
-            return id;
+            const { data } = await axios.put(`/api/v1/admin/users/${id}/toggle-status`,
+                { reason },
+                { withCredentials: true }
+            );
+            return data.user;
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Không thể xóa user');
+            return rejectWithValue(error.response?.data?.message || 'Không thể thay đổi trạng thái tài khoản');
         }
     }
 );
@@ -635,16 +653,19 @@ const adminSlice = createSlice({
                 state.error = action.payload;
             });
 
-        // Delete User
+        // Toggle User Status (Soft Delete / Reactivate)
         builder
-            .addCase(deleteUser.pending, (state) => {
+            .addCase(toggleUserStatus.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(deleteUser.fulfilled, (state, action) => {
+            .addCase(toggleUserStatus.fulfilled, (state, action) => {
                 state.loading = false;
-                state.users = state.users.filter(u => u._id !== action.payload);
+                const index = state.users.findIndex(u => u._id === action.payload._id);
+                if (index !== -1) {
+                    state.users[index] = action.payload;
+                }
             })
-            .addCase(deleteUser.rejected, (state, action) => {
+            .addCase(toggleUserStatus.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             });

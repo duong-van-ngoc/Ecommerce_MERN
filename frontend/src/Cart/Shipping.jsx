@@ -1,45 +1,52 @@
 /**
- * ============================================================================
- * COMPONENT: Shipping
- * ============================================================================
- * 1. Component là gì: 
- *    - Màn hình nhập Thông tin Giao hàng (Bước 1/3 luồng Checkout thanh toán).
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Trang Thông tin Giao hàng (Shipping Information Page).
  * 
- * 2. Props: 
- *    - Không.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Là bước đầu tiên (Step 1/3) trong quy trình Thanh toán (Checkout Flow).
+ *    - Thu thập dữ liệu vận chuyển chính xác: Địa chỉ chi tiết, Tỉnh/Thành, Quận/Huyện, Phường/Xã và Số điện thoại.
+ *    - Tích hợp API địa chính Việt Nam để cung cấp trải nghiệm chọn địa chỉ chuyên nghiệp, hạn chế sai sót nhập liệu.
  * 
- * 3. State:
- *    - Local State (useState):
- *      + `address`, `pinCode`, `phoneNumber`: các state lưu text thông tin cá nhân.
- *      + `provinces`, `districts`, `wards`: mảng dữ liệu hành chính gọi từ API.
- *      + `provinceCode`, `districtCode`, `wardCode`: mã code Tỉnh, Huyện, Phường hiện tại.
- *    - Global State (useSelector): Lấy `shippingInfo` từ Redux Store (nếu người dùng đã nhập trước đó).
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Thanh toán & Đặt hàng (Checkout & Order Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi input textbox/select list bị User chọn thay đổi.
- *    - Khi API trả về dữ liệu các dropdown địa chính.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Cascading Selects (Dropdown phân cấp): Kỹ thuật xử lý các thẻ `<select>` phụ thuộc nhau. Chọn Tỉnh -> Kích hoạt `useEffect` tải Huyện -> Chọn Huyện -> Kích hoạt tải Xã.
+ *    - API Integration: Sử dụng các hàm Service (`getProvinces`, `getDistrictsByProvince`, `getWardsByDistrict`) để tương tác với API địa lý bên ngoài.
+ *    - Redux Persistence: Đọc dữ liệu `shippingInfo` cũ từ Redux Store để tự động điền (Pre-fill) giúp người dùng không phải nhập lại nếu họ lỡ tay F5 trang hoặc quay lại từ bước sau.
+ *    - Data Mapping: Kỹ thuật tìm kiếm tên (Name) từ mã (Code) thông qua hàm `.find()` trước khi lưu dữ liệu, giúp giao diện xác nhận đơn hàng hiển thị được tên Tỉnh/Thành rõ ràng thay vì mã số.
  * 
- * 5. Event handling:
- *    - Hàm `shippingInfoSubmit(e)`: Xử lý Click "Tiếp tục", dispatch thông tin và Navigate tới bước 2.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Các lựa chọn vùng miền và thông tin liên lạc từ khách hàng.
+ *    - Output: Một Object `shippingInfo` hoàn chỉnh lưu vào Redux và chuyển hướng sang bước tiếp theo.
  * 
- * 6. Conditional rendering:
- *    - Các thẻ `<select>` Quận/Phường bị disable nếu chưa chọn cấp cao hơn thông qua biến điều kiện.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `provinces`, `districts`, `wards`: Các mảng dữ liệu hành chính phục vụ việc hiển thị danh sách lựa chọn.
+ *    - `provinceCode`, `districtCode`, `wardCode`: Lưu trữ mã số vùng đang được chọn để làm tham số cho các API cấp dưới.
  * 
- * 7. List rendering:
- *    - Mảng list Provinces, Districts, Wards được `.map` để render ra các `<option>`.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - Bộ 3 `useEffect`: Nòng cốt xử lý logic "Chọn cấp trên, load cấp dưới".
+ *    - `shippingInfoSubmit`: Hàm tổng quát thực hiện Validation (kiểm tra SĐT) và đóng gói dữ liệu cuối cùng.
  * 
- * 8. Controlled input:
- *    - Mọi form box/select list đều binding từ `value={state}` và `onChange={setState}`.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Trang tải lên -> `useEffect` đầu tiên lấy danh sách Tỉnh/Thành toàn quốc.
+ *    - Bước 2: Người dùng chọn Tỉnh -> `useEffect` thứ hai nhạy bén phát hiện sự thay đổi và tải ngay danh sách Quận tương ứng.
+ *    - Bước 3: Người dùng hoàn tất nhập SĐT và Địa chỉ nhà.
+ *    - Bước 4: Nhấn "Tiếp tục" -> Hệ thống map Code thành Name -> Lưu vào Redux -> Chuyển sang `/order/confirm`.
  * 
- * 9. Lifting state up:
- *    - Phân quyền dữ liệu ở mức Redux Global -> Gọi action `saveShippingInfo` pass data vào đó.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - UI -> External Address API (Lấy danh sách vùng) -> UI components.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Vừa Mount `useEffect` -> Fetch API lấy Tỉnh, điền form dựa trên Cache Redux.
- *    - (2) Nếu chọn provinceCode -> Chạy `useEffect` fetch API Huyện. Thao tác tương tự kéo theo Phường.
- *    - (3) Nhấn Tiếp tục -> Validate SDT, Đầy đủ fields -> Áp dụng `saveShippingInfo` gởi gói Object (bao gồm cả name string) vào Redux.
- *    - (4) Điều hướng Router đẩy sang `/order/confirm` (Bước 2/3).
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - `disabled`: Các ô chọn cấp dưới sẽ bị "khóa" nếu cấp trên chưa được chọn, giúp tránh lỗi logic dữ liệu.
+ *    - `activePath={1}`: Truyền vào component `CheckoutPath` để làm sáng bước 1 trên thanh tiến trình.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Toàn bộ quá trình fetch dữ liệu địa lý là bất đồng bộ (Async/Await).
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Cần chú ý logic `setDistrictCode("")` và `setWardCode("")` mỗi khi cấp trên thay đổi. Nếu thiếu cái này, bạn có thể gửi lên một địa chỉ "râu ông nọ chắp cằm bà kia" (Huyện của Tỉnh cũ nhưng lại ở Tỉnh mới).
+ *    - `phoneNumber.length !== 10`: Basic validation đảm bảo số điện thoại Việt Nam hợp lệ.
  */
 import React, { useEffect, useState } from 'react'
 import '../CartStyles/Shipping.css'

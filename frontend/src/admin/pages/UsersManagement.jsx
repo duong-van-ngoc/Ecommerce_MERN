@@ -1,54 +1,19 @@
 /**
- * ============================================================================
- * COMPONENT: UsersManagement
- * ============================================================================
- * 1. Component là gì: 
- *    - View theo dõi Thông tin, Tìm Kiếm, Chỉnh sửa Quyền hạn (Role User/Admin) hoặc Xóa Accounts người dùng.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Trang Quản Lý Người Dùng (Users Management Page).
  * 
- * 2. Props: 
- *    - Component Route Root. Không Props.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Cung cấp cái nhìn tổng quan về tất cả tài khoản khách hàng trên hệ thống.
+ *    - Thực hiện nhiệm vụ quan trọng: Phân quyền (Role Management) và Quản trị trạng thái tài khoản (Khóa/Mở khóa).
+ *    - Sử dụng cơ chế Soft Delete: Tài khoản bị khóa (isActive=false) thay vì xóa vĩnh viễn, bảo toàn dữ liệu đơn hàng.
  * 
- * 3. State:
- *    - Local State: 
- *      + `searchTerm`: Giá trị chuỗi String text search Account box.
- *      + `roleFilter`: Lọc theo Role 'all' | 'user' | 'admin'.
- *    - Global State: List Arrays Accounts `users`, trạng thái Fetch API `loading`.
- * 
- * 4. Render lại khi nào:
- *    - Nhập Text tìm kiếm, thay select Box Filtering.
- *    - Cập nhật Data Database thành công (Load, Sửa Role, Xóa).
- * 
- * 5. Event handling:
- *    - `handleRoleChange`: Thay Quyền User sang Admin (Hoặc ngược lại). Gửi Thunk API trực tiếp Value Select Box.
- *    - `handleDelete`: Fire Dialog Native confirm ròi Call Action Xóa Backend.
- * 
- * 6. Conditional rendering:
- *    - Render `loading-spinner` lúc fetch List.
- *    - List Filter Data rỗng -> In Row thẻ Empty Error Msg.
- *    - Hiện Placeholder text ký tự đầu Tên khi User rỗng avatar (`user.avatar?.url` null).
- * 
- * 7. List rendering:
- *    - Component sử dụng Javascript Map render danh sách List account qua variable `filteredUsers.map`.
- * 
- * 8. Controlled input:
- *    - Hai Filter control `searchTerm` / `roleFilter`.
- *    - Select box Inline Role Dropdown cho Từng người dùng (giá trị binding trực tiếp theo record).
- * 
- * 9. Lifting state up:
- *    - Connect Redux Thunk qua adminSlice cho toàn bộ hành động Load / Edit Role / Delete.
- * 
- * 10. Luồng hoạt động:
- *    - (1) Vừa Mount Trang -> Gọi Dispatch lấy Array `users` data (Thunk).
- *    - (2) Lọc `filteredUsers` từ keyword đang có (Mặc định All).
- *    - (3) Data Flow Render Từng Dòng Table HTML (Kiểm tra từng Avatar có hình hay k để show custom placeholder UI).
- *    - (4) Cập nhật Role inline -> User select Option trên Row, bắn Action API đằng sau mặt UI ngay tức khắc. Báo Toast Done.
- *    - (5) Thao tác Delete (Tương Tự Admin Manage Orders / Products).
- * ============================================================================
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Quản trị Nhân sự & Bảo mật hệ thống (User Identity & Access Management - IAM).
  */
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { fetchAllUsers, updateUserRole, deleteUser } from '../adminSLice/adminSlice';
+import { fetchAllUsers, updateUserRole, toggleUserStatus } from '../adminSLice/adminSlice';
 import UserDetailModal from '../components/UserDetailModal';
 import '../styles/UsersManagement.css';
 
@@ -61,8 +26,11 @@ function UsersManagement() {
     const { users, loading, error } = useSelector(state => state.admin);
     const [searchTerm, setSearchTerm] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
+    const [statusFilter, setStatusFilter] = useState('all');
     const [selectedUser, setSelectedUser] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [lockReasonInput, setLockReasonInput] = useState('');
+    const [showLockModal, setShowLockModal] = useState(null);
 
 
     // Fetch users khi component mount
@@ -87,15 +55,37 @@ function UsersManagement() {
         }
     };
 
-    // Xử lý xóa user
-    const handleDelete = async (id) => {
-        if (window.confirm('Bạn có chắc muốn xóa người dùng này?')) {
-            try {
-                await dispatch(deleteUser(id)).unwrap();
-                toast.success('Xóa người dùng thành công!');
-            } catch (err) {
-                toast.error(err || 'Xóa người dùng thất bại');
+    // Xử lý toggle status (khóa/mở khóa)
+    const handleToggleStatus = async (user) => {
+        if (user.isActive) {
+            // Show lock reason modal before deactivating
+            setShowLockModal(user._id);
+            setLockReasonInput('');
+        } else {
+            // Reactivate directly
+            if (window.confirm(`Bạn có chắc muốn MỞ KHÓA tài khoản "${user.name}"?`)) {
+                try {
+                    await dispatch(toggleUserStatus({ id: user._id })).unwrap();
+                    toast.success('Mở khóa tài khoản thành công!');
+                } catch (err) {
+                    toast.error(err || 'Thao tác thất bại');
+                }
             }
+        }
+    };
+
+    // Confirm lock with reason
+    const handleConfirmLock = async (userId) => {
+        try {
+            await dispatch(toggleUserStatus({
+                id: userId,
+                reason: lockReasonInput || 'Vi phạm chính sách hệ thống'
+            })).unwrap();
+            toast.success('Khóa tài khoản thành công!');
+            setShowLockModal(null);
+            setLockReasonInput('');
+        } catch (err) {
+            toast.error(err || 'Thao tác thất bại');
         }
     };
 
@@ -112,9 +102,14 @@ function UsersManagement() {
             user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.email.toLowerCase().includes(searchTerm.toLowerCase());
 
-        const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+        const userRole = user?.role_id?.name || user?.role;
+        const matchesRole = roleFilter === 'all' || userRole === roleFilter;
 
-        return matchesSearch && matchesRole;
+        const matchesStatus = statusFilter === 'all'
+            || (statusFilter === 'active' && user.isActive !== false)
+            || (statusFilter === 'locked' && user.isActive === false);
+
+        return matchesSearch && matchesRole && matchesStatus;
     });
 
     if (loading) {
@@ -132,7 +127,7 @@ function UsersManagement() {
             <div className="users-header">
                 <div>
                     <h2 className="users-title">Quản Lý Người Dùng</h2>
-                    <p className="users-subtitle">Quản lý tài khoản và quyền người dùng</p>
+                    <p className="users-subtitle">Quản lý tài khoản, quyền hạn và trạng thái người dùng</p>
                 </div>
             </div>
 
@@ -155,6 +150,15 @@ function UsersManagement() {
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
                 </select>
+                <select
+                    className="status-filter"
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                    <option value="all">Tất cả trạng thái</option>
+                    <option value="active">🟢 Hoạt động</option>
+                    <option value="locked">🔴 Bị khóa</option>
+                </select>
             </div>
 
             {/* Users Table */}
@@ -164,6 +168,7 @@ function UsersManagement() {
                         <tr>
                             <th>Người Dùng</th>
                             <th>Quyền</th>
+                            <th>Trạng Thái</th>
                             <th>Ngày Tham Gia</th>
                             <th>Hành Động</th>
                         </tr>
@@ -171,7 +176,7 @@ function UsersManagement() {
                     <tbody>
                         {filteredUsers && filteredUsers.length > 0 ? (
                             filteredUsers.map((user) => (
-                                <tr key={user._id}>
+                                <tr key={user._id} className={user.isActive === false ? 'row-locked' : ''}>
                                     <td>
                                         <div className="user-info">
                                             <div className="user-avatar">
@@ -191,13 +196,18 @@ function UsersManagement() {
                                     </td>
                                     <td>
                                         <select
-                                            className={`role-select ${user.role === 'admin' ? 'role-admin' : 'role-user'}`}
-                                            value={user.role}
+                                            className={`role-select ${(user?.role_id?.name || user?.role) === 'admin' ? 'role-admin' : 'role-user'}`}
+                                            value={user?.role_id?.name || user?.role}
                                             onChange={(e) => handleRoleChange(user._id, e.target.value)}
                                         >
                                             <option value="user">User</option>
                                             <option value="admin">Admin</option>
                                         </select>
+                                    </td>
+                                    <td>
+                                        <span className={`status-badge ${user.isActive === false ? 'status-locked' : 'status-active'}`}>
+                                            {user.isActive === false ? '🔒 Bị vô hiệu hóa' : '✅ Hoạt động'}
+                                        </span>
                                     </td>
                                     <td>{new Date(user.createdAt).toLocaleDateString('vi-VN')}</td>
                                     <td>
@@ -210,11 +220,11 @@ function UsersManagement() {
                                                 👁️
                                             </button>
                                             <button
-                                                className="btn-delete"
-                                                onClick={() => handleDelete(user._id)}
-                                                title="Xóa"
+                                                className={`btn-toggle-status ${user.isActive === false ? 'btn-unlock' : 'btn-lock'}`}
+                                                onClick={() => handleToggleStatus(user)}
+                                                title={user.isActive === false ? 'Mở khóa' : 'Khóa tài khoản'}
                                             >
-                                                🗑️
+                                                {user.isActive === false ? '🔓' : '🔒'}
                                             </button>
                                         </div>
                                     </td>
@@ -223,7 +233,7 @@ function UsersManagement() {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="4" className="no-users">
+                                <td colSpan="5" className="no-users">
                                     Không tìm thấy người dùng nào
                                 </td>
                             </tr>
@@ -231,6 +241,37 @@ function UsersManagement() {
                     </tbody>
                 </table>
             </div>
+
+            {/* Lock Reason Modal */}
+            {showLockModal && (
+                <div className="lock-modal-overlay" onClick={() => setShowLockModal(null)}>
+                    <div className="lock-modal" onClick={(e) => e.stopPropagation()}>
+                        <h3>🔒 Khóa tài khoản</h3>
+                        <p>Nhập lý do khóa tài khoản (tùy chọn):</p>
+                        <textarea
+                            className="lock-reason-input"
+                            value={lockReasonInput}
+                            onChange={(e) => setLockReasonInput(e.target.value)}
+                            placeholder="Ví dụ: Vi phạm chính sách, spam, v.v..."
+                            rows={3}
+                        />
+                        <div className="lock-modal-actions">
+                            <button
+                                className="btn-confirm-lock"
+                                onClick={() => handleConfirmLock(showLockModal)}
+                            >
+                                Xác nhận khóa
+                            </button>
+                            <button
+                                className="btn-cancel-lock"
+                                onClick={() => setShowLockModal(null)}
+                            >
+                                Hủy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Modal chi tiết người dùng */}
             <UserDetailModal 

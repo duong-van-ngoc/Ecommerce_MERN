@@ -1,3 +1,59 @@
+/**
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Bong Bóng Chat AI (Tobi AI Chatbot).
+ * 
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Là một trợ lý ảo thông minh (AI Stylist) giúp tư vấn phong cách, tìm kiếm sản phẩm và giải đáp thắc mắc của khách hàng.
+ *    - Tích hợp trực tiếp với Google Gemini API (thông qua Backend) để cung cấp phản hồi theo thời gian thực.
+ *    - Hỗ trợ các hành động nhanh (Quick Actions) như "Thêm vào giỏ hàng" ngay trong nội dung chat.
+ * 
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Hỗ trợ Khách hàng & Trí tuệ Nhân tạo (AI Customer Support Flow).
+ * 
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Persistent Chat History: Sử dụng `localStorage` để lưu trữ lịch sử tin nhắn và `sessionId`. Điều này giúp cuộc hội thoại không bị mất đi khi người dùng F5 trang web.
+ *    - Markdown Rendering: Sử dụng `react-markdown` để hiển thị nội dung phản hồi từ AI (vốn thường ở định dạng Markdown), giúp trình bày văn bản, hình ảnh và danh sách một cách đẹp mắt.
+ *    - Custom Link Interception: Kỹ thuật can thiệp vào các đường link trong Markdown. Nếu AI trả về một link có cấu trúc `cart/add/ID`, component sẽ biến nó thành một nút "Thêm vào giỏ hàng" có logic Redux thay vì một link web thông thường.
+ *    - Framer Motion / CSS Glassmorphism: Sử dụng kỹ thuật làm mờ hậu cảnh (Backdrop Blur) và các hiệu ứng bóng đổ (Shadows) để tạo giao diện Chatbot trông cực kỳ cao cấp và hiện đại.
+ *    - Auto-scroll to Bottom: Sử dụng `useRef` kết hợp với `scrollIntoView` trong `useEffect` để luôn tự động cuộn xuống tin nhắn mới nhất.
+ * 
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Tin nhắn từ người dùng, dữ liệu cá nhân từ Redux (username) và phản hồi từ API Gemini.
+ *    - Output: Giao diện khung Chat nổi (Floating Chat UI) và các tin nhắn được định dạng đẹp.
+ * 
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `isOpen`: Trạng thái đóng/mở khung chat.
+ *    - `messages`: Mảng chứa toàn bộ lịch sử trò chuyện (Role: user/bot).
+ *    - `input`: Lưu nội dung người dùng đang gõ.
+ *    - `loading`: Trạng thái đợi AI suy nghĩ (hiển thị hiệu ứng ba dấu chấm nhấp nháy).
+ *    - `sessionId`: Định danh cuộc hội thoại để AI giữ được ngữ cảnh (Context).
+ * 
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `handleSendMessage`: Gửi tin nhắn lên Server, nhận phản hồi và cập nhật UI.
+ *    - `clearChat`: Xóa sạch lịch sử hội thoại trong bộ nhớ trình duyệt.
+ *    - `scrollToBottom`: Đảm bảo người dùng luôn nhìn thấy tin nhắn mới nhất.
+ * 
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Người dùng mở bong bóng chat -> Tobi chào hỏi cá nhân hóa theo tên.
+ *    - Bước 2: Người dùng gõ câu hỏi -> Nhấn gửi -> Tin nhắn user hiện lên ngay lập tức.
+ *    - Bước 3: Gọi API Backend -> Backend gọi Gemini -> Nhận phản hồi.
+ *    - Bước 4: Tobi "gõ" câu trả lời -> Render Markdown -> Hiện nút "Thêm vào giỏ" nếu AI gợi ý sản phẩm.
+ * 
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Request: `POST /api/v1/ai/chat` kèm `message`, `sessionId`, `userName`.
+ *    - Response: Chuỗi văn bản (String) chứa câu trả lời của AI.
+ * 
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Personalized Greeting: Lấy tên người dùng từ Redux để chào hỏi (Chào Dương!, Chào Ngọc!...).
+ *    - Action Buttons: Chỉ hiển thị các nút gợi ý nhanh ở đầu cuộc hội thoại.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Toàn bộ quá trình gọi API qua Axios là bất đồng bộ (`async/await`).
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Chú ý phần `styles`: Toàn bộ CSS được viết dưới dạng Template String để giữ cho component đóng gói hoàn chỉnh (Self-contained).
+ *    - Cơ chế "Add to Cart": Đây là điểm chạm quan trọng kết nối AI với doanh thu. Nếu muốn thay đổi cách thêm hàng, hãy tìm hàm xử lý `components.a` trong `ReactMarkdown`.
+ */
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';

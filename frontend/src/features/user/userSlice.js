@@ -1,39 +1,55 @@
 /**
- * ============================================================================
- * COMPONENT: userSlice
- * ============================================================================
- * 1. Component là gì: 
- *    - Đảm nhiệm vai trò hiển thị và xử lý logic cho vùng phần tử `userSlice` trong ứng dụng.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là file Mảnh quản lý trạng thái Người dùng (User Redux Slice).
  * 
- * 2. Props: 
- *    - Không nhận trực tiếp props truyền từ cha.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Quản lý toàn bộ vòng đời của người dùng trên Frontend: Từ Đăng ký, Đăng nhập cho đến Cập nhật hồ sơ và Đăng xuất.
+ *    - Duy trì trạng thái xác thực (`isAuthenticated`) và thông tin cá nhân (`user`) để các Component khác (như Header, Profile) có thể sử dụng.
+ *    - Tự động hóa việc lưu trữ và xóa thông tin phiên đăng nhập trong LocalStorage của trình duyệt.
  * 
- * 3. State:
- *    - Không sử dụng state (Stateless component).
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Xác thực (Authentication) & Quản lý Tài khoản (User Management Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi component cha re-render.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - `createAsyncThunk`: Kỹ thuật xử lý các tác vụ bất đồng bộ (gọi API) trong Redux Toolkit. Nó tự động tạo ra 3 trạng thái: `pending` (đang chờ), `fulfilled` (thành công) và `rejected` (thất bại).
+ *    - `createSlice`: Hàm gom nhóm các Reducers và Actions liên quan đến một đối tượng duy nhất (ở đây là User).
+ *    - LocalStorage Persistence: Thủ thuật lưu dữ liệu vào bộ nhớ trình duyệt để người dùng không bị mất trạng thái đăng nhập khi nhấn F5 (Refresh).
+ *    - Axios Interceptor: Sử dụng instance axios tùy chỉnh để tự động đính kèm Token/Header cần thiết.
  * 
- * 5. Event handling:
- *    - Không có event controls phức tạp.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Thông tin đăng nhập/đăng ký từ các Form ở giao diện.
+ *    - Output: Trạng thái User toàn cục (Object User, trạng thái Loading, thông báo Lỗi).
  * 
- * 6. Conditional rendering:
- *    - Sử dụng toán tử 3 ngôi (? :) hoặc `&&` để ẩn/hiện element hoặc component.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `user`: Chứa toàn bộ thông tin tài khoản (Tên, Email, Ảnh đại diện, Role).
+ *    - `isAuthenticated`: Biến logic quan trọng để quyết định xem User có được vào các trang "Protected" hay không.
+ *    - `loading`: Dùng để hiển thị các biểu tượng xoay (Spinner) khi đang chờ API phản hồi.
  * 
- * 7. List rendering:
- *    - Không sử dụng list rendering.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `register/login/logout`: Bộ ba nguyên tử quản lý phiên làm việc.
+ *    - `loaderUser`: Hàm "thần thánh" tự động lấy lại thông tin Profile khi người dùng quay lại trang web (dùng Token từ Cookie/Local).
+ *    - `updateProfile/updatePassword`: Các hàm chỉnh sửa thông tin cá nhân.
+ *    - `persistAuthState`: Helper lưu trạng thái Auth vào bộ nhớ máy tính người dùng.
  * 
- * 8. Controlled input:
- *    - Không chứa form controls.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Component gọi `dispatch(login)`.
+ *    - Bước 2: `createAsyncThunk` chuyển sang trạng thái `pending` (Loading bắt đầu).
+ *    - Bước 3: Gọi API Backend thông qua Axios.
+ *    - Bước 4: Backend trả về dữ liệu -> Chạy vào `fulfilled` -> Lưu vào Redux + LocalStorage.
  * 
- * 9. Lifting state up:
- *    - Dữ liệu được quản lý cục bộ hoặc đẩy lên Redux store toàn cục.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Component -> Dispatch -> Thunk -> Axios -> Backend API -> MongoDB -> Trả kết quả về Slice -> Cập nhật UI.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Component Mount -> Chỉ mount giao diện thuần và nhận Props.
- *    - (2) Nhận State/Props và render UI ban đầu.
- *    - (3) End-User tương tác trên component -> Cập nhật State -> Re-render màn hình.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Xử lý mã lỗi 401 (Hết hạn login): Tự động xóa sạch LocalStorage (`clearAuthState`) để bảo mật.
+ *    - Phân loại lỗi: Phân biệt lỗi do mạng, lỗi do sai mật khẩu để hiển thị thông báo chính xác cho người dùng.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Sử dụng `createAsyncThunk` kết hợp với `async/await` cho toàn bộ các chức năng gọi API.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Lưu ý về `Content-Type`: Khi đăng ký hoặc cập nhật ảnh đại diện, ta dùng `multipart/form-data`, còn đăng nhập thông thường dùng `application/json`.
+ *    - Đây là file "nhạy cảm" về bảo mật, hãy cẩn thận khi thay đổi cách lưu Token hoặc các hàm xóa trạng thái đăng nhập.
  */
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from '../../api/http.js'

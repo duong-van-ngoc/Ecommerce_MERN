@@ -1,39 +1,50 @@
 /**
- * ============================================================================
- * COMPONENT: Vouchers
- * ============================================================================
- * 1. Component là gì: 
- *    - Đảm nhiệm vai trò hiển thị và xử lý logic cho vùng phần tử `Vouchers` trong ứng dụng.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component "Kho Voucher / Mã giảm giá" (Vouchers / Coupon Wallet).
  * 
- * 2. Props: 
- *    - Không nhận trực tiếp props truyền từ cha.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Quản lý và hiển thị danh sách các mã ưu đãi dành cho người dùng.
+ *    - Hỗ trợ phân loại mã linh hoạt: Mã Freeship, Mã giảm giá tiền mặt, Mã độc quyền từ Shop.
+ *    - Cung cấp trạng thái trực quan: Mã nào đã lưu, tiến độ sử dụng mã (còn bao nhiêu %).
  * 
- * 3. State:
- *    - Local State (quản lý nội bộ qua useState).
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Khuyến mãi & Tiết kiệm người dùng (Marketing & User Savings Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi Local State thay đổi.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - State-based Filtering (Tabs): Kỹ thuật sử dụng một biến `activeTab` để thay đổi tập dữ liệu hiển thị mà không cần tải lại trang.
+ *    - Visual Feedback (Progress Bar): Sử dụng CSS động (`style={{ width: ... }}`) để vẽ thanh tiến độ lượng voucher còn lại.
+ *    - Component Styling Logic: Áp dụng class `.saved` để thay đổi màu sắc và nội dung nút bấm dựa trên trạng thái của Voucher.
+ *    - Multi-category UI: Thiết kế bố cục thẻ Voucher chuyên nghiệp với icon và thông tin điều kiện áp dụng rõ ràng.
  * 
- * 5. Event handling:
- *    - Có tương tác sự kiện (onClick, onChange, onSubmit...).
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Danh sách `mockVouchers` (dữ liệu mẫu đại diện cho dữ liệu từ Database).
+ *    - Output: Giao diện ví voucher phân loại theo nhu cầu người dùng.
  * 
- * 6. Conditional rendering:
- *    - Sử dụng toán tử 3 ngôi (? :) hoặc `&&` để ẩn/hiện element hoặc component.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `activeTab`: Quyết định danh mục voucher nào đang được tiêu điểm (Freeship, Shop, v.v.).
  * 
- * 7. List rendering:
- *    - Sử dụng `.map()` để render danh sách elements.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `setActiveTab`: Cập nhật bộ lọc khi người dùng click vào các thanh phân loại ở trên cùng.
+ *    - `filteredVouchers`: Mảng kết quả sau khi "sàng lọc" từ danh sách tổng dựa trên tiêu chí `type`.
  * 
- * 8. Controlled input:
- *    - Không chứa form controls.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Người dùng mở trang Kho Voucher -> `activeTab` mặc định là "all".
+ *    - Bước 2: Nhấn vào tab "Miễn phí vận chuyển" -> `activeTab` cập nhật -> Logic lọc mảng chạy.
+ *    - Bước 3: UI re-render, chỉ hiện các thẻ voucher có `type === 'freeship'`.
+ *    - Bước 4: Click "Lưu" -> Cập nhật trạng thái `saved` (logic này hiện đang để ở UI tĩnh).
  * 
- * 9. Lifting state up:
- *    - Dữ liệu được quản lý cục bộ hoặc đẩy lên Redux store toàn cục.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - (Dự kiến) UI -> GET /api/v1/vouchers -> MongoDB -> Response. Hiện đang dùng dữ liệu Mock.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Component Mount -> Chỉ mount giao diện thuần và nhận Props.
- *    - (2) Nhận State/Props và render UI ban đầu.
- *    - (3) End-User tương tác trên component -> Cập nhật State -> Re-render màn hình.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Check mảng rỗng: Nếu lọc không ra kết quả, hiển thị ảnh minh họa "Không có voucher nào".
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Hiện tại file này thuần Logic UI đồng bộ.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Chú ý phần thiết kế `voucher-card`: Đây là một thiết kế đặc thù trong E-commerce, cần giữ đúng cấu trúc để hiển thị đẹp mắt trên cả Mobile và Desktop.
+ *    - `AccountSidebar` cũng được tích hợp để đảm bảo người dùng có thể nhảy nhanh sang các mục quản lý tài khoản khác.
  */
 import React, { useState } from "react";
 import AccountSidebar from "../components/AccountSidebar";

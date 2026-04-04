@@ -1,52 +1,60 @@
 /**
- * ============================================================================
- * COMPONENT: ImportProductModal
- * ============================================================================
- * 1. Component là gì: 
- *    - Hộp Modal Popup chứa logic để load, parse, validate file Excel hoặc CSV để Import hàng loạt Sản phẩm.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Cửa Sổ Nhập Sản Phẩm Hàng Loạt (Import Product Modal).
  * 
- * 2. Props: 
- *    - `onClose` (function): Trigger đóng Modal trên parent UI.
- *    - `onImportSuccess` (function): Callback gọi lại cho trang Cha khi import xong để trigger fetch list mới.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Giải quyết bài toán "nhập liệu quy mô lớn". Thay vì Admin phải gõ tay từng sản phẩm, họ chỉ cần chuẩn bị một file Excel/CSV và tải lên.
+ *    - Đóng vai trò là một "bộ lọc" thông minh: Kiểm tra lỗi định dạng, kiểm tra trùng lặp SKU và cho phép Admin chọn cách xử lý (Cộng dồn kho hay Ghi đè dữ liệu).
  * 
- * 3. State:
- *    - Local State (useState):
- *      + `previewData`: Array JSON parser preview từ Excel.
- *      + `fileName`: Tên file gốc đang xử lý.
- *      + `validationErrors`: Array obj chỉ rõ các lỗi parse sheet (sai category, ko có giá v.v.).
- *    - Global State (useSelector/useDispatch): Handle cờ `loading` của AdminSlice để disable Button.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Quản trị Dữ liệu Hàng hóa (Product Catalog Management) - Nhánh Xử lý hàng loạt (Batch Processing).
  * 
- * 4. Render lại khi nào:
- *    - Read file xong list table/error xuất hiện. Đổi valid array/thêm array error.
- *    - Global State `loading` API.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - SheetJS (XLSX Library): Thư viện hàng đầu để thao tác với file Excel trong JavaScript. Dùng để chuyển đổi từ file Binary sang mảng JSON (`sheet_to_json`).
+ *    - Smart Header Detection: Hàm `findHeaderRow` tự động lùng sục trong 20 dòng đầu của file Excel để tìm dòng chứa tiêu đề (Name, SKU...). Kỹ thuật này giúp hệ thống linh hoạt, chấp nhận cả những file Excel có vài dòng ghi chú ở đầu trang.
+ *    - SKU Pre-check Mechanism: Trước khi Import, hệ thống gửi toàn bộ SKU lên Server để "soi" xem cái nào có rồi, cái nào chưa. Đây là bước cực kỳ quan trọng để tránh tạo ra dữ liệu rác hoặc ghi đè nhầm hàng hóa.
+ *    - Validation Logic: Kiểm tra tính hợp lệ của từng dòng (Giá phải là số > 0, Kho không được âm, thiếu trường bắt buộc...). Trả về danh sách lỗi chi tiết kèm số dòng để Admin dễ dàng sửa lại file.
+ *    - Bulk Update Strategies: Cung cấp 3 chế độ cho sản phẩm đã tồn tại: 
+ *      + Accumulate: Cộng dồn số lượng vào kho cũ.
+ *      + Overwrite: Xóa thông tin cũ, thay bằng thông tin mới từ file.
+ *      + Skip: Giữ nguyên sản phẩm cũ, không làm gì cả.
+ *    - FileReader API: Đọc nội dung file từ máy tính người dùng dưới dạng `ArrayBuffer` để xử lý bất đồng bộ.
  * 
- * 5. Event handling:
- *    - `handleFileChange`: Chọn file đẩy vào luồng FileReader + XLSX sheet_to_json().
- *    - `handleImport`: Filter bỏ row lỗi, Map danh sách hợp lệ và `dispatch(importProducts)`.
- *    - `handleDownloadTemplate`: Parse Array Template mẫu JSON ra dạng Book của XLSX -> Tải file mẫu xuống client duyệt.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: File `.xlsx`, `.xls`, hoặc `.csv` từ máy tính Admin.
+ *    - Output: Một Request "Bulk Import" được gửi lên Backend để cập nhật hàng loạt hàng nghìn sản phẩm cùng lúc.
  * 
- * 6. Conditional rendering:
- *    - Thay label hiển thị drop file (Trống / Có chứa Tên file tải lên).
- *    - Thẻ Bảng / Thẻ Báo lỗi validation ẩn hiện dựa vào lengh Data mảng state chứa row.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `previewData`: "Bản nháp" dữ liệu sau khi parse, dùng để hiển thị lên bảng cho Admin kiểm tra trước khi bấm nút chốt.
+ *    - `validationErrors`: "Danh sách đen" các dòng bị lỗi định dạng.
+ *    - `fileName`: Lưu tên file để hiển thị lên UI, tạo cảm giác thân thiện.
  * 
- * 7. List rendering:
- *    - `previewData.slice(0, 50).map`: Hiển thị 50 dòng Preview từ dữ liệu Import vào Table UI.
- *    - `validationErrors.slice(0, 10).map`: Hiển thị top 10 dòng Error cần sửa.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `handleFileChange`: Trái tim của quá trình đọc file. Thực hiện Parse -> Map trường -> Validate -> Pre-check trùng lặp.
+ *    - `handleImport`: Gom tất cả các dòng hợp lệ (valid) và gửi API.
+ *    - `handleDownloadTemplate`: Tạo và tải xuống file Excel mẫu chuẩn 2024 (bao gồm cả các trường AI Stylist cho Admin).
  * 
- * 8. Controlled input:
- *    - Ref thẻ nhập ảo `<input type='file'>` dạng hidden, click by `fileInputRef`.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Admin tải file mẫu -> Điền dữ liệu sản phẩm.
+ *    - Bước 2: Tải file lên -> Hệ thống Parse ra Table Preview.
+ *    - Bước 3: Nhìn bảng Preview: Dòng đỏ là lỗi (cần sửa file), dòng vàng là đã có (chọn chế độ cập nhật), dòng xanh là mới tinh.
+ *    - Bước 4: Admin chọn "Cộng dồn" cho các SP cũ -> Bấm "Import" -> Kết thúc.
  * 
- * 9. Lifting state up:
- *    - Hàm `importProducts()` thunk đẩy Array Items Valid lên Endpoint Database Bulk POST Backend.
- *    - Callback `onImportSuccess()` trigger chọc Cha fetch list.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Request 1 (Pre-check): `POST /api/v1/admin/products/import-precheck` (Gửi mảng SKU).
+ *    - Request 2 (Bulk Import): `POST /api/v1/admin/products/import` (Gửi mảng Data khổng lồ).
  * 
- * 10. Luồng hoạt động:
- *    - (1) User mở Modal. Chọn File Button / Input hidden trigger click.
- *    - (2) `handleFileChange`: FileReader đọc Text bin -> SheetJS parser Array Buffer -> Extract JSON.
- *    - (3) Hàm `findHeaderRow` quét tìm Header Line (Row nào chứa Keyword Header). Validate Required Fields -> Lưu row lỗi array riêng, save preview object array tổng.
- *    - (4) UI Preview re-render có dòng Xanh (Tick), dòng Đỏ (error list message) bôi đen.
- *    - (5) User click [Import n Sản Phẩm]. File list đi Filter bỏ lỗi -> Đẩy API Thunk. Nếu Success -> Update Redux store, hiện Toaster success. Trigger `onClose`.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Preview Table: Hiển thị tối đa 50 dòng đầu để tránh làm đơ trình duyệt nếu file có hàng vạn sản phẩm.
+ *    - Import Button: Bị disable nếu file không có dòng nào hợp lệ (`validCount === 0`).
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Đọc file (`reader.onload`).
+ *    - Các lời gọi API `unwrap()` để check SKU và thực hiện Import.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - File này xử lý dữ liệu thô từ Excel, nên việc "Mapping" tiêu đề cột là cực kỳ nhạy cảm. Lưu ý mảng `REQUIRED_FIELDS` và các biến thể của tên cột (ví dụ: 'name' hay 'Tên sản phẩm' đều phải được hiểu là một).
+ *    - Chế độ `accumulate` (Cộng dồn) là tính năng cực kỳ hữu ích cho các đợt nhập thêm hàng mới về kho.
  */
 import React, { useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';

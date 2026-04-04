@@ -1,46 +1,59 @@
 /**
- * ============================================================================
- * COMPONENT: Dashboard
- * ============================================================================
- * 1. Component là gì: 
- *    - Trang chủ Bảng điều khiển (Dashboard) của Admin, hiển thị các thống kê tổng quan (Doanh thu, Đơn hàng, Người dùng) và danh sách Đơn hàng mới nhất.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Trang Bảng Điều Khiển Tổng Quan (Admin Dashboard Page).
  * 
- * 2. Props: 
- *    - Không Props. Nhận data từ Store Redux.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Là "bộ não" tóm tắt toàn bộ hoạt động kinh doanh của cửa hàng.
+ *    - Giúp Admin nắm bắt nhanh các con số sống còn: Tổng doanh thu, số lượng đơn hàng và số người dùng mới.
+ *    - Cung cấp danh sách các đơn hàng mới nhất để Admin có thể ưu tiên xử lý ngay lập tức.
+ *    - Tích hợp báo cáo thông minh từ AI Stylist để tối ưu hóa dữ liệu sản phẩm.
  * 
- * 3. State:
- *    - Global State (useSelector): 
- *      + `user`, `isAuthenticated` từ userSlice (Để check Role Admin).
- *      + `stats` (Tổng quan 4 card Thống kê), `recentOrders` (Mảng 5 đơn hàng gần nhất), `loading`, `error` từ adminSlice.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Quản trị & Thống kê Kinh doanh (Admin Dashboard & Business Analytics Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi lấy xong dữ liệu API Thống kê và Redux Store cập nhật các state `stats`, `recentOrders`, `loading`.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Redux Thunk Orchestration: Sử dụng `useEffect` để kích hoạt một loạt các Action bất đồng bộ (`fetchDashboardStats`, `fetchRecentOrders`,...) ngay khi trang vừa tải xong.
+ *    - Advanced PDF Exporting: Kỹ thuật xuất báo cáo PDF chuyên nghiệp từ giao diện web. Sử dụng `html-to-image` để chụp ảnh màn hình chất lượng cao và `jsPDF` để tự động phân phối ảnh đó vào các trang A4.
+ *    - Dynamic CSS Styling for Printing: Trước khi xuất PDF, mã nguồn sẽ "tiêm" thêm CSS tạm thời vào trang web để ẩn đi các nút bấm thừa (`no-print`), xóa thanh cuộn và cố định màu nền trắng cho bản in đẹp nhất.
+ *    - Conditional Rendering Guard: Thực hiện kiểm tra quyền truy cập 2 lớp (Authentication & Role) ngay tại đầu trang. Nếu không phải Admin, người dùng sẽ bị Redirect (chuyển hướng) ngay lập tức về trang phù hợp.
+ *    - Data Visualization: Kết hợp các Component biểu đồ (`RevenueChart`) và bảng dữ liệu (`OrdersTable`) để biến những con số khô khan thành thông tin trực quan dễ hiểu.
  * 
- * 5. Event handling:
- *    - `useEffect` trigger Call API khi vào trang.
- *    - Catch `error` hiển thị Toast popup.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Dữ liệu tổng hợp (stats) và danh sách đơn hàng gần đây từ Backend.
+ *    - Output: Một giao diện Dashboard cao cấp với khả năng xuất file báo cáo Offline.
  * 
- * 6. Conditional rendering:
- *    - Chặn quyền: Dùng `Navigate` đá văng về `/login` nếu ko Auth, đá về `/` nếu Role khác Admin.
- *    - Rendering giao diện Loading Spinner khi fetch dữ liệu chậm `if (loading)`.
- *    - Render List card thống kê `if (stats)` có tồn tại.
- *    - Bảng danh sách đơn hàng `recentOrders.length > 0` hiển thị Bảng, ngược lại hiển thị Text Trống.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `stats`: Chứa các con số tổng quát (Revenue, Orders, Users, Products).
+ *    - `recentOrders`: Mảng chứa 5 đơn hàng mới nhất.
+ *    - `loading`: Trạng thái chờ dữ liệu từ máy chủ.
+ *    - `error`: Lưu trữ các thông báo lỗi nếu quá trình lấy data gặp trục trặc.
  * 
- * 7. List rendering:
- *    - Map List mảng `recentOrders.map` đổ ra từng dòng `<tr>` cho Table Đơn hàng gần đây.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `exportToPDF`: Hàm xử lý phức tạp để chụp ảnh trang Dashboard và lưu thành file PDF đa trang.
+ *    - AI Stylist Insight: Một widget thông minh tính toán tỷ lệ sản phẩm đã được tối ưu hóa cho hệ thống tư vấn AI.
  * 
- * 8. Controlled input:
- *    - Component thuần View tĩnh, không có Input form.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Kiểm tra quyền Admin.
+ *    - Bước 2: Dispatch các Action để lấy dữ liệu thống kê từ Server.
+ *    - Bước 3: Hiển thị các "Card" chỉ số (KPIs) và Biểu đồ doanh thu.
+ *    - Bước 4: Hiển thị bảng 5 đơn hàng mới nhất ở cuối trang.
+ *    - Bước 5: (Tùy chọn) Admin nhấn nút "Xuất PDF" để lấy bản báo cáo bản cứng.
  * 
- * 9. Lifting state up:
- *    - Fetch API qua Action Thunk của Redux: `fetchDashboardStats` và `fetchRecentOrders`. Store tự lo việc lưu State.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Request: `GET /api/v1/admin/stats` và `GET /api/v1/admin/orders?limit=5`.
+ *    - Database: Truy vấn trực tiếp vào các Collection: Orders, Products, Users để tính tổng.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Router điều hướng vào Dashboard, Render vòng 1 -> Kiểm tra Authenticate, không phải Admin thì Redirect.
- *    - (2) Dispatch 2 Action gọi 2 API (lấy data Thống kê, lấy 5 đơn hàng mới nhất). Component ở trạng thái Loading.
- *    - (3) API trả về thành công -> Store Redux lưu data vào thẻ `admin` reducer.
- *    - (4) Dashboard nhận trigger State re-render giao diện các thông số tổng (`stats`) và bóc mảng array (`recentOrders`) rải ra Table. 
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Loading Spinner: Hiển thị vòng xoay nếu dữ liệu quan trọng chưa kịp tải xong.
+ *    - Access Denied: Sử dụng `toast.error` để thông báo khi có người dùng thường cố tình truy cập trang này qua URL.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Các cuộc gọi API thông qua Redux Thunk.
+ *    - Quá trình xử lý ảnh nặng nề khi sinh file PDF (sử dụng `toast.loading` để báo hiệu cho Admin chờ).
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - `dashboard-content`: Đây là ID quan trọng, nếu bạn đổi tên ID này, tính năng xuất PDF sẽ bị hỏng.
+ *    - `pixelRatio: 2`: Giúp ảnh trong PDF nét gấp đôi bình thường, nhưng cũng làm file nặng hơn. Hãy cân nhắc nếu website chạy chậm.
  */
 import React, { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
@@ -61,15 +74,16 @@ function Dashboard() {
     const { isAuthenticated, user } = useSelector(state => state.user);
     const { stats, recentOrders, loading, error } = useSelector(state => state.admin);
 
-    // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS (Rules of Hooks)
+    const userRole = user?.role_id?.name || user?.role;
+
     // Fetch data on component mount
     useEffect(() => {
-        if (isAuthenticated && user?.role === 'admin') {
+        if (isAuthenticated && userRole === 'admin') {
             dispatch(fetchDashboardStats());
             dispatch(fetchRecentOrders(5));
             dispatch(fetchAllProducts());
         }
-    }, [dispatch, isAuthenticated, user]);
+    }, [dispatch, isAuthenticated, userRole]);
 
     // Show error toast
     useEffect(() => {
@@ -83,7 +97,7 @@ function Dashboard() {
         return <Navigate to="/login" replace />;
     }
 
-    if (user && user.role !== 'admin') {
+    if (user && userRole !== 'admin') {
         toast.error('Bạn không có quyền truy cập trang này');
         return <Navigate to="/" replace />;
     }

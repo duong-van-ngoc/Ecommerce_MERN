@@ -1,46 +1,52 @@
 /**
- * ============================================================================
- * COMPONENT: Rating (Đánh giá sao Vàng)
- * ============================================================================
- * 1. Component là gì: 
- *    - Biễu đồ trực quan Hiển thị mức Đánh giá chất lượng của khách (Stars 1-5).
- *    - Chịu trách nhiệm render icon Sao ở 2 chế độ: Interactive State (cho form) hoặc Readonly Mode (Card list).
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Rating (Hệ thống Đánh giá 5 Sao).
  * 
- * 2. Props: 
- *    - `value` (number): Điểm số truyền gốc để neo.
- *    - `onRatingChange` (function): Trigger Update truyền cho Component Form mẹ. 
- *    - `disabled` (boolean): Flag chặn click lúc đang chỉ Show Card List.
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Cung cấp một phương thức trực quan để người dùng đánh giá chất lượng sản phẩm.
+ *    - Xuất hiện linh hoạt ở hai nơi: Trên thẻ sản phẩm (chế độ chỉ xem) và trong form đánh giá (chế độ tương tác).
+ *    - Giúp hệ thống thu thập điểm số từ 1 đến 5 sao để tính toán trung bình cộng cho sản phẩm.
  * 
- * 3. State:
- *    - Local State: 
- *      + `hoveredRating` (number): Phản ánh tức thời con trỏ chuột trên ngôi sao nào để làm sao nó sáng lên (tính năng Preview Rating) mà không ghi đè số thực.
- *      + `selectedRating` (number): Chốt vĩnh viễn mốc user bấm click chuột cuối cùng.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Phản hồi Người dùng & Uy tín Sản phẩm (User Feedback & Product Reputation Flow).
  * 
- * 4. Render lại khi nào:
- *    - Bất cứ khi nào chuột liếm ngang các cạnh sao (`onMouseEnter`) hoặc user thay đổi mức sao (`onClick`).
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Multi-state Interaction Logic: Sử dụng đồng thời hai trạng thái `hoveredRating` (cho hiệu ứng preview khi rê chuột) và `selectedRating` (cho kết quả chốt cuối cùng). Việc tách đôi giúp trải nghiệm người dùng cực kỳ mượt mà.
+ *    - Lifting State Up: Một kỹ thuật React kinh điển. Khi người dùng click chọn số sao, Component con này sẽ "đẩy" giá trị đó lên cho Component cha (như trang Đánh giá) thông qua hàm callback `onRatingChange`.
+ *    - Dynamic Element Generation: Sử dụng vòng lặp `for` để tự động sinh ra đúng 5 ngôi sao. Cách tiếp cận này chuyên nghiệp hơn nhiều so với việc viết tay 5 thẻ `<span>` tĩnh, giúp bạn dễ dàng thay đổi lên hệ thống 10 sao nếu cần.
+ *    - Conditional Styling (Filled vs Empty): Logic tính toán thông minh: "Nếu số sao thứ i nhỏ hơn hoặc bằng số sao đang chọn, thì cho nó màu vàng, ngược lại màu xám".
+ *    - Pointer Events Control: Sử dụng thuộc tính CSS `pointer-events: none` khi `disabled=true`. Đây là cách đơn giản và hiệu quả nhất để biến một Control tương tác thành một nhãn hiển thị tĩnh mà không làm loãng logic code.
  * 
- * 5. Event handling:
- *    - `handleMouseEnter`: Lấy ID mốc sao truyền cho `setHoveredRating`.
- *    - `handleMouseLeave`: Reset sao về mức đã Fixed (`setHoveredRating(0)`).
- *    - `handleClick`: Chống sửa nếu `disabled`. Còn không thì lưu Local `selectedRating` và nổ Up `onRatingChange(rating)` lên Hook Controller form ngoài.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Điểm số khởi tạo (`value`), cờ hiệu khóa tương tác (`disabled`) và hàm nhận kết quả (`onRatingChange`).
+ *    - Output: Một dãy ngôi sao có khả năng "thắp sáng" theo tương tác chuột.
  * 
- * 6. Conditional rendering:
- *    - Biến cất giá trị boolean `isFilled` kiểm tra xem index sao đang vượt quá mốc chuột/Click hay bé hơn -> Bôi cam class (filled) hoặc để nhạt (empty).
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `hoveredRating`: Lưu mốc sao mà chuột đang lướt qua (dùng cho hiệu ứng sáng mờ).
+ *    - `selectedRating`: Lưu mốc điểm mà người dùng đã chính thức nhấn chọn.
  * 
- * 7. List rendering:
- *    - Vòng For thuần đẩy 5 mảng Component Element `<span>` rỗng vào Array Result `stars` và return render.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `generateStars`: Hàm "kiến trúc sư" tổng hợp logic trạng thái để xây dựng nên dãy sao.
+ *    - Event Handlers: Bộ ba `MouseEnter`, `MouseLeave`, `Click` điều khiển toàn bộ trải nghiệm người dùng.
  * 
- * 8. Controlled input:
- *    - Ẩn mình dưới dạng Element Custom giả vờ là Element form input control thay vì thẻ <input> thực sự.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Khởi tạo mức sao dựa trên Prop `value`.
+ *    - Bước 2: User rê chuột qua sao số 4 -> `hoveredRating` thành 4 -> 4 sao đầu tiên sáng vàng.
+ *    - Bước 3: User click vào sao số 4 -> `selectedRating` thành 4 -> Gửi số 4 lên cho cha xử lý.
+ *    - Bước 4: User bỏ chuột ra -> `hoveredRating` về 0 -> Dãy sao quay về trạng thái đã chọn ở Bước 3.
  * 
- * 9. Lifting state up:
- *    - Phát sự kiện thay đổi Form Select ra bên ngoài (`onRatingChange`).
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Không gọi API trực tiếp. Kết quả được đẩy lên cha để cha thực hiện POST request lưu vào MongoDB.
  * 
- * 10. Luồng hoạt động:
- *    - Mount -> Khởi tạo 5 sao xám hoặc điểm ban đầu (vd 4 sao vàng, 1 xám).
- *    - Người dùng rê chuột lướt sao 5 -> Hover state đổi 5 -> Cả 5 sao sáng màu cam mờ. 
- *    - Click thả chuột ngay sao số 3 -> State chốt sổ 3 chấu -> Gửi 3 điểm về component Order Review.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Guard Clause: `if(!disabled)` lọc toàn bộ các tương tác chuột, đảm bảo không ai có thể sửa điểm đánh giá trên thẻ sản phẩm ở trang chủ.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Không có.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - Ký tự `★`: Đây là ký tự Unicode đặc biệt. Nếu bạn muốn dùng Icon xịn hơn (như SVG hay FontAwesome), chỉ cần thay thế ký tự này trong hàm `generateStars`.
+ *    - Logic `i <= (hoveredRating || selectedRating)`: Đây là "trái tim" của hiệu ứng sáng sao, ưu tiên hiển thị mốc đang rê chuột trước mốc đã chọn.
  */
 import React, { useState } from 'react'
 import '../componentStyles/Rating.css'

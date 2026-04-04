@@ -1,42 +1,51 @@
 /**
- * ============================================================================
- * COMPONENT: UserDashboard
- * ============================================================================
- * 1. Component là gì: 
- *    - Đảm nhiệm vai trò hiển thị và xử lý logic cho vùng phần tử `UserDashboard` trong ứng dụng.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component "Menu Người dùng Nhanh" (User Navigation Dashboard / Mini Profile).
  * 
- * 2. Props: 
- *    - Nhận các props: user
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Hiển thị ảnh đại diện và tên người dùng ngay trên Thanh công cụ (Navbar).
+ *    - Cung cấp Menu xả xuống (Dropdown) chứa các lối tắt quan trọng: Quản lý đơn hàng, Hồ sơ, Giỏ hàng và Đăng xuất.
+ *    - Tự động phân quyền: Nếu là Admin, sẽ có thêm nút dẫn tới trang Quản trị (Admin Dashboard).
  * 
- * 3. State:
- *    - Local State (quản lý nội bộ qua useState).
- *      + Global State (lấy từ Redux qua useSelector).
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Điều phối Người dùng (User Navigation & Auth Actions Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi Local State thay đổi.
- *    - Khi Global State (Redux) cập nhật.
- *    - Khi Props từ cha truyền xuống thay đổi.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Unwrapping Promises: Sử dụng `dispatch(logout()).unwrap()` để xử lý logic "Clean up" và "Navigate" ngay sau khi hành động logout bất đồng bộ hoàn tất thành công.
+ *    - Overlay Tech: Kỹ thuật sử dụng một lớp phủ trong suốt (`.overlay`) để bắt sự kiện click ra ngoài, giúp đóng menu một cách tự nhiên.
+ *    - Dynamic Menu Generation: Cách sử dụng mảng `options` kết hợp lệnh `unshift()` để xây dựng danh sách nút bấm linh hoạt theo vai trò người dùng (User vs Admin).
+ *    - Redux State Subscription: Theo dõi `cartItems.length` để cập nhật con số hiển thị trên nút "Giỏ hàng" ngay tức thì.
  * 
- * 5. Event handling:
- *    - Có tương tác sự kiện (onClick, onChange, onSubmit...).
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Prop `user` (dữ liệu người dùng hiện tại).
+ *    - Output: Giao diện chuyển đổi trạng thái (Toggle Menu) và các lệnh chuyển trang (Navigate).
  * 
- * 6. Conditional rendering:
- *    - Sử dụng toán tử 3 ngôi (? :) hoặc `&&` để ẩn/hiện element hoặc component.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `menuVisible`: Biến Boolean điều khiển việc hiện/ẩn danh sách các nút chức năng.
  * 
- * 7. List rendering:
- *    - Sử dụng `.map()` để render danh sách elements.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `logoutUser`: Thực hiện dọn dẹp phiên làm việc, xóa Token và đưa người dùng về trang Đăng nhập.
+ *    - `toggleMennu`: Hàm đảo trạng thái hiển thị của Dropdown.
  * 
- * 8. Controlled input:
- *    - Không chứa form controls.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Người dùng di chuột/click vào ảnh Avatar -> `menuVisible` thành `true`.
+ *    - Bước 2: Menu hiện lên liệt kê các lựa chọn phù hợp với phân quyền.
+ *    - Bước 3: Người dùng chọn một mục (VD: Orders) -> Kích hoạt hàm điều hướng `navigate`.
+ *    - Bước 4: Click vào vùng trống bên ngoài -> Lớp phủ `overlay` bắt sự kiện để đóng menu.
  * 
- * 9. Lifting state up:
- *    - Dữ liệu được quản lý cục bộ hoặc đẩy lên Redux store toàn cục.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - UI -> Logout Action -> API /api/v1/logout -> Server xóa Cookie/Session -> Response.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Component Mount -> Chỉ mount giao diện thuần và nhận Props.
- *    - (2) Nhận State/Props và render UI ban đầu.
- *    - (3) End-User tương tác trên component -> Cập nhật State -> Re-render màn hình.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - `location.pathname.startsWith('/admin')`: Tự động ẩn Component này nếu đang ở trong vùng quản trị để tránh xung đột giao diện.
+ *    - Admin Check: `if (user.role === 'admin')` để quyết định có hiện nút quản trị hay không.
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Tiến trình `logoutUser` là bất đồng bộ quan trọng nhất trong file này.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - "Rules of Hooks": Lưu ý dòng comment "ALL HOOKS must be called BEFORE any conditional return". Đây là nguyên tắc vàng của React để tránh lỗi Hooks nhảy lung tung khi render.
+ *    - `cart-not-empty`: Class đặc biệt dùng để làm nổi bật nút Giỏ hàng khi có đồ bên trong.
  */
 import React, { useState } from 'react'
 import '../UserStyles/UserDashboard.css'
@@ -68,7 +77,8 @@ function UserDashboard({ user }) {
         { name: `Cart(${cartItems.length})`, funcName: myCart, isCart: true },
         { name: 'Logout', funcName: logoutUser },
     ]
-    if (user.role === 'admin') {
+    const userRole = user?.role_id?.name || user?.role;
+    if (userRole === 'admin') {
         options.unshift({
             name: 'Admin Dashboard', funcName: dashboard
         })

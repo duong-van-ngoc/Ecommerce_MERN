@@ -1,42 +1,57 @@
 /**
- * ============================================================================
- * COMPONENT: ReviewComment
- * ============================================================================
- * 1. Component là gì: 
- *    - Đảm nhiệm vai trò hiển thị và xử lý logic cho vùng phần tử `ReviewComment` trong ứng dụng.
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component "Modal Đánh giá & Phản hồi" (Review Comment Modal).
  * 
- * 2. Props: 
- *    - Nhận các props: isOpen, onClose, product, orderId, onSuccess
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Cung cấp giao diện chuyên nghiệp để người dùng gửi cảm nhận sau khi nhận được hàng.
+ *    - Cho phép chấm điểm sao (Star Rating), viết bình luận, chọn thẻ gợi ý (Tags) và tải lên hình ảnh/video thực tế.
+ *    - Giúp tăng độ tin cậy cho sản phẩm thông qua các "User Generated Content" (Nội dung do người dùng tạo).
  * 
- * 3. State:
- *    - Local State (quản lý nội bộ qua useState).
- *      + Global State (lấy từ Redux qua useSelector).
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Sau mua hàng & Đánh giá (Post-purchase & Review Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi Local State thay đổi.
- *    - Khi Global State (Redux) cập nhật.
- *    - Khi Props từ cha truyền xuống thay đổi.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Modal Pattern: Sử dụng kỹ thuật `isOpen` kết hợp `onClose` và `e.stopPropagation()` để quản lý hộp thoại đè lên màn hình chính.
+ *    - Complex State Management: Quản lý rất nhiều trạng thái đồng thời (Rating, Hover, Tags, Images Previews, Loading, Success).
+ *    - Cloudinary/Multer Integration: Xử lý `FormData` và `multipart/form-data` để gửi tập tin hình ảnh/video từ trình duyệt lên server.
+ *    - URL Object: Sử dụng `URL.createObjectURL(file)` để tạo ảnh xem trước tức thì (Image Previews) mà không cần đợi tải lên server.
+ *    - Memoization: Sử dụng `useMemo` và `useCallback` để tối ưu hiệu năng, tránh render lại modal khi các thông tin tĩnh không đổi.
  * 
- * 5. Event handling:
- *    - Có tương tác sự kiện (onClick, onChange, onSubmit...).
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Props `product` (đối tượng sản phẩm), `orderId` (id đơn hàng), và các hàm điều khiển `onClose`, `onSuccess`.
+ *    - Output: Một bản ghi Review mới được tạo trong Database và hiển thị thông báo thành công.
  * 
- * 6. Conditional rendering:
- *    - Sử dụng toán tử 3 ngôi (? :) hoặc `&&` để ẩn/hiện element hoặc component.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - `rating`: Số sao người dùng chọn (1-5).
+ *    - `selectedTags`: Danh sách các nhãn gợi ý (VD: Giao hàng nhanh, Đóng gói kỹ).
+ *    - `images/imagePreviews`: Lưu file thực tế và link ảnh tạm thời để hiển thị.
+ *    - `showUsername`: Quyền riêng tư (Cho phép ẩn danh hoặc hiện tên thật).
  * 
- * 7. List rendering:
- *    - Sử dụng `.map()` để render danh sách elements.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `handleImageChange`: Xử lý chọn nhiều ảnh/video, kiểm tra giới hạn số lượng và dung lượng.
+ *    - `handleSubmit`: Tổng hợp toàn bộ dữ liệu (Rating + Tags + Comment + Images) vào `FormData` và gửi đi.
+ *    - `renderStars`: Hàm hỗ trợ vẽ icon sao với màu sắc thay đổi theo trạng thái `hover` hoặc `selected`.
  * 
- * 8. Controlled input:
- *    - Có form input elements (có thể bị controlled bởi state).
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Modal bật lên -> Hiển thị thông tin sản phẩm cần đánh giá.
+ *    - Bước 2: User chọn số sao -> Nhấn thêm các thẻ gợi ý nhanh.
+ *    - Bước 3: User chọn ảnh từ máy tính -> `imagePreviews` hiển thị ngay lập tức để kiểm tra.
+ *    - Bước 4: Nhấn "Hoàn thành" -> Bật `loading` -> Gửi `FormData` lên API.
+ *    - Bước 5: Thành công -> Chuyển sang trạng thái `success=true` -> Hiện màn hình cảm ơn.
  * 
- * 9. Lifting state up:
- *    - Dữ liệu được quản lý cục bộ hoặc đẩy lên Redux store toàn cục.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - UI -> PUT (FormData) -> API `/api/v1/review` -> Backend (Multer + Cloudinary) -> MongoDB (Update Product Ratings).
  * 
- * 10. Luồng hoạt động:
- *    - (1) Component Mount -> Chỉ mount giao diện thuần và nhận Props.
- *    - (2) Nhận State/Props và render UI ban đầu.
- *    - (3) End-User tương tác trên component -> Cập nhật State -> Re-render màn hình.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Validate Stars: Bắt buộc người dùng phải chọn ít nhất 1 sao trước khi gửi.
+ *    - Error Handling: Hiển thị thông báo lỗi chi tiết (VD: File quá nặng, đã đánh giá rồi).
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Hàm `handleSubmit` chứa logic gọi API bất đồng bộ và xử lý File.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - `URL.revokeObjectURL(preview)`: Đừng quên giải phóng bộ nhớ khi người dùng xóa ảnh xem trước hoặc đóng modal để tránh rò rỉ bộ nhớ (Memory Leak).
+ *    - `maskedName`: Logic che giấu tên (VD: N*****c) giúp bảo vệ quyền riêng tư nếu người dùng không muốn hiện tên đầy đủ.
  */
 import React, { useState, useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";

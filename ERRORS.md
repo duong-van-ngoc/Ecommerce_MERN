@@ -5,8 +5,8 @@
 ---
 
 ## Thống kê nhanh
-- **Tổng lỗi**: 0
-- **Đã sửa**: 0
+- **Tổng lỗi**: 1
+- **Đã sửa**: 1
 
 ---
 
@@ -25,5 +25,28 @@
     1. Backend: Chỉ cập nhật `images` nếu `images.length > 0`. Trích xuất trực tiếp `style`, `vibe`, `trending`.
     2. Frontend: Chuyển sang dùng `.set()` cho `FormData` và gọi `onClose()` sau khi thành công.
 - **Prevention**: Luôn kiểm tra sự tồn tại của file trước khi ghi đè mảng. UI phải đồng bộ ngay khi Store cập nhật.
+
+
+---
+
+## [2026-04-04 11:07] - Lỗi Transaction MongoDB khi Hủy đơn (Standalone local)
+
+- **Type**: Runtime / Configuration
+- **Severity**: High
+- **File**: `backend/controllers/orderController.js`
+- **Agent**: Tobi (Antigravity Orchestrator)
+- **Status**: Fixed 🎯
+- **Root Cause**: 
+    - Database local chạy ở chế độ **Standalone**, không hỗ trợ **Transactions**.
+    - Backend bọc logic hủy đơn trong `mongoose.startSession()`, gây ra crash 500.
+- **Error Message**: 
+  ```
+  Transaction numbers are only allowed on a replica set member or mongos
+  ```
+- **Fix Applied**: 
+    - Triển khai **Hybrid Transaction Logic**: Tự động nhận diện Replica Set.
+    - Chỉ kích hoạt Session nếu Database có hỗ trợ (Vercel/Atlas). 
+    - Chế độ Standalone (Local) sẽ chạy logic tuần tự an toàn.
+- **Prevention**: Sử dụng helper function hoặc kiểm tra `topology.type` trước khi dùng Transactions.
 
 ---

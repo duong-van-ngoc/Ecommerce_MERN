@@ -1,46 +1,52 @@
 /**
- * ============================================================================
- * COMPONENT: Product (Product Card)
- * ============================================================================
- * 1. Component là gì: 
- *    - Một Thẻ Card (Component con) dùng để hiển thị gói gọn thông tin của DUY NHẤT 1 SẢN PHẨM.
- *    - Nó thường được tái sử dụng để render thành Danh sách (trong trang Products) hoặc Khối (New Arrivals, Related Products...).
+ * 1. FILE NÀY LÀ GÌ: 
+ *    Đây là Component Thẻ Sản Phẩm (Product Card).
  * 
- * 2. Props: 
- *    - `product` (Object): Chứa toàn bộ Data Schema của 1 sản phẩm (như _id, name, price, originalPrice, images array, rating, sold...).
+ * 2. VAI TRÒ TRONG DỰ ÁN:
+ *    - Là "gương mặt đại diện" của sản phẩm trên các danh sách (Trang chủ, Trang tìm kiếm, Sản phẩm gợi ý).
+ *    - Cung cấp cái nhìn nhanh (Quick View) giúp khách hàng nắm bắt được các thông tin quan trọng nhất: Ảnh, Tên, Giá và Đánh giá.
+ *    - Là "cánh cửa" dẫn lối người dùng đi sâu vào trang Chi tiết sản phẩm.
  * 
- * 3. State:
- *    - Local State: 
- *      + `rating` (number): Dành cho thao tác hover hoặc chấm điểm tại Component Rating con.
- *    - Không có Global State.
+ * 3. FILE NÀY THUỘC LUỒNG NÀO:
+ *    - Luồng Duyệt Sản phẩm & Tìm kiếm (Product Browsing & Discovery Flow).
  * 
- * 4. Render lại khi nào:
- *    - Khi data Object `product` từ cha bị thay đổi.
+ * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
+ *    - Reusable Component: Được thiết kế cực kỳ linh hoạt để có thể render hàng trăm lần trong một trang mà không gây xung đột.
+ *    - `Link` Component (React Router): Bao bọc toàn bộ thẻ Card. Điều này giúp người dùng có thể bấm vào bất kỳ vị trí nào trên thẻ để chuyển trang, tăng diện tích tương tác (Clickable Area).
+ *    - Event Bubbling Control (`stopPropagation`): Một kỹ thuật quan trọng. Khi người dùng click vào nút "Yêu thích" (Tim), ta phải chặn sự kiện này để nó không bị "trôi" lên thẻ `Link` cha, tránh việc nhảy trang ngoài ý muốn.
+ *    - Frontend Logic Calculation: Tự động tính toán phần trăm giảm giá (%) dựa trên giá gốc và giá hiện tại ngay tại client, giúp giảm tải công việc cho phía Backend.
+ *    - Conditional Rendering: Xử lý hiển thị thông minh: Chỉ hiện Badge giảm giá nếu có giảm giá thật sự; chỉ hiện giá gốc gạch ngang nếu sản phẩm đang được khuyến mãi.
  * 
- * 5. Event handling:
- *    - Nút (Icon Yêu thích): Click để thêm logic Wishlist tuy nhiên đang pending `TODO: Add to wishlist logic`.
- *    - `<Link to={...}>`: Bao hàm toàn bộ thẻ card để bấm vào đâu cũng đẩy Route sang `/product/:id`.
+ * 5. INPUT / OUTPUT CỦA FILE:
+ *    - Input: Object `product` chứa đầy đủ dữ liệu từ Database.
+ *    - Output: Một khung thẻ sản phẩm đẹp mắt với đầy đủ hiệu ứng hover.
  * 
- * 6. Conditional rendering:
- *    - Nếu có giá trị mảng ảnh `images[0]?.url` -> Render ảnh 1, nếu không -> Render ảnh default `/public/ao/ao_khoac.jpg`.
- *    - Check % Giảm giá `discountPercent > 0` -> Xuất hiện badge giảm giá mảng đỏ góc thẻ card.
- *    - Dựa vào Category structure (Object 3 cấp hoặc text trơn) -> In ra Category Name tương ứng.
+ * 6. STATE / PROPS / PARAMS / ... : 
+ *    - Prop `product`: Dữ liệu đầu vào duy nhất và quan trọng nhất.
  * 
- * 7. List rendering:
- *    - File bản thân nó là Entity Đích nên không loop. Tuy nhiên nó CẦN phải được vòng lặp gọi tới (từ cha) thông qua List Rendering.
+ * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
+ *    - `discountPercent`: Hằng số tính toán tỷ lệ giảm giá.
+ *    - `formatVND`: Helper format tiền tệ sang định dạng Việt Nam (ví dụ: 1.200.000₫).
  * 
- * 8. Controlled input:
- *    - Các thành phần Input không tồn tại, chỉ truyền giá trị readOnly vào khối Rating con.
+ * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
+ *    - Bước 1: Nhận dữ liệu sản phẩm từ danh sách cha.
+ *    - Bước 2: Tính toán % chiết khấu (nếu có).
+ *    - Bước 3: Render ảnh sản phẩm (có xử lý ảnh mặc định nếu ảnh gốc bị lỗi).
+ *    - Bước 4: Hiển thị tên, giá, số sao và số lượng đã bán.
  * 
- * 9. Lifting state up:
- *    - Chỉ nhận dữ liệu data-down, không emit data-up lên cho cha.
+ * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
+ *    - Không gọi API trực tiếp. Nó chỉ tiêu thụ dữ liệu đã được nạp sẵn từ Trang chủ hoặc Trang sản phẩm.
  * 
- * 10. Luồng hoạt động:
- *    - (1) Nhận Object Prop Data từ vòng lặp cha (ví dụ `products.map(p => <Product product={p}/>)`).
- *    - (2) Component Mount -> Function tính toán tự động % chênh lệch giữa giá Sale (price) và giá Gốc (originalPrice).
- *    - (3) Hàm formatVND định dạng giá tiền tệ sang dạng có dấu chấm.
- *    - (4) Render ra khung giao diện hình ảnh, tiêu đề, giá tiền, % giảm giá và tổng lượt bán. Link toàn bộ khối về trang Detail.
- * ============================================================================
+ * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
+ *    - Sold Count Formatting: Nếu số lượng bán trên 1000, nó sẽ tự động đổi thành định dạng rút gọn (ví dụ: 1.2k) cho gọn gàng.
+ *    - Category Display: Thông minh trong việc lấy tên danh mục từ cấu trúc đa cấp (Level 1, 2, 3).
+ * 
+ * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
+ *    - Không có.
+ * 
+ * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
+ *    - `hover-scale-up`: Đây là class CSS tạo hiệu ứng phóng to ảnh khi di chuột vào, giúp trang web trông "sống" hơn.
+ *    - Chú ý phần `TODO: Add to wishlist logic`: Đây là nơi bạn sẽ code thêm tính năng lưu sản phẩm yêu thích sau này.
  */
 import React, { useState } from 'react'
 import '../componentStyles/Product.css'
