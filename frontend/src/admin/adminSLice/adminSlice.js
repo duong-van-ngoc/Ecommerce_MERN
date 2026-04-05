@@ -249,6 +249,107 @@ export const searchAdminProducts = createAsyncThunk(
 );
 
 /**
+ * === VOUCHERS MANAGEMENT ===
+ */
+
+/**
+ * Async Thunk - Lấy tất cả voucher (Admin)
+ */
+export const fetchAllAdminVouchers = createAsyncThunk(
+    'admin/fetchAllVouchers',
+    async (filters = {}, { rejectWithValue }) => {
+        try {
+            // Chuyển đổi object filter thành query string
+            const params = new URLSearchParams();
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== '') {
+                    params.append(key, value);
+                }
+            });
+
+            const queryString = params.toString();
+            const url = `/api/v1/vouchers/admin${queryString ? `?${queryString}` : ''}`;
+
+            const { data } = await axios.get(url, {
+                withCredentials: true
+            });
+            // Trả về toàn bộ object data để lấy thông tin phân trang (vouchers, totalVouchers, totalPages, ...)
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Không thể tải danh sách voucher');
+        }
+    }
+);
+
+/**
+ * Async Thunk - Tạo voucher mới
+ */
+export const createVoucher = createAsyncThunk(
+    'admin/createVoucher',
+    async (voucherData, { rejectWithValue }) => {
+        try {
+            const { data } = await axios.post('/api/v1/vouchers/admin/new', voucherData, {
+                withCredentials: true
+            });
+            return data.voucher;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Không thể tạo voucher');
+        }
+    }
+);
+
+/**
+ * Async Thunk - Thay đổi trạng thái voucher
+ */
+export const toggleVoucherStatus = createAsyncThunk(
+    'admin/toggleVoucherStatus',
+    async (id, { rejectWithValue }) => {
+        try {
+            const { data } = await axios.put(`/api/v1/vouchers/admin/${id}/status`, {}, {
+                withCredentials: true
+            });
+            return data.voucher;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Không thể thay đổi trạng thái');
+        }
+    }
+);
+
+/**
+ * Async Thunk - Xóa voucher
+ */
+export const deleteVoucher = createAsyncThunk(
+    'admin/deleteVoucher',
+    async (id, { rejectWithValue }) => {
+        try {
+            await axios.delete(`/api/v1/vouchers/admin/${id}`, {
+                withCredentials: true
+            });
+            return id;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Không thể xóa voucher');
+        }
+    }
+);
+
+/**
+ * Async Thunk - Cập nhật voucher
+ */
+export const updateVoucher = createAsyncThunk(
+    'admin/updateVoucher',
+    async ({ id, voucherData }, { rejectWithValue }) => {
+        try {
+            const { data } = await axios.put(`/api/v1/vouchers/admin/${id}`, voucherData, {
+                withCredentials: true
+            });
+            return data.voucher;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Không thể cập nhật voucher');
+        }
+    }
+);
+
+/**
  * === ORDERS MANAGEMENT ===
  */
 
@@ -468,6 +569,10 @@ const adminSlice = createSlice({
         products: [],
         orders: [],
         users: [],
+        vouchers: [],
+        totalVouchers: 0,     // Tổng số voucher
+        totalPages: 0,        // Tổng số trang
+        currentPage: 1,       // Trang hiện tại
         settings: null,
         globalSearchQuery: '', // Từ khóa tìm kiếm toàn cục từ Header
         searchResults: [],    // Kết quả tìm kiếm sản phẩm API
@@ -829,6 +934,80 @@ const adminSlice = createSlice({
                 state.searchResults = action.payload;
             })
             .addCase(searchAdminProducts.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            });
+
+        // ===== Vouchers Management =====
+        builder
+            .addCase(fetchAllAdminVouchers.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchAllAdminVouchers.fulfilled, (state, action) => {
+                state.loading = false;
+                state.vouchers = action.payload.vouchers;
+                state.totalVouchers = action.payload.totalVouchers;
+                state.totalPages = action.payload.totalPages;
+                state.currentPage = action.payload.currentPage;
+            })
+            .addCase(fetchAllAdminVouchers.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            });
+
+        builder
+            .addCase(createVoucher.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(createVoucher.fulfilled, (state, action) => {
+                state.loading = false;
+                state.vouchers.unshift(action.payload);
+            })
+            .addCase(createVoucher.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            });
+
+        builder
+            .addCase(toggleVoucherStatus.pending, (state) => {
+                // state.loading = true; // Thường không set loading cho toggle để mượt mà hơn
+            })
+            .addCase(toggleVoucherStatus.fulfilled, (state, action) => {
+                const index = state.vouchers.findIndex(v => v._id === action.payload._id);
+                if (index !== -1) {
+                    state.vouchers[index] = action.payload;
+                }
+            })
+            .addCase(toggleVoucherStatus.rejected, (state, action) => {
+                state.error = action.payload;
+            });
+
+        builder
+            .addCase(deleteVoucher.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(deleteVoucher.fulfilled, (state, action) => {
+                state.loading = false;
+                state.vouchers = state.vouchers.filter(v => v._id !== action.payload);
+            })
+            .addCase(deleteVoucher.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            });
+
+        builder
+            .addCase(updateVoucher.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(updateVoucher.fulfilled, (state, action) => {
+                state.loading = false;
+                const index = state.vouchers.findIndex(v => v._id === action.payload._id);
+                if (index !== -1) {
+                    state.vouchers[index] = action.payload;
+                }
+            })
+            .addCase(updateVoucher.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             });

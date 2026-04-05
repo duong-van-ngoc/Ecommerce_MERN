@@ -54,6 +54,7 @@ import Order from '../models/orderModel.js';
 import Cart from '../models/cartModel.js';
 import CartItem from '../models/cartItemModel.js';
 import HandleError from '../utils/handleError.js';
+import sendEmail from '../utils/sendEmail.js';
 
 // Khởi tạo VNPay instance (lazy loading để tránh lỗi hoisting env)
 let vnpayInstance;
@@ -137,7 +138,7 @@ const updateOrderPaymentStatus = async (query) => {
     const orderId = query.vnp_TxnRef;
     const responseCode = query.vnp_ResponseCode;
 
-    const order = await Order.findById(orderId);
+    const order = await Order.findById(orderId).populate("user_id", "name email");
     if (!order) return { success: false, code: '01', message: 'Order not found' };
     
     // Check amount (VNPay vnp_Amount is multiplied by 100)
@@ -165,6 +166,70 @@ const updateOrderPaymentStatus = async (query) => {
         };
         order.orderStatus = "Chờ xử lý";
         await order.save();
+
+        // --- GỬI EMAIL XÁC NHẬN THANH TOÁN THÀNH CÔNG ---
+        try {
+            if (order.user_id && order.user_id.email) {
+                const emailSubject = `✅ Xác nhận thanh toán thành công - Đơn hàng #${order._id}`;
+                
+                // Tạo bảng sản phẩm HTML
+                const itemsHtml = order.orderItems.map(item => `
+                    <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.name}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">${item.price.toLocaleString('vi-VN')}đ</td>
+                    </tr>
+                `).join('');
+
+                const htmlContent = `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
+                        <h2 style="color: #2e7d32; text-align: center;">Thanh toán thành công!</h2>
+                        <p>Chào <strong>${order.user_id.name}</strong>,</p>
+                        <p>Cảm ơn bạn đã mua sắm tại <strong>Tobi Shop</strong>. Chúng tôi đã nhận được thanh toán cho đơn hàng của bạn qua <strong>VNPay</strong>.</p>
+                        
+                        <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                            <h3 style="margin-top: 0; color: #555;">Thông tin đơn hàng:</h3>
+                            <p><strong>Mã đơn hàng:</strong> #${order._id}</p>
+                            <p><strong>Tổng tiền:</strong> <span style="color: #d32f2f; font-weight: bold;">${order.totalPrice.toLocaleString('vi-VN')} VNĐ</span></p>
+                            <p><strong>Trạng thái:</strong> Đã thanh toán</p>
+                            <p><strong>Phương thức:</strong> VNPay</p>
+                        </div>
+
+                        <h3 style="color: #555;">Chi tiết sản phẩm:</h3>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #eee;">
+                                    <th style="padding: 10px; text-align: left;">Sản phẩm</th>
+                                    <th style="padding: 10px; text-align: center;">Số lượng</th>
+                                    <th style="padding: 10px; text-align: right;">Giá</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHtml}
+                            </tbody>
+                        </table>
+
+                        <p style="text-align: center; margin-top: 30px;">
+                            <a href="${process.env.FRONTEND_URL}/order/${order._id}" 
+                               style="background: #2e7d32; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                               Xem chi tiết đơn hàng
+                            </a>
+                        </p>
+
+                        <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                        <p style="font-size: 12px; color: #999; text-align: center;">
+                            Đây là email tự động, vui lòng không phản hồi.<br>
+                            &copy; 2026 Tobi Shop. All rights reserved.
+                        </p>
+                    </div>
+                `;
+
+                // Gửi email bất đồng bộ, không bắt User phải chờ kết quả gửi mail xong mới thấy thông báo thành công
+                sendEmail(order.user_id.email, emailSubject, htmlContent);
+            }
+        } catch (emailErr) {
+            console.error("[Email System Error]: Không thể gửi mail xác nhận:", emailErr.message);
+        }
 
         // --- CLEAR CART ITEMS (New normalized schema) ---
         try {

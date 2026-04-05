@@ -68,6 +68,7 @@ import address from './routes/addressRoute.js';
 import payment from './routes/paymentRoutes.js';
 import cart from './routes/cartRoutes.js';
 import aiAssistant from './routes/aiRoute.js';
+import vouchers from './routes/v2/promoRoutes.js';
 
 import errorHandleMiddleware from './middleware/error.js';
 import cookieParser from 'cookie-parser';
@@ -137,8 +138,9 @@ app.use("/api/v1/admin", admin);
 app.use("/api/v1", settings);
 app.use("/api/v1/address", address);
 app.use("/api/v1", payment);
-app.use("/api/v1", cart);
+app.use("/api/v1/cart", cart);
 app.use("/api/v1/ai", aiAssistant);
+app.use("/api/v1/vouchers", vouchers);
 
 app.use(errorHandleMiddleware);
 

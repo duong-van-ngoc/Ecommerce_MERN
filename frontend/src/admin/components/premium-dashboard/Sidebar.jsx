@@ -55,6 +55,7 @@ const navItems = [
     { name: 'Quản lý sản phẩm', icon: 'inventory_2', path: '/admin/products' },
     { name: 'Quản lý đơn hàng', icon: 'receipt_long', path: '/admin/orders' },
     { name: 'Quản lý người dùng', icon: 'group', path: '/admin/users' },
+    { name: 'Quản lý Voucher', icon: 'confirmation_number', path: '/admin/vouchers' },
 ];
 
 export default function Sidebar({ user }) {
