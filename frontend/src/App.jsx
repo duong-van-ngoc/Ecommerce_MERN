@@ -89,6 +89,7 @@ import Dashboard from './admin/pages/Dashboard';
 import ProductsManagement from './admin/pages/ProductsManagement';
 import OrdersManagement from './admin/pages/OrdersManagement';
 import UsersManagement from './admin/pages/UsersManagement';
+import VouchersManagement from './admin/pages/VouchersManagement';
 import Settings from './admin/pages/Settings';
 
 function App() {
@@ -180,6 +181,7 @@ function App() {
           <Route path="products" element={<ProductsManagement />} />
           <Route path="orders" element={<OrdersManagement />} />
           <Route path="users" element={<UsersManagement />} />
+          <Route path="vouchers" element={<VouchersManagement />} />
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
