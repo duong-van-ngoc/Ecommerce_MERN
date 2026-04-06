@@ -58,6 +58,29 @@ import User from '../models/userModel.js'
 import HandleError from '../utils/handleError.js';
 import handleAsyncError from '../middleware/handleAsyncError.js';
 import APIFunctionality from '../utils/apiFunctionality.js';
+import { sendStatusEmail } from '../services/emailService.js';
+
+// Helper: Sinh mã đơn hàng ngẫu nhiên chuyên nghiệp: TB-YYYYMMDD-XXXXX
+const generateOrderCode = async () => {
+  const date = new Date();
+  const dateStr = date.toISOString().slice(0, 10).replace(/-/g, ""); // YYYYMMDD
+  
+  let isUnique = false;
+  let code = "";
+  
+  while (!isUnique) {
+    const randomStr = Math.random().toString(36).substring(2, 7).toUpperCase(); // 5 ký tự ngẫu nhiên
+    code = `TB-${dateStr}-${randomStr}`;
+    
+    // Kiểm tra tính duy nhất trong database
+    const existingOrder = await Order.findOne({ orderCode: code });
+    if (!existingOrder) {
+      isUnique = true;
+    }
+  }
+  
+  return code;
+};
 
 
 // Tạo đơn hàng mới (dữ liệu snapshot được gởi từ Frontend sau Checkout)
@@ -85,6 +108,9 @@ export const createNewOrder = handleAsyncError(async (req, res, next) => {
     color: item.color || null
   }));
 
+  // Tự động sinh mã đơn hàng mới
+  const orderCode = await generateOrderCode();
+
   const order = await Order.create({
     shippingInfo: normalizedShipping,
     orderItems: normalizedItems,
@@ -100,6 +126,7 @@ export const createNewOrder = handleAsyncError(async (req, res, next) => {
 
     paidAt: null,
     user_id: req.user._id,
+    orderCode: orderCode, // Gán mã đơn hàng
 
     orderStatus: "Chờ xử lý",
     isPaid: false,
@@ -120,7 +147,7 @@ export const getSingleOrder = handleAsyncError(async (req, res, next) => {
   }
   
   // Check access: only admin or the order owner can view
-  if (req.user.role !== 'admin' && order.user_id.toString() !== req.user.id.toString()) {
+  if (req.user.role !== 'admin' && order.user_id?.toString() !== req.user.id.toString()) {
     return next(new HandleError("Bạn không có quyền truy cập đơn hàng này", 403));
   }
 
@@ -132,7 +159,7 @@ export const getSingleOrder = handleAsyncError(async (req, res, next) => {
 
 // Xem tất cả đơn hàng của user hiện tại
 export const allMyOrder = handleAsyncError(async (req, res, next) => {
-  const orders = await Order.find({ user_id: req.user.id })
+  const orders = await Order.find({ user_id: req.user.id }).populate("user_id", "name email");
   if (!orders) {
     return next(new HandleError("Không tìm thấy đơn hàng", 404))
   }
@@ -160,10 +187,11 @@ export const getAllOrder = handleAsyncError(async (req, res, next) => {
 
 // cập nhật trạng thái đơn hàng
 export const updateOrderStauts = handleAsyncError(async (req, res, next) => {
-  const order = await Order.findById(req.params.id);
+  const order = await Order.findById(req.params.id).populate("user_id", "name email");
   if (!order) return next(new HandleError("Không tìm thấy đơn hàng", 404));
 
   const newStatus = req.body.status;
+  const { trackingNumber, cancellationReason } = req.body;
 
   const allowed = ["Chờ xử lý", "Đang giao", "Đã giao", "Đã hủy"];
   if (!allowed.includes(newStatus)) {
@@ -181,18 +209,30 @@ export const updateOrderStauts = handleAsyncError(async (req, res, next) => {
   }
 
   order.orderStatus = newStatus;
+  if (trackingNumber) order.trackingNumber = trackingNumber;
+  if (cancellationReason) order.cancellationReason = cancellationReason;
 
   if (newStatus === "Đã giao") {
     order.deliveredAt = Date.now();
 
-    if (order.paymentInfo?.method === "COD" && !order.isPaid) {
+    if (order.paymentMethod === "COD" && !order.isPaid) {
       order.isPaid = true;
       order.paidAt = Date.now();
-      order.paymentInfo.status = "PAID";
+      if (order.paymentInfo) {
+        order.paymentInfo.status = "PAID";
+      }
     }
   }
 
+  if (newStatus === "Đã hủy") {
+    order.cancelledAt = Date.now();
+    order.cancelledBy = req.user._id;
+  }
+
   await order.save({ validateBeforeSave: false });
+
+  // Gửi email thông báo (bất đồng bộ)
+  sendStatusEmail(order, newStatus);
 
   res.status(200).json({ success: true, order });
 });

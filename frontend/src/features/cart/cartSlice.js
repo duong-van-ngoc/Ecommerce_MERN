@@ -174,7 +174,13 @@ const cartSlice = createSlice({
             localStorage.setItem(getCartKey(state.userId), JSON.stringify(state.cartItems));
 
             if (state.userId) {
-                axios.post('/api/v1/cart/item/remove', { product: pId, size: pSize, color: pColor }).catch(err => console.error(err));
+                // RESTful DELETE: /api/v1/cart/item/:productId?size=...&color=...
+                const query = new URLSearchParams();
+                if (pSize) query.append('size', pSize);
+                if (pColor) query.append('color', pColor);
+                const queryString = query.toString();
+                const url = `/api/v1/cart/item/${pId}${queryString ? '?' + queryString : ''}`;
+                axios.delete(url).catch(err => console.error(err));
             }
         },
         saveShippingInfo: (state, action) => {

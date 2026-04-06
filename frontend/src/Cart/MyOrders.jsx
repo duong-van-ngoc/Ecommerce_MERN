@@ -152,6 +152,7 @@ function MyOrders() {
       const query = searchQuery.toLowerCase();
       result = result.filter(
         (order) =>
+          (order.orderCode && order.orderCode.toLowerCase().includes(query)) ||
           order._id?.toLowerCase().includes(query) ||
           order.orderItems?.some((item) => item.name?.toLowerCase().includes(query))
       );
@@ -281,7 +282,9 @@ function MyOrders() {
                               {statusConfig.text}
                             </span>
                           </div>
-                          <span className="order-id">ID: #{order._id?.slice(-8).toUpperCase()}</span>
+                          <span className="order-id">
+                            {order.orderCode ? `Mã: ${order.orderCode}` : `ID: #${order._id?.slice(-8).toUpperCase()}`}
+                          </span>
                         </div>
 
                         {/* Product List */}
