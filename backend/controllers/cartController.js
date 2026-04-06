@@ -112,11 +112,10 @@ export const updateCartItem = handleAsyncError(async (req, res, next) => {
     });
 });
 
-// DELETE /api/v1/cart — Xóa một mặt hàng cụ thể khỏi giỏ
+// DELETE /api/v1/cart/item/:productId — Xóa một mặt hàng cụ thể khỏi giỏ
 export const removeCartItem = handleAsyncError(async (req, res, next) => {
-    // Support both "product_id" (new) and "product" (legacy from frontend)
-    const product_id = req.body.product_id || req.body.product;
-    const { size, color } = req.body;
+    const { productId } = req.params;
+    const { size, color } = req.query; // Get variants from query string
 
     const cart = await Cart.findOne({ user_id: req.user.id });
 
@@ -124,12 +123,19 @@ export const removeCartItem = handleAsyncError(async (req, res, next) => {
         return next(new HandleError("Không tìm thấy giỏ hàng", 404));
     }
 
-    await CartItem.findOneAndDelete({
+    // Standardize nulls for matching
+    const query = {
         cart_id: cart._id,
-        product_id,
-        size: size || null,
-        color: color || null,
-    });
+        product_id: productId
+    };
+
+    if (size) query.size = size;
+    else query.size = null;
+
+    if (color) query.color = color;
+    else query.color = null;
+
+    await CartItem.findOneAndDelete(query);
 
     const cartWithItems = await buildCartResponse(cart);
 

@@ -375,10 +375,10 @@ export const fetchAllOrders = createAsyncThunk(
  */
 export const updateOrderStatus = createAsyncThunk(
     'admin/updateOrderStatus',
-    async ({ id, status }, { rejectWithValue }) => {
+    async ({ id, status, trackingNumber, cancellationReason }, { rejectWithValue }) => {
         try {
             const { data } = await axios.put(`/api/v1/admin/order/${id}`,
-                { status },
+                { status, trackingNumber, cancellationReason },
                 { withCredentials: true }
             );
             return data.order;

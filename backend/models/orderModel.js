@@ -57,6 +57,14 @@ const orderSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  
+  orderCode: {
+      type: String,
+      required: true,
+      unique: true,
+      uppercase: true,
+      index: true
+  },
 
   orderItems: [
     {
@@ -85,7 +93,20 @@ const orderSchema = new mongoose.Schema({
   orderStatus: {
     type: String,
     required: true,
-    default: "Processing",
+    enum: ["Chờ xử lý", "Đang giao", "Đã giao", "Đã hủy"],
+    default: "Chờ xử lý",
+  },
+
+  trackingNumber: {
+    type: String,
+    trim: true,
+    sparse: true, // Cho phép null nhưng nếu có giá trị thì phải duy nhất (nếu unique: true)
+  },
+
+  cancellationReason: {
+    type: String,
+    trim: true,
+    default: null
   },
 
   paymentMethod: {
