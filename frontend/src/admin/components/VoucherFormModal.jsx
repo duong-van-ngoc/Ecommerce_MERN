@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { createVoucher, updateVoucher } from '../adminSLice/adminSlice';
+import { createVoucher, updateVoucher } from '@/admin/adminSLice/adminSlice';
 import { toast } from 'react-toastify';
 
 const VoucherFormModal = ({ voucher, onClose }) => {

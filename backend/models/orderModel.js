@@ -132,6 +132,29 @@ const orderSchema = new mongoose.Schema({
   isPaid: { type: Boolean, default: false },
   paidAt: { type: Date },
 
+  // --- VOUCHER SNAPSHOT (Refactor: Gộp History vào Order) ---
+  voucher_id: {
+    type: mongoose.Schema.ObjectId,
+    ref: "Voucher",
+    index: true
+  },
+  voucherCode: { // Lưu mã tại thời điểm áp dụng
+    type: String,
+    uppercase: true,
+    trim: true
+  },
+  voucherType: { // Lưu loại: percentage | fixed
+    type: String,
+    enum: ["percentage", "fixed"]
+  },
+  voucherValue: { // Giá trị (ví dụ: 10% hoặc 50000)
+    type: Number
+  },
+  discountAmount: { // Số tiền được giảm thực tế
+    type: Number,
+    default: 0
+  },
+
   itemsPrice: { type: Number, required: true, default: 0 },
   taxPrice: { type: Number, required: true, default: 0 },
   shippingPrice: { type: Number, required: true, default: 0 },
@@ -149,6 +172,16 @@ const orderSchema = new mongoose.Schema({
   },
   createdAt: { type: Date, default: Date.now },
 }, { timestamps: true });
+
+// --- CẤU HÌNH INDEX (Tối ưu truy vấn & nghiệp vụ) ---
+// Index cho user và voucher để tăng tốc độ đối soát
+orderSchema.index({ user_id: 1 });
+orderSchema.index({ orderStatus: 1 });
+
+// Compound Index: Phục vụ logic "Kiểm tra User đã dùng voucher này chưa"
+// Giúp Query cực nhanh khi hệ thống có hàng triệu đơn hàng
+orderSchema.index({ user_id: 1, voucher_id: 1, orderStatus: 1 });
+
 
 // Middleware tính tổng tiền trước khi lưu đơn hàng
 orderSchema.pre('save', function(next) {

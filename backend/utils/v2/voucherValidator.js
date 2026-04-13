@@ -1,4 +1,4 @@
-import VoucherHistory from '../../models/voucherHistoryModel.js';
+import Order from '../../models/orderModel.js';
 
 /**
  * Validator chuyên sâu cho Voucher - Đồng bộ với Schema v2
@@ -38,11 +38,11 @@ const validateVoucher = async (voucher, user, orderAmount) => {
         };
     }
 
-    // 5. Kiểm tra giới hạn sử dụng của từng User
-    const userUsageCount = await VoucherHistory.countDocuments({ 
-        userId: user._id, 
-        voucherId: voucher._id,
-        status: 'used' // Giả sử có status used trong history
+    // 5. Kiểm tra giới hạn sử dụng của từng User (Bằng cách đếm số Đơn Hàng không bị hủy)
+    const userUsageCount = await Order.countDocuments({ 
+        user_id: user._id, 
+        voucher_id: voucher._id,
+        orderStatus: { $ne: 'Đã hủy' }
     });
 
     if (userUsageCount >= voucher.conditions.limitPerUser) {

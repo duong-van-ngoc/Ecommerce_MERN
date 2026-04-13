@@ -52,7 +52,7 @@
  *    - Đây là file "nhạy cảm" về bảo mật, hãy cẩn thận khi thay đổi cách lưu Token hoặc các hàm xóa trạng thái đăng nhập.
  */
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import axios from '../../api/http.js'
+import axios from '@/shared/api/http.js'
 
 const getErrorPayload = (error, fallbackMessage) => ({
     message: error.response?.data?.message || fallbackMessage,

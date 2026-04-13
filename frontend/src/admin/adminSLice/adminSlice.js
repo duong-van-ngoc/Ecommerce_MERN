@@ -53,7 +53,7 @@
  *    - File này rất dài vì nó gom nhiều tính năng Admin vào một nơi để dễ quản lý "Phân vùng dữ liệu Admin".
  */
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from '../../api/http.js';
+import axios from '@/shared/api/http.js';
 
 /**
  * Async Thunk - Lấy thống kê dashboard

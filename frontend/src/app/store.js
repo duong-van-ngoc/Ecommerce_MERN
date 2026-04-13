@@ -44,11 +44,11 @@
  *    - Tên bạn đặt trong phần `reducer` cực kỳ quan trọng: Nó sẽ quyết định cách bạn lấy dữ liệu ra ở các Component bằng Hook `useSelector`.
  */
 import { configureStore } from '@reduxjs/toolkit';
-import productReducer from '../features/products/productSlice';
-import userReducer from '../features/user/userSlice';
-import cartReducer from '../features/cart/cartSlice';
-import orderReducer from '../features/orders/orderSlice';
-import adminReducer from '../admin/adminSLice/adminSlice'
+import productReducer from '@/features/products/productSlice';
+import userReducer from '@/features/user/userSlice';
+import cartReducer from '@/features/cart/cartSlice';
+import orderReducer from '@/features/orders/orderSlice';
+import adminReducer from '@/admin/adminSLice/adminSlice'
 
 
 export const store = configureStore({

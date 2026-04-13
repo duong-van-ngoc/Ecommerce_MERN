@@ -54,10 +54,10 @@
  */
 import React, { useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { importStock, searchAdminProducts, updateSingleStock } from '../adminSLice/adminSlice';
+import { importStock, searchAdminProducts, updateSingleStock } from '@/admin/adminSLice/adminSlice';
 import { toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
-import '../styles/StockManagement.css';
+import '@/pages/admin/styles/StockManagement.css';
 
 /**
  * StockManagement - Tab quản lý nhập hàng

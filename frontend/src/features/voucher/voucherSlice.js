@@ -4,7 +4,7 @@
  * CHỨC NĂNG: Gọi API kiểm tra mã, lưu trữ số tiền giảm giá và thông báo lỗi.
  */
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "../../api/http.js";
+import axios from "@/shared/api/http.js";
 
 // Thunk: Kiểm tra và áp dụng Voucher
 export const applyVoucher = createAsyncThunk(

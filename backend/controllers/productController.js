@@ -60,6 +60,7 @@ import Review from '../models/reviewModel.js';
 import HandleError from '../utils/handleError.js';
 import handleAsyncError from '../middleware/handleAsyncError.js';
 import APIFunctionality from '../utils/apiFunctionality.js';
+import { getRelatedProductsLevel1 } from '../services/productRecommendationService.js';
 
 
 
@@ -165,13 +166,37 @@ export const getAllProducts = handleAsyncError(async (req, res, next) => {
     // phân trang 
     apiFeatures.pagination(resultPerPage);
     const products = await apiFeatures.query;
+
+    let relatedProducts = [];
+    let hasResults = products.length > 0;
+
+    // Nếu không có kết quả, gọi service gợi ý (Level 1)
+    if (!hasResults) {
+        // Lấy category từ query (nếu có map trong APIFunctionality)
+        // Lưu ý: APIFunctionality.CATEGORY_MAP là static nên ta có thể dùng để trích xuất level1,2,3
+        const mappedCategory = req.query.category ? APIFunctionality.CATEGORY_MAP[req.query.category] : null;
+
+        relatedProducts = await getRelatedProductsLevel1({
+            brand: req.query.brand,
+            category: mappedCategory || {
+                level1: req.query.level1,
+                level2: req.query.level2,
+                level3: req.query.level3
+            },
+            limit: 8
+        });
+    }
+
     res.status(200).json({
         success: true,
         products,
         productCount,
         resultPerPage,
         totalPages,
-        currentPage: page
+        currentPage: page,
+        hasResults,
+        relatedProducts,
+        message: hasResults ? "Tìm kiếm thành công" : "Không tìm thấy sản phẩm phù hợp"
     });
 })
 

@@ -46,7 +46,7 @@
  *    - Shadow Design: Sử dụng một bóng đổ tùy chỉnh có màu hồng mờ (`rgba(238, 90, 111, 0.08)`) để tạo sự đồng bộ hoàn hảo với tông màu thương hiệu.
  */
 import React from 'react';
-import formatVND from '../../../utils/formatCurrency.js';
+import formatVND from '@/shared/utils/formatCurrency.js';
 
 export default function KPISection({ stats }) {
     if (!stats) return null;
