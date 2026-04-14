@@ -53,7 +53,7 @@
  *    - Cờ `isUpdate` trong `addItemsToCart` giúp phân biệt giữa việc "Thêm mới" (cộng thêm) và "Sửa số lượng" (thay thế hoàn toàn) trong trang giỏ hàng.
  */
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "../../api/http.js";
+import axios from "@/shared/api/http.js";
 
 // Hàm hỗ trợ lấy Key LocalStorage động dựa trên ID người dùng
 const getCartKey = (userId) => userId ? `cartItems_${userId}` : 'cartItems_guest';

@@ -56,7 +56,7 @@ import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 // Import New Premium Layout
-import DashboardLayout from './premium-dashboard/DashboardLayout';
+import DashboardLayout from '@/admin/components/premium-dashboard/DashboardLayout';
 
 function AdminLayout() {
     const { isAuthenticated, user } = useSelector(state => state.user);

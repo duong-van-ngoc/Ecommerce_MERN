@@ -50,7 +50,7 @@
  *    - `resultPerPage` cần phải đồng bộ với thiết lập của Backend để đảm bảo phân trang không bị lệch.
  */
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from '../../api/http.js';
+import axios from '@/shared/api/http.js';
 
 
 // Lấy danh sách sản phẩm (có filter + sort + pagination)
@@ -150,7 +150,10 @@ const productSlice = createSlice({
     error: null,
     product: null,
     resultPerPage: 4,
-    totalPages: 0
+    totalPages: 0,
+    hasResults: true,
+    relatedProducts: [],
+    message: null
   },
   reducers: {
     removeErrors: (state) => {
@@ -172,11 +175,16 @@ const productSlice = createSlice({
         state.productCount = action.payload.productCount;
         state.resultPerPage = action.payload.resultPerPage;
         state.totalPages = action.payload.totalPages;
+        state.hasResults = action.payload.hasResults !== undefined ? action.payload.hasResults : true;
+        state.relatedProducts = action.payload.relatedProducts || [];
+        state.message = action.payload.message || null;
       })
       .addCase(getProduct.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Đã xảy ra lỗi';
-        state.products = []
+        state.products = [];
+        state.hasResults = false;
+        state.relatedProducts = [];
       })
 
     // lay thong tin chi tiet  san pham

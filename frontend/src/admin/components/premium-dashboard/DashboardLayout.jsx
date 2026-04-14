@@ -46,8 +46,8 @@
  *    - Margin Left (`ml-64`): Khi thay đổi độ rộng Sidebar, bạn BẮT BUỘC phải cập nhật lại giá trị margin này ở thẻ `main` để tránh vỡ layout.
  */
 import React from 'react';
-import Sidebar from './Sidebar';
-import Header from './Header';
+import Sidebar from '@/admin/components/premium-dashboard/Sidebar';
+import Header from '@/admin/components/premium-dashboard/Header';
 
 export default function DashboardLayout({ user, children }) {
     return (

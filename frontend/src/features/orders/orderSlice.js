@@ -51,7 +51,7 @@
  *    - Đảm bảo rằng `orderDetails` và `order` được định rõ cấu trúc dữ liệu để tránh lỗi "undefined" khi render thông tin sản phẩm trong đơn hàng.
  */
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import axios from '../../api/http.js'
+import axios from '@/shared/api/http.js'
 
 
 

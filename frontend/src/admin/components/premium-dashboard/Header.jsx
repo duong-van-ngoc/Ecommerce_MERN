@@ -46,7 +46,7 @@
  */
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { setGlobalSearchQuery } from '../../adminSLice/adminSlice';
+import { setGlobalSearchQuery } from '@/admin/adminSLice/adminSlice';
 
 export default function Header({ user }) {
     const dispatch = useDispatch();

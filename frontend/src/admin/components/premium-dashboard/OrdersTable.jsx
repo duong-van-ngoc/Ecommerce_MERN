@@ -47,7 +47,7 @@
  *    - Nut "Xem Tất Cả": Liên kết trực tiếp đến phân hệ quản lý đơn hàng chuyên sâu.
  */
 import React from 'react';
-import formatVND from '../../../utils/formatCurrency.js';
+import formatVND from '@/shared/utils/formatCurrency.js';
 
 export default function OrdersTable({ orders }) {
     if (!orders || orders.length === 0) {
