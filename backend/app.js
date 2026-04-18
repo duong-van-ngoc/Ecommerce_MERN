@@ -68,7 +68,8 @@ import address from './routes/addressRoute.js';
 import payment from './routes/paymentRoutes.js';
 import cart from './routes/cartRoutes.js';
 import aiAssistant from './routes/aiRoute.js';
-import vouchers from './routes/v2/promoRoutes.js';
+import vouchers from './routes/promoRoutes.js';
+import notifications from './routes/notificationRoutes.js';
 
 import errorHandleMiddleware from './middleware/error.js';
 import cookieParser from 'cookie-parser';

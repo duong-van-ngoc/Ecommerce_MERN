@@ -42,6 +42,22 @@ const addressSchema = new mongoose.Schema({
     required: [true, "Vui lòng nhập địa chỉ cụ thể"],
     trim: true
   },
+  provinceCode: {
+    type: String,
+    required: [true, "Mã tỉnh/thành là bắt buộc"]
+  },
+  districtCode: {
+    type: String,
+    required: [true, "Mã quận/huyện là bắt buộc"]
+  },
+  wardCode: {
+    type: String,
+    required: [true, "Mã phường/xã là bắt buộc"]
+  },
+  zipCode: {
+    type: String,
+    trim: true
+  },
   addressLabel: {
     type: String,
     enum: ["Nhà riêng", "Văn phòng", "Khác"],

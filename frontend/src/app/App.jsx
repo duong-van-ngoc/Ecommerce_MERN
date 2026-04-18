@@ -63,6 +63,7 @@ import Profile from '@/pages/user/Profile'
 import ProtectedRoute from '@/shared/components/ProtectedRoute'
 import UpdateProfile from '@/pages/user/UpdateProfile'
 import UpdatePassword from '@/pages/user/UpdatePassword'
+import Addresses from '@/Pages/user/Addresses'
 import ForgotPassword from '@/pages/auth/ForgotPassword'
 import ResetPassword from '@/pages/auth/ResetPassword'
 import { loaderUser } from '@/features/user/userSlice'
@@ -130,6 +131,9 @@ function App() {
         />
         <Route path="/password/update"
           element={<ProtectedRoute element={<UpdatePassword />} />}
+        />
+        <Route path="/profile/addresses"
+          element={<ProtectedRoute element={<Addresses />} />}
         />
         <Route path="/password/forgot" element={<ForgotPassword />} />
         <Route path="/password/reset/:token" element={<ResetPassword />} />

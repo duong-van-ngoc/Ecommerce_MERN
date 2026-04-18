@@ -48,7 +48,10 @@ import productReducer from '@/features/products/productSlice';
 import userReducer from '@/features/user/userSlice';
 import cartReducer from '@/features/cart/cartSlice';
 import orderReducer from '@/features/orders/orderSlice';
-import adminReducer from '@/admin/adminSLice/adminSlice'
+import addressReducer from '@/features/address/addressSlice';
+import adminReducer from '@/admin/adminSLice/adminSlice';
+import voucherReducer from '@/features/voucher/voucherSlice';
+import notificationReducer from '@/features/notification/notificationSlice';
 
 
 export const store = configureStore({
@@ -57,6 +60,9 @@ export const store = configureStore({
         user: userReducer,
         cart: cartReducer,
         order: orderReducer,
+        address: addressReducer,
         admin: adminReducer,
+        voucher: voucherReducer,
+        notification: notificationReducer,
     }
 })

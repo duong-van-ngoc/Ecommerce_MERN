@@ -24,9 +24,25 @@ export const applyVoucher = createAsyncThunk(
   }
 );
 
+// Thunk: Lấy danh sách Voucher công khai đang hoạt động
+export const fetchActiveVouchers = createAsyncThunk(
+  "voucher/fetchActiveVouchers",
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data } = await axios.get("/api/v1/vouchers/all");
+      return data.vouchers;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Không thể lấy danh sách mã giảm giá"
+      );
+    }
+  }
+);
+
 const voucherSlice = createSlice({
   name: "voucher",
   initialState: {
+    activeVouchers: [],   // Danh sách voucher công khai từ kho
     appliedVoucher: null, // Lưu kết quả validation từ server
     voucherCode: "",      // Mã đang nhập hoặc đã apply
     loading: false,
@@ -46,6 +62,7 @@ const voucherSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Apply Voucher
       .addCase(applyVoucher.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -62,9 +79,22 @@ const voucherSlice = createSlice({
         state.error = action.payload;
         state.appliedVoucher = null;
         state.success = false;
+      })
+      // Fetch Active Vouchers
+      .addCase(fetchActiveVouchers.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchActiveVouchers.fulfilled, (state, action) => {
+        state.loading = false;
+        state.activeVouchers = action.payload;
+      })
+      .addCase(fetchActiveVouchers.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
 
 export const { resetVoucher, clearVoucherErrors } = voucherSlice.actions;
 export default voucherSlice.reducer;
+

@@ -122,7 +122,7 @@
 .cart-left-column {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 16px; /* Increased from 0 to lengthen the left side */
 }
 
 .cart-select-header {
@@ -199,7 +199,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 20px;
+  padding: 24px 20px; /* Increased padding to lengthen items */
   border-bottom: 1px solid #f0f0f0;
   animation: slideIn 0.3s ease-out;
 }
@@ -356,126 +356,545 @@
   color: #ee4d2d;
 }
 
-/* ======================= ORDER SUMMARY ======================= */
+/* =============================================================
+   PREMIUM ORDER SUMMARY & VOUCHER SECTION (REFACTORED)
+   ============================================================= */
+
 .order-summary {
-  background: #fff;
-  border-radius: 8px;
+  background: #ffffff;
+  border-radius: 20px;
   padding: 24px;
   position: sticky;
-  top: 120px;
+  top: 100px;
   align-self: flex-start;
-  max-height: calc(100vh - 140px);
-  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), 0 1px 8px rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.03);
   z-index: 10;
+  transition: all 0.3s ease;
 }
 
 .summary-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #222;
-  margin: 0 0 20px 0;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #f0f0f0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin: 0 0 24px 0;
+  letter-spacing: -0.02em;
+}
+
+/* Financial Details Box */
+.summary-details-box {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 24px;
+  border-bottom: 1.5px dashed #f0f0f0;
+  margin-bottom: 24px;
 }
 
 .summary-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
+}
+
+.row-label {
   font-size: 14px;
-  color: #666;
-}
-
-.summary-value {
+  color: #64748b;
   font-weight: 500;
-  color: #222;
 }
 
-.summary-value.discount {
-  color: #ee4d2d;
-}
-
-.summary-value.free {
-  color: #26aa99;
-  font-weight: 600;
-}
-
-.shipping-note {
-  font-size: 12px;
-  color: #999;
-  font-style: italic;
-  margin: 0 0 8px 0;
-}
-
-.summary-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 16px 0;
-  margin-top: 8px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.summary-total>span {
+.row-value {
   font-size: 15px;
   font-weight: 600;
-  color: #222;
+  color: #1e293b;
 }
 
-.total-value-wrapper {
-  text-align: right;
-}
-
-.total-value {
-  font-size: 22px;
+.row-value.discount {
+  color: #ef4444; /* Clean Red */
   font-weight: 700;
-  color: #ee4d2d;
-  display: block;
 }
 
-.vat-note {
-  font-size: 12px;
-  color: #999;
-  margin-top: 2px;
+.row-value.free-shipping {
+  color: #10b981; /* Premium Green */
+  font-weight: 700;
 }
 
-.checkout-btn {
-  width: 100%;
-  padding: 14px;
-  background: #ee4d2d;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-top: 16px;
-}
-
-.checkout-btn:hover:not(:disabled) {
-  background: #d73211;
-}
-
-.checkout-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.benefits-list {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.benefit-item {
+.shipping-info-alert {
   display: flex;
   align-items: center;
   gap: 8px;
+  background: #f0fdf4;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-top: 4px;
+}
+
+.shipping-info-alert .material-symbols-outlined {
+  font-size: 18px;
+  color: #10b981;
+}
+
+.shipping-info-alert p {
+  font-size: 11px;
+  color: #065f46;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Voucher Section Header */
+.summary-voucher-section {
+  margin-bottom: 24px;
+}
+
+.voucher-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.voucher-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.voucher-header-title .material-symbols-outlined {
+  color: #ee4d2d;
+  font-size: 22px;
+}
+
+.voucher-header-title span {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.view-all-vouchers-btn {
+  background: none;
+  border: none;
+  color: #ee4d2d;
   font-size: 13px;
-  color: #666;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: opacity 0.2s;
+}
+
+.view-all-vouchers-btn:hover {
+  opacity: 0.8;
+}
+
+.view-all-vouchers-btn .material-symbols-outlined {
+  font-size: 16px;
+}
+
+/* Voucher Input Box */
+.voucher-input-wrapper {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.input-inner-group {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-inner-group .input-icon {
+  position: absolute;
+  left: 12px;
+  font-size: 18px;
+  color: #94a3b8;
+}
+
+.premium-voucher-input {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.premium-voucher-input:focus {
+  background: #ffffff;
+  border-color: #ee4d2d;
+  box-shadow: 0 0 0 4px rgba(238, 77, 45, 0.08);
+  outline: none;
+}
+
+.premium-apply-btn {
+  padding: 0 18px;
+  background: #1a1a1a;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.premium-apply-btn:hover:not(:disabled) {
+  background: #000;
+  transform: translateY(-1px);
+}
+
+.premium-apply-btn:disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Applied Voucher State */
+.applied-voucher-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  padding: 12px 14px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  animation: fadeIn 0.3s ease;
+}
+
+.applied-card-icon {
+  width: 36px;
+  height: 36px;
+  background: #fecaca;
+  color: #ee4d2d;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.applied-card-icon .material-symbols-outlined {
+  font-size: 20px;
+}
+
+.applied-card-content {
+  flex: 1;
+}
+
+.applied-voucher-code {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  color: #ee4d2d;
+}
+
+.applied-voucher-desc {
+  display: block;
+  font-size: 11px;
+  color: #7f1d1d;
+  font-weight: 500;
+}
+
+.remove-voucher-action {
+  background: none;
+  border: none;
+  padding: 6px;
+  color: #94a3b8;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  transition: all 0.2s;
+}
+
+.remove-voucher-action:hover {
+  background: #fff;
+  color: #ef4444;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Quick List Carousel */
+.voucher-quick-carousel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 0;
+}
+
+/* Removed internal scrollbars from summary carousel as requested */
+
+/* Premium Mini Voucher Card - Ticket Design */
+.premium-mini-voucher {
+  display: flex;
+  height: 76px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #ffffff;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.03));
+  border: 1px solid #f1f5f9;
+  transition: all 0.2s;
+}
+
+.premium-mini-voucher:hover {
+  border-color: rgba(238, 77, 45, 0.2);
+  transform: translateX(4px);
+}
+
+.voucher-left-stub {
+  width: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: #f8fafc;
+}
+
+.stub-punched-holes {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -1px;
+  width: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 4px 0;
+}
+
+.stub-punched-holes::before,
+.stub-punched-holes::after {
+  content: '';
+  width: 12px;
+  height: 12px;
+  background: #ffffff; /* Same as summary bg */
+  border-radius: 50%;
+  position: absolute;
+  left: -6px;
+  border: 1px solid #f1f5f9;
+}
+
+.stub-punched-holes::before { top: -6px; }
+.stub-punched-holes::after { bottom: -6px; }
+
+.voucher-left-stub .material-symbols-outlined {
+  font-size: 20px;
+  opacity: 0.5;
+}
+
+.voucher-body-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-left: 1.5px dashed #e2e8f0;
+}
+
+.voucher-text-info {
+  min-width: 0;
+}
+
+.voucher-name-label {
+  font-size: 14px;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.voucher-short-desc {
+  font-size: 11px;
+  color: #64748b;
+  margin: 2px 0 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.voucher-use-btn {
+  background: none;
+  border: 1.5px solid #ee4d2d;
+  color: #ee4d2d;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.voucher-use-btn:hover:not(:disabled) {
+  background: #ee4d2d;
+  color: #fff;
+}
+
+.voucher-use-btn:disabled {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Mini Voucher Color Variations */
+.premium-mini-voucher.red .voucher-left-stub { background: #fff1f0; color: #cf1322; }
+.premium-mini-voucher.red .voucher-name-label { color: #cf1322; }
+
+.premium-mini-voucher.blue .voucher-left-stub { background: #e6f7ff; color: #096dd9; }
+.premium-mini-voucher.blue .voucher-name-label { color: #096dd9; }
+
+.premium-mini-voucher.indigo .voucher-left-stub { background: #f0f5ff; color: #1d39c4; }
+.premium-mini-voucher.indigo .voucher-name-label { color: #1d39c4; }
+
+/* Feedback Messages */
+.voucher-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 16px;
+  animation: slideDown 0.3s ease;
+}
+
+.voucher-message.error { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
+.voucher-message.success { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+
+/* Total Footer Box */
+.summary-total-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-top: 24px;
+  margin-top: 8px;
+  border-top: 1.5px solid #f8fafc;
+}
+
+.total-label-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.total-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.total-subtext {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.total-price-box {
+  text-align: right;
+}
+
+.final-price {
+  font-size: 26px;
+  font-weight: 900;
+  color: #ee4d2d;
+  display: block;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.savings-badge {
+  display: inline-block;
+  background: #fef2f2;
+  color: #ef4444;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin-top: 6px;
+  border: 1px solid #fee2e2;
+  text-transform: uppercase;
+}
+
+/* Main CTA Button */
+.main-checkout-cta {
+  width: 100%;
+  padding: 18px;
+  background: #ee4d2d;
+  color: #ffffff;
+  border: none;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  margin-top: 24px;
+  box-shadow: 0 15px 30px rgba(238, 77, 45, 0.2);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.main-checkout-cta:hover:not(:disabled) {
+  background: #d63d1e;
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px rgba(238, 77, 45, 0.3);
+}
+
+.main-checkout-cta:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.main-checkout-cta:disabled {
+  background: #f1f5f9;
+  color: #cbd5e1;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.main-checkout-cta .material-symbols-outlined {
+  font-size: 20px;
+  transition: transform 0.2s;
+}
+
+.main-checkout-cta:hover .material-symbols-outlined {
+  transform: translateX(4px);
+}
+
+/* Trust Benefits */
+.trust-benefits-container {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 14px;
+}
+
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #475569;
+  font-weight: 500;
+}
+
+.trust-item .material-symbols-outlined {
+  color: #10b981;
+  font-size: 18px;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ======================= MOBILE STICKY ======================= */
@@ -582,7 +1001,11 @@
   }
 
   .order-summary {
-    display: none;
+    display: block;
+    position: static;
+    margin-top: 20px;
+    max-height: none;
+    padding: 20px;
   }
 
   .mobile-sticky-checkout {

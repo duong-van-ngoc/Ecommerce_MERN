@@ -116,7 +116,13 @@ function OrderConfirm() {
   )
   const tax = subtotal * 0.1
   const shippingCharges = subtotal >= 500000 ? 0 : 30000
-  const total = subtotal + tax + shippingCharges
+
+  // Đọc thông tin voucher từ sessionStorage
+  const appliedVoucher = JSON.parse(sessionStorage.getItem("appliedVoucher") || "null")
+  const discountAmount = appliedVoucher ? Number(appliedVoucher.discountAmount || 0) : 0
+  const voucherCode = appliedVoucher ? appliedVoucher.voucherCode : ""
+
+  const total = Math.max(0, subtotal + tax + shippingCharges - discountAmount)
 
   const navigate = useNavigate()
 
@@ -143,12 +149,15 @@ function OrderConfirm() {
 
     // Mapping: Chuẩn hóa dữ liệu địa chỉ cho Backend Model
     const mappedShippingInfo = {
-      address: `${shippingInfo.address}, ${shippingInfo.wardName || ''}`,
-      city: shippingInfo.districtName, 
-      state: shippingInfo.provinceName,
-      country: shippingInfo.country || 'VN',
-      pinCode: Number(shippingInfo.pinCode) || 700000,
-      phoneNo: Number(shippingInfo.phoneNumber || shippingInfo.phoneNo)
+      fullName: user?.name || "",
+      phone: String(shippingInfo.phoneNumber || shippingInfo.phoneNo || ""),
+      province: shippingInfo.provinceName || "",
+      district: shippingInfo.districtName || "",
+      ward: shippingInfo.wardName || "",
+      streetAddress: shippingInfo.address || "",
+      provinceCode: shippingInfo.provinceCode || "",
+      districtCode: shippingInfo.districtCode || "",
+      wardCode: shippingInfo.wardCode || "",
     }
 
     // Prepare Order Data
@@ -172,6 +181,11 @@ function OrderConfirm() {
       itemPrice: Number(subtotal),
       taxPrice: Number(tax),
       shippingPrice: Number(shippingCharges),
+      discountAmount: Number(discountAmount),
+      voucherCode: voucherCode,
+      voucher_id: appliedVoucher?.voucher_id || null,
+      voucherType: appliedVoucher?.voucherType || "",
+      voucherValue: Number(appliedVoucher?.voucherValue || 0),
       totalPrice: Number(total)
     }
 
@@ -218,6 +232,7 @@ function OrderConfirm() {
       setShowSuccessPopup(true)
       sessionStorage.removeItem("directBuyItem"); 
       sessionStorage.removeItem("selectedOrderItems"); 
+      sessionStorage.removeItem("appliedVoucher"); 
 
       // Xóa sản phẩm khỏi Redux Store và LocalStorage
       dispatch(removeOrderedItems(cartItems));
@@ -397,6 +412,14 @@ function OrderConfirm() {
                       <span>Thuế VAT (10%)</span>
                       <span className="font-medium text-slate-900">{formatVND(tax)}</span>
                     </div>
+
+                    {discountAmount > 0 && (
+                      <div className="flex justify-between text-[#ff5a5f] font-medium bg-[#ff5a5f]/5 p-2 rounded-lg border border-[#ff5a5f]/10">
+                        <span>Giảm giá {voucherCode && `(${voucherCode})`}</span>
+                        <span>-{formatVND(discountAmount)}</span>
+                      </div>
+                    )}
+
                     <div className="my-4 border-t border-dashed border-slate-200 pt-4">
                       <div className="flex items-baseline justify-between">
                         <span className="font-bold uppercase tracking-wide text-slate-900">Tổng cộng</span>
