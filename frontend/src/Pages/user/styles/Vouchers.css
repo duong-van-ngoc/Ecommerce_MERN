@@ -152,12 +152,44 @@
 }
 
 /* ==================================
-   2. TABS PHÂN LOẠI
+   2. TABS PHÂN LOẠI & MODE SELECTOR
 =================================== */
+.voucher-mode-selector {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 18px 24px;
+    border-radius: 16px;
+    font-weight: 800;
+    font-size: 15px;
+    border: 2px solid transparent;
+    background: #FFFFFF;
+    color: #64748B;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+
+.mode-btn.active {
+    background: #FF4E50;
+    color: #FFFFFF;
+    box-shadow: 0 10px 20px -5px rgba(255, 78, 80, 0.3);
+    transform: translateY(-2px);
+}
+
+.mode-btn.center.active {
+    background: linear-gradient(135deg, #00D2BE, #00EAD3);
+    box-shadow: 0 10px 20px -5px rgba(0, 210, 190, 0.3);
+}
+
 .vouchers-tab-group {
     margin-bottom: 40px;
     overflow-x: auto;
-    padding-bottom: 8px;
+    padding: 4px;
 }
 
 .voucher-tabs {

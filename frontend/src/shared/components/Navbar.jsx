@@ -49,10 +49,17 @@
  *    - Đừng quên file CSS tương ứng `Navbar.css` vì logic hiển thị Mobile/Desktop dựa hoàn toàn vào Media Queries trong đó.
  *    - Chú ý hàm `encodeURIComponent`: Nó giúp bảo vệ ứng dụng khi người dùng tìm kiếm bằng các ký tự đặc biệt như `&`, `#`, `?`.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import '@/shared/components/styles/Navbar.css';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { 
+    fetchNotifications, 
+    markAsRead, 
+    markAllRead, 
+    readLocal,
+    readAllLocal
+} from '@/features/notification/notificationSlice';
 
 function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

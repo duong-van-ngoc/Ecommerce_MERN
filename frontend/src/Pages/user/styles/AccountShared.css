@@ -1,0 +1,227 @@
+/* 
+   AccountShared.css
+   Style dùng chung cho tất cả các trang trong khu vực Tài khoản của người dùng.
+   Bao gồm: Layout, Sidebar Integration, và Premium Hero Header.
+*/
+
+/* 1. Layout Tổng Thể */
+.account-container {
+    background-color: #F8FAFC;
+    min-height: 100vh;
+    padding: 24px 20px 80px;
+    font-family: 'Manrope', 'Plus Jakarta Sans', sans-serif;
+}
+
+.account-content {
+    display: flex;
+    gap: 32px;
+    max-width: 1440px;
+    margin: 0 auto;
+}
+
+.account-main {
+    flex: 1;
+    min-width: 0; /* Tránh vỡ layout với flex child */
+}
+
+/* 2. HERO HEADER CAO CẤP (Thống nhất cho mọi trang) */
+.account-hero {
+    background: linear-gradient(135deg, #FFF5F5, #FFF0F6, #F0F4FF);
+    background-size: 200% 200%;
+    animation: account-gradient-shift 8s ease infinite;
+    border-radius: 20px;
+    padding: 40px;
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    border: 1px solid #FFFFFF;
+}
+
+@keyframes account-gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.hero-content {
+    position: relative;
+    z-index: 10;
+}
+
+.hero-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    background-color: rgba(255, 78, 80, 0.1);
+    color: #FF4E50;
+    font-size: 12px;
+    font-weight: 900;
+    border-radius: 9999px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.hero-title {
+    font-size: 44px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 900;
+    color: #1A1C1E;
+    margin-bottom: 12px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.hero-title-highlight {
+    background: linear-gradient(to right, #FF4E50, #F06292);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-desc {
+    color: rgba(26, 28, 30, 0.6);
+    font-weight: 500;
+    max-width: 450px;
+    line-height: 1.6;
+    font-size: 15px;
+}
+
+/* Stats Box trong Hero */
+.hero-stats {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    padding: 24px 32px;
+    border-radius: 24px;
+    box-shadow: 0 20px 25px -5px rgba(255, 78, 80, 0.05);
+    border: 1px solid #FFFFFF;
+    min-width: 200px;
+    text-align: center;
+    position: relative;
+    z-index: 10;
+    transition: transform 0.3s ease;
+}
+
+.hero-stats:hover {
+    transform: scale(1.05);
+}
+
+.hero-stats-label {
+    font-size: 11px;
+    color: rgba(26, 28, 30, 0.4);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+}
+
+.hero-stats-number {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 4px;
+}
+
+.hero-stats-number .number {
+    font-size: 48px;
+    font-weight: 900;
+    color: #FF4E50;
+    line-height: 1;
+}
+
+.hero-stats-number .unit {
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(26, 28, 30, 0.3);
+}
+
+/* Decor cho Hero */
+.hero-decoration-1 {
+    position: absolute;
+    right: -80px;
+    bottom: -80px;
+    width: 320px;
+    height: 320px;
+    background-color: rgba(255, 78, 80, 0.1);
+    border-radius: 50%;
+    filter: blur(100px);
+}
+
+.hero-decoration-2 {
+    position: absolute;
+    left: -40px;
+    top: -40px;
+    width: 240px;
+    height: 240px;
+    background-color: rgba(78, 101, 255, 0.1);
+    border-radius: 50%;
+    filter: blur(80px);
+}
+
+/* 3. TABS PHÂN LOẠI (Nếu có) */
+.account-tab-group {
+    margin-bottom: 32px;
+    overflow-x: auto;
+    padding: 4px;
+}
+
+.account-tabs {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px;
+    background-color: #FFFFFF;
+    border-radius: 9999px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(225, 226, 236, 0.3);
+}
+
+.account-tab {
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(26, 28, 30, 0.5);
+    border-radius: 9999px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.account-tab:hover {
+    background-color: rgba(255, 78, 80, 0.05);
+    color: #FF4E50;
+}
+
+.account-tab.active {
+    background-color: #FF4E50;
+    color: #FFFFFF;
+    font-weight: 900;
+    box-shadow: 0 10px 15px -3px rgba(255, 78, 80, 0.3);
+}
+
+/* 4. CHUNG CHO CÁC THẺ CARD DÙNG TRANG CÁ NHÂN */
+.account-card {
+    background: #FFFFFF;
+    border-radius: 20px;
+    padding: 32px;
+    border: 1px solid rgba(225, 226, 236, 0.5);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* 5. RESPONSIVE DÙNG CHUNG */
+@media (max-width: 1024px) {
+    .account-content { flex-direction: column; gap: 24px; }
+    .account-hero { padding: 32px 24px; flex-direction: column; text-align: center; gap: 32px; }
+    .hero-title { font-size: 32px; }
+    .hero-desc { margin: 0 auto; }
+}
+
+@media (max-width: 640px) {
+    .account-container { padding: 16px 12px 60px; }
+    .account-hero { padding: 24px 16px; }
+    .hero-stats { min-width: 100%; }
+}

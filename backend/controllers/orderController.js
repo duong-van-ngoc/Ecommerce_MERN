@@ -55,10 +55,14 @@ import mongoose from "mongoose";
 import Order from '../models/orderModel.js';
 import Product from '../models/productModel.js'
 import User from '../models/userModel.js'
+import Address from '../models/addressModel.js'
 import HandleError from '../utils/handleError.js';
 import handleAsyncError from '../middleware/handleAsyncError.js';
 import APIFunctionality from '../utils/apiFunctionality.js';
 import { sendStatusEmail } from '../services/emailService.js';
+import Voucher from '../models/voucherModel.js';
+import Notification from '../models/notificationModel.js';
+import { validateVoucher } from '../utils/v2/voucherValidator.js';
 
 // Helper: Sinh mã đơn hàng ngẫu nhiên chuyên nghiệp: TB-YYYYMMDD-XXXXX
 const generateOrderCode = async () => {
@@ -82,22 +86,83 @@ const generateOrderCode = async () => {
   return code;
 };
 
+// Helper: Chuẩn hóa dữ liệu địa chỉ để đồng nhất Snapshot và Address Book
+const normalizeShippingAddress = (source) => ({
+  fullName: source.fullName || source.name || "",
+  phone: String(source.phone || source.phoneNo || source.phoneNumber || ""),
+  province: source.province || source.state || "",
+  district: source.district || source.city || "",
+  ward: source.ward || "",
+  streetAddress: source.streetAddress || source.address || "",
+  addressLabel: source.addressLabel || "Khác",
+  provinceCode: source.provinceCode || "",
+  districtCode: source.districtCode || "",
+  wardCode: source.wardCode || "",
+});
+
 
 // Tạo đơn hàng mới (dữ liệu snapshot được gởi từ Frontend sau Checkout)
 export const createNewOrder = handleAsyncError(async (req, res, next) => {
-  const { shippingInfo, orderItems, itemPrice, taxPrice, shippingPrice, totalPrice, paymentMethod } = req.body;
+  const { 
+    address_id, 
+    shippingInfo, 
+    saveAddress, 
+    orderItems, 
+    itemPrice, 
+    taxPrice, 
+    shippingPrice, 
+    totalPrice, 
+    paymentMethod,
+    voucher_id,
+    voucherCode,
+    discountAmount // Từ FE gửi lên để tham khảo, server sẽ tính lại
+  } = req.body;
 
-  // Normalize shippingInfo: support both old format (city/state/pinCode/phoneNo)
-  // and new format (name/phone/address/district/province)
-  const normalizedShipping = {
-    name: shippingInfo.name || req.user.name || "",
-    phone: String(shippingInfo.phone || shippingInfo.phoneNo || shippingInfo.phoneNumber || ""),
-    address: shippingInfo.address || "",
-    district: shippingInfo.district || shippingInfo.city || "",
-    province: shippingInfo.province || shippingInfo.state || ""
-  };
+  let finalShippingInfo = {};
 
-  // Normalize orderItems: support both "product" (old) and "product_id" (new) field
+  // BƯỚC 1: XÁC ĐỊNH NGUỒN ĐỊA CHỈ (Ưu tiên address_id)
+  if (address_id) {
+    // TH1: Chọn từ Sổ địa chỉ
+    const savedAddress = await Address.findById(address_id);
+    
+    if (!savedAddress) {
+      return next(new HandleError("Địa chỉ đã chọn không tồn tại", 404));
+    }
+
+    if (savedAddress.user_id.toString() !== req.user.id.toString()) {
+      return next(new HandleError("Bạn không có quyền sử dụng địa chỉ này", 403));
+    }
+
+    finalShippingInfo = normalizeShippingAddress(savedAddress);
+  } else if (shippingInfo) {
+    // TH2: Nhập tay địa chỉ mới
+    // Validate các trường bắt buộc
+    const requiredFields = ["fullName", "phone", "province", "district", "ward", "streetAddress"];
+    for (const field of requiredFields) {
+      if (!shippingInfo[field]) {
+        return next(new HandleError(`Vui lòng cung cấp đầy đủ: ${field}`, 400));
+      }
+    }
+
+    finalShippingInfo = normalizeShippingAddress(shippingInfo);
+
+    // BƯỚC 2: LƯU ĐỊA CHỈ NẾU YÊU CẦU (saveAddress === true)
+    if (saveAddress === true) {
+      // Kiểm tra user đã có địa chỉ nào chưa để quyết định isDefault
+      const addressCount = await Address.countDocuments({ user_id: req.user.id });
+      
+      await Address.create({
+        user_id: req.user.id,
+        ...finalShippingInfo,
+        isDefault: addressCount === 0 // Nếu chưa có cái nào thì cái đầu tiên là default
+      });
+    }
+  } else {
+    // TH3: Không cung cấp nguồn địa chỉ nào
+    return next(new HandleError("Vui lòng cung cấp địa chỉ giao hàng", 400));
+  }
+
+  // BƯỚC 3: CHUẨN HÓA DANH SÁCH SẢN PHẨM
   const normalizedItems = (orderItems || []).map(item => ({
     product_id: item.product_id || item.product,
     name: item.name,
@@ -108,26 +173,61 @@ export const createNewOrder = handleAsyncError(async (req, res, next) => {
     color: item.color || null
   }));
 
-  // Tự động sinh mã đơn hàng mới
+  // BƯỚC 4: XỬ LÝ VOUCHER & TÍNH TOÁN LẠI TỔNG TIỀN (BACKEND VALIDATION)
+  let serverDiscountAmount = 0;
+  let serverVoucherInfo = {
+    voucher_id: null,
+    voucherCode: "",
+    voucherType: "",
+    voucherValue: 0
+  };
+
+  if (voucher_id) {
+    const voucher = await Voucher.findById(voucher_id);
+    if (voucher) {
+      const validation = await validateVoucher(voucher, req.user, Number(itemPrice));
+      if (validation.isValid) {
+        serverDiscountAmount = validation.discount;
+        serverVoucherInfo = {
+          voucher_id: voucher._id,
+          voucherCode: voucher.code,
+          voucherType: voucher.discount.type,
+          voucherValue: voucher.discount.value
+        };
+
+        // Tăng lượt sử dụng voucher (Atomic update)
+        voucher.usedCount += 1;
+        await voucher.save();
+      } else {
+        // Nếu voucher không còn hợp lệ khi đặt hàng (VD: vừa hết hạn/hết lượt)
+        return next(new HandleError(validation.message || "Mã giảm giá đã hết hiệu lực", 400));
+      }
+    }
+  }
+
+  // Tính lại tổng tiền cuối cùng trên server để đảm bảo an toàn
+  const serverTotal = Math.max(0, Number(itemPrice) + Number(taxPrice) + Number(shippingPrice) - serverDiscountAmount);
+
+  // BƯỚC 5: KHỞI TẠO ĐƠN HÀNG
   const orderCode = await generateOrderCode();
 
   const order = await Order.create({
-    shippingInfo: normalizedShipping,
+    shippingInfo: finalShippingInfo,
     orderItems: normalizedItems,
-
-    // paymentMethod and paymentStatus are top-level fields in schema
     paymentMethod: paymentMethod || req.body.paymentInfo?.method || "COD",
     paymentStatus: "Pending",
-
     itemsPrice: itemPrice || 0,
     taxPrice: taxPrice || 0,
     shippingPrice: shippingPrice || 0,
-    totalPrice: totalPrice || 0,
-
+    totalPrice: serverTotal,
+    discountAmount: serverDiscountAmount,
+    voucherCode: serverVoucherInfo.voucherCode,
+    voucher_id: serverVoucherInfo.voucher_id,
+    voucherType: serverVoucherInfo.voucherType,
+    voucherValue: serverVoucherInfo.voucherValue,
     paidAt: null,
     user_id: req.user._id,
-    orderCode: orderCode, // Gán mã đơn hàng
-
+    orderCode: orderCode,
     orderStatus: "Chờ xử lý",
     isPaid: false,
   });
@@ -233,6 +333,23 @@ export const updateOrderStauts = handleAsyncError(async (req, res, next) => {
 
   // Gửi email thông báo (bất đồng bộ)
   sendStatusEmail(order, newStatus);
+
+  // TỰ ĐỘNG TẠO THÔNG BÁO CHO USER
+  let notificationMessage = `Đơn hàng #${order.orderCode} đã chuyển sang trạng thái: ${newStatus}`;
+  
+  // Bổ sung mã vận đơn cho các trạng thái giao vận theo yêu cầu
+  const shippingStatuses = ["Đang giao", "Đã giao"];
+  if (shippingStatuses.includes(newStatus) && order.trackingNumber) {
+    notificationMessage += `. Mã vận đơn: ${order.trackingNumber}`;
+  }
+
+  await Notification.create({
+    userId: order.user_id._id || order.user_id,
+    title: `📦 Cập nhật đơn hàng ${order.orderCode}`,
+    message: notificationMessage,
+    type: 'order',
+    link: '/orders/my'
+  });
 
   res.status(200).json({ success: true, order });
 });

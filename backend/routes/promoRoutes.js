@@ -1,9 +1,10 @@
 import express from 'express';
-import Voucher from '../../models/voucherModel.js';
-import { validateVoucher } from '../../utils/v2/voucherValidator.js';
-import { verifyUserAuth } from '../../middleware/userAuth.js';
-import { isAuthenticatedAdmin } from '../../middleware/adminAuth.js';
-import asyncErrorHandler from "../../middleware/handleAsyncError.js";
+import Voucher from '../models/voucherModel.js';
+import { validateVoucher } from '../utils/v2/voucherValidator.js';
+import { verifyUserAuth } from '../middleware/userAuth.js';
+import { isAuthenticatedAdmin } from '../middleware/adminAuth.js';
+import asyncErrorHandler from "../middleware/handleAsyncError.js";
+import Notification from '../models/notificationModel.js';
 
 const router = express.Router();
 
@@ -23,8 +24,30 @@ const applyVoucherPreview = asyncErrorHandler(async (req, res, next) => {
 
   const result = await validateVoucher(voucher, user, itemPrice);
   res.status(200).json({ 
-    success: result.isValid, 
-    ...result 
+    success: result.isValid,
+    isValid: result.isValid,
+    message: result.message,
+    discountAmount: result.discount, // Chuyển từ discount sang discountAmount để khớp FE
+    voucherCode: voucher.code,       // Trả về code để FE hiển thị
+    voucher_id: voucher._id,         // Thêm ID để FE lưu trữ và gửi lên khi tạo order
+    voucherType: voucher.discount.type,
+    voucherValue: voucher.discount.value
+  });
+});
+
+// 1b. Lấy danh sách Voucher đang hoạt động (Dành cho Client hiển thị trong Giỏ hàng)
+const getActiveVouchers = asyncErrorHandler(async (req, res, next) => {
+  const now = new Date();
+  const vouchers = await Voucher.find({
+    status: 'active',
+    'targeting.isPublic': true,
+    'conditions.startDate': { $lte: now },
+    'conditions.endDate': { $gte: now }
+  }).sort({ createdAt: -1 });
+
+  res.status(200).json({
+    success: true,
+    vouchers
   });
 });
 
@@ -37,6 +60,26 @@ const createVoucher = asyncErrorHandler(async (req, res, next) => {
   }
   
   const voucher = await Voucher.create(voucherData);
+
+  // TỰ ĐỘNG TẠO THÔNG BÁO CHO NGƯỜI DÙNG (CHỈ DÀNH CHO VOUCHER PHỔ THÔNG & CÔNG KHAI)
+  try {
+    const isGeneral = voucher.type === 'general';
+    const isPublic = voucher.targeting && voucher.targeting.isPublic;
+
+    if (isGeneral && isPublic) {
+      await Notification.create({
+        userId: null, // Thông báo chung cho mọi người
+        title: '🎁 Mã giảm giá mới cực hời!',
+        message: `Tobi Shop vừa tung mã [${voucher.code}] giảm ${voucher.discount.type === 'percentage' ? `${voucher.discount.value}%` : `${voucher.discount.value.toLocaleString('vi-VN')}₫`}. Dùng ngay kẻo lỡ!`,
+        type: 'promotion',
+        link: '/cart'
+      });
+    }
+  } catch (error) {
+    console.error("Lỗi khi tạo thông báo Voucher:", error.message);
+    // Không chặn luồng trả về voucher cho Admin
+  }
+
   res.status(201).json({ 
     success: true, 
     voucher 
@@ -200,6 +243,8 @@ const deleteVoucher = asyncErrorHandler(async (req, res, next) => {
 });
 
 // ROUTES DEFINITION
+router.route('/all').get(getActiveVouchers);
+router.route('/active').get(getActiveVouchers);
 router.route('/apply').post(verifyUserAuth, applyVoucherPreview);
 
 // Admin Routes

@@ -71,6 +71,11 @@ function AccountSidebar() {
             path: "/orders/user",
         },
         {
+            icon: "📍",
+            label: "Địa Chỉ",
+            path: "/profile/addresses",
+        },
+        {
             icon: "🔔",
             label: "Thông Báo",
             path: "/notifications",

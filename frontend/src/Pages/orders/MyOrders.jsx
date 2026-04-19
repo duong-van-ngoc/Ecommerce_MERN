@@ -64,6 +64,7 @@ import AccountSidebar from "@/shared/components/AccountSidebar";
 import ReviewComment from "@/pages/orders/ReviewComment";
 import CancelOrderModal from "@/pages/orders/CancelOrderModal";
 import "@/pages/orders/styles/MyOrders.css";
+import "@/pages/user/styles/AccountShared.css";
 
 // Status tabs
 const STATUS_TABS = [
@@ -106,7 +107,7 @@ function MyOrders() {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [selectedCancelOrderId, setSelectedCancelOrderId] = useState(null);
 
-  const { orders = [], loading, error, success } = useSelector((state) => state.order);
+  const { orders = [], loading, error, cancelSuccess } = useSelector((state) => state.order);
   const { user } = useSelector((state) => state.user);
 
   useEffect(() => {
@@ -119,14 +120,14 @@ function MyOrders() {
       dispatch(removeErrors());
     }
 
-    if (success) {
+    if (cancelSuccess) {
       toast.success("Hủy đơn hàng thành công!");
       setIsCancelModalOpen(false);
       setSelectedCancelOrderId(null);
       dispatch(removeSuccess());
       dispatch(getMyOrders()); // Load lại danh sách đơn hàng mới nhất
     }
-  }, [dispatch, error, success]);
+  }, [dispatch, error, cancelSuccess]);
 
   const handleCancelOrder = (id) => {
     setSelectedCancelOrderId(id);
@@ -192,17 +193,40 @@ function MyOrders() {
       <PageTitle title="Đơn hàng của tôi" />
       <Navbar />
 
-      <div className="my-orders-page">
-        <div className="orders-page-layout">
+      <div className="account-container">
+        <div className="account-content">
 
           <AccountSidebar />
 
           {/* Main Content */}
-          <main className="orders-main-content">
-            {/* Header with title + search */}
-            <header className="orders-header-section">
-              <div className="orders-header-top">
-                <h1 className="orders-page-title">Đơn hàng của tôi</h1>
+          <main className="account-main">
+            
+            {/* HERO HEADER - ĐỒNG BỘ GIAO DIỆN */}
+            <div className="account-hero">
+                <div className="hero-content">
+                    <span className="hero-badge">Lịch sử mua hàng</span>
+                    <h1 className="hero-title">
+                        Đơn hàng <br />
+                        <span className="hero-title-highlight">Của tôi</span>
+                    </h1>
+                    <p className="hero-desc">
+                        Kiểm tra trạng thái các đơn hàng đã đặt. Theo dõi quá trình vận chuyển và quản lý các đơn hàng của bạn một cách dễ dàng.
+                    </p>
+                </div>
+                <div className="hero-stats">
+                    <p className="hero-stats-label">Tổng số đơn hàng</p>
+                    <div className="hero-stats-number">
+                        <span className="number">{orders.length}</span>
+                        <span className="unit">đơn</span>
+                    </div>
+                </div>
+                <div className="hero-decoration-1"></div>
+                <div className="hero-decoration-2"></div>
+            </div>
+
+            {/* Header with search & tabs */}
+            <div className="account-card" style={{padding: '24px'}}>
+              <div className="orders-header-top" style={{marginBottom: '24px'}}>
                 <div className="orders-search-wrapper">
                   <span className="search-icon-box">
                     <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -220,19 +244,21 @@ function MyOrders() {
                 </div>
               </div>
 
-              {/* Tab Bar */}
-              <div className="orders-tab-bar">
-                {STATUS_TABS.map((tab) => (
-                  <button
-                    key={tab.id}
-                    className={`tab-item ${currentTab === tab.id ? "active" : ""}`}
-                    onClick={() => setCurrentTab(tab.id)}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
+              {/* Tab Bar Duy trì logic cũ nhưng bọc trong account-tabs */}
+              <div className="account-tab-group" style={{marginBottom: 0}}>
+                <div className="account-tabs">
+                  {STATUS_TABS.map((tab) => (
+                    <button
+                      key={tab.id}
+                      className={`account-tab ${currentTab === tab.id ? "active" : ""}`}
+                      onClick={() => setCurrentTab(tab.id)}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </header>
+            </div>
 
             {/* Error */}
             {error && (

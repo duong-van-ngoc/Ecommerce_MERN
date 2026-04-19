@@ -64,10 +64,10 @@ const voucherSchema = new mongoose.Schema({
     index: true 
   },
   
-  // Phân loại: Exclusive (Độc quyền VIP), Limited (Giới hạn lượt), General (Phố thông)
+  // Phân loại: general (Phổ thông), limited (Giới hạn), exclusive (Độc quyền), shop (Cửa hàng)
   type: { 
     type: String, 
-    enum: ['exclusive', 'limited', 'general'], 
+    enum: ['general', 'limited', 'exclusive', 'shop'], 
     required: true,
     default: 'general'
   },

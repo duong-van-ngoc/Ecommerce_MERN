@@ -49,16 +49,27 @@
  */
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchNotifications, markAsRead, markAllRead, readLocal, readAllLocal } from "@/features/notification/notificationSlice";
 import AccountSidebar from "@/shared/components/AccountSidebar";
 import "@/pages/user/styles/Notifications.css";
+import "@/pages/user/styles/AccountShared.css";
 import PageTitle from "@/shared/components/PageTitle";
+import { TicketPercent, Package, Wallet, ShoppingBag, Bell } from "lucide-react";
 
 import Navbar from "@/shared/components/Navbar";
 import Footer from "@/shared/components/Footer";
 
 const Notifications = () => {
     const location = useLocation();
+    const dispatch = useDispatch();
     const [filter, setFilter] = useState("all");
+
+    const { notifications, unreadCount, loading } = useSelector((state) => state.notification);
+
+    useEffect(() => {
+        dispatch(fetchNotifications());
+    }, [dispatch]);
 
     // Map path to filter type
     useEffect(() => {
@@ -70,59 +81,10 @@ const Notifications = () => {
         else setFilter("all");
     }, [location]);
 
-    // Mock Data
-    const mockNotifications = [
-        {
-            id: 1,
-            type: "order",
-            title: "Giao hàng thành công",
-            content: "Đơn hàng #123456789 đã được giao thành công. Vui lòng đánh giá sản phẩm nhé!",
-            icon: "📦",
-            time: "14:30 02-02-2024",
-            unread: true,
-        },
-        {
-            id: 2,
-            type: "order",
-            title: "Đơn hàng đang được vận chuyển",
-            content: "Đơn hàng #987654321 của bạn đã được giao cho đơn vị vận chuyển.",
-            icon: "🚚",
-            time: "09:15 01-02-2024",
-            unread: false,
-        },
-        {
-            id: 3,
-            type: "promotion",
-            title: "Siêu Sale 2.2 - Giảm đến 50%",
-            content: "Săn deal hot ngay hôm nay! Hàng ngàn voucher đang chờ bạn.",
-            icon: "🏷️",
-            time: "00:00 02-02-2024",
-            unread: true,
-        },
-        {
-            id: 4,
-            type: "wallet",
-            title: "Hoàn xu 20.000đ",
-            content: "Bạn vừa nhận được 20.000 xu từ đơn hàng #123456789.",
-            icon: "💰",
-            time: "15:00 02-02-2024",
-            unread: true,
-        },
-        {
-            id: 5,
-            type: "shopee",
-            title: "Chào mừng bạn đến với ToBi Shop",
-            content: "Cảm ơn bạn đã tạo tài khoản. Khám phá các sản phẩm ngay!",
-            icon: "🛍️",
-            time: "10:00 01-01-2024",
-            unread: false,
-        },
-    ];
-
     // Filter Logic
     const filteredNotifications = filter === "all"
-        ? mockNotifications
-        : mockNotifications.filter(item => item.type === filter);
+        ? notifications
+        : notifications.filter(item => item.type === filter);
 
     const getTitle = () => {
         switch (filter) {
@@ -134,30 +96,89 @@ const Notifications = () => {
         }
     };
 
+    const handleMarkRead = (id) => {
+        dispatch(readLocal(id));
+        dispatch(markAsRead(id));
+    };
+
+    const handleMarkAllRead = () => {
+        dispatch(readAllLocal());
+        dispatch(markAllRead());
+    };
+
+    const getIcon = (type) => {
+        switch (type) {
+            case "promotion": return <TicketPercent className="icon-lucide" size={24} color="#ee4d2d" />;
+            case "order": return <Package className="icon-lucide" size={24} color="#26aa99" />;
+            case "wallet": return <Wallet className="icon-lucide" size={24} color="#f6a700" />;
+            case "shopee": return <ShoppingBag className="icon-lucide" size={24} color="#ee4d2d" />;
+            default: return <Bell className="icon-lucide" size={24} color="#4b5563" />;
+        }
+    };
+
+    const formatTime = (dateString) => {
+        const date = new Date(dateString);
+        return `${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')} ${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+    };
+
     return (
         <>
             <PageTitle title="Thông báo" />
             <Navbar />
-            <div className="notifications-container">
-                <div className="notifications-content">
+            <div className="account-container">
+                <div className="account-content">
                     <AccountSidebar />
-                    <div className="notifications-main">
-                        <div className="notifications-header">
-                            <h2>{getTitle()}</h2>
-                            <button className="mark-read-btn">Đánh dấu Đã đọc tất cả</button>
+                    <div className="account-main">
+                        
+                        {/* HERO HEADER - ĐỒNG BỘ GIAO DIỆN */}
+                        <div className="account-hero">
+                            <div className="hero-content">
+                                <span className="hero-badge">Trung tâm tin tức</span>
+                                <h1 className="hero-title">
+                                    Thông báo <br />
+                                    <span className="hero-title-highlight">Mới nhận</span>
+                                </h1>
+                                <p className="hero-desc">
+                                    Cập nhật những tin tức mới nhất về đơn hàng, khuyến mãi và các hoạt động hệ thống từ ToBi Shop. Đừng bỏ lỡ bất kỳ ưu đãi nào!
+                                </p>
+                            </div>
+                            <div className="hero-stats">
+                                <p className="hero-stats-label">Thông báo mới</p>
+                                <div className="hero-stats-number">
+                                    <span className="number">{unreadCount}</span>
+                                    <span className="unit">tin</span>
+                                </div>
+                            </div>
+                            <div className="hero-decoration-1"></div>
+                            <div className="hero-decoration-2"></div>
                         </div>
 
+                        <div className="account-card" style={{padding: '0'}}>
+                            <div className="notifications-header" style={{padding: '24px', borderBottom: '1px solid #f1f5f9'}}>
+                                <h2 style={{margin: 0, fontSize: '20px', fontWeight: 900}}>{getTitle()}</h2>
+                                <button className="mark-read-btn" onClick={handleMarkAllRead}>Đánh dấu Đã đọc tất cả</button>
+                            </div>
+
                         <div className="notifications-list">
-                            {filteredNotifications.length > 0 ? (
+                            {loading ? (
+                                <div className="loading-notifications">Đang tải thông báo...</div>
+                            ) : filteredNotifications.length > 0 ? (
                                 filteredNotifications.map((item) => (
-                                    <Link to="#" key={item.id} className={`notification-item ${item.unread ? "unread" : ""}`}>
+                                    <Link 
+                                        to={item.link || "#"} 
+                                        key={item._id} 
+                                        className={`notification-item ${!item.isRead ? "unread" : ""}`}
+                                        onClick={() => handleMarkRead(item._id)}
+                                    >
                                         <div className="notification-image">
-                                            <span className="notification-icon">{item.icon}</span>
+                                            <span className="notification-icon">
+                                                {getIcon(item.type)}
+                                            </span>
                                         </div>
                                         <div className="notification-details">
                                             <h3 className="notification-title">{item.title}</h3>
-                                            <p className="notification-desc">{item.content}</p>
-                                            <span className="notification-time">{item.time}</span>
+                                            <p className="notification-desc">{item.message}</p>
+                                            <span className="notification-time">{formatTime(item.createdAt)}</span>
                                         </div>
                                     </Link>
                                 ))
@@ -171,7 +192,8 @@ const Notifications = () => {
                     </div>
                 </div>
             </div>
-            <Footer />
+        </div>
+        <Footer />
         </>
     );
 };

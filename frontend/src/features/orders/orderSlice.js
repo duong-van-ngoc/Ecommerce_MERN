@@ -112,6 +112,7 @@ const orderSlice = createSlice({
     name: 'orders',
     initialState: {
         success: false,
+        cancelSuccess: false,
         loading: false,
         error: null,
         orders: [],
@@ -125,6 +126,7 @@ const orderSlice = createSlice({
         },
         removeSuccess: (state) => {
             state.success = false
+            state.cancelSuccess = false
         }
     },
     extraReducers: (builder) => {
@@ -180,7 +182,7 @@ const orderSlice = createSlice({
             })
             .addCase(cancelOrder.fulfilled, (state, action) => {
                 state.loading = false;
-                state.success = true; // Bật success để UI biết là đã hủy xong
+                state.cancelSuccess = true; // Chỉ bật cancelSuccess
             })
             .addCase(cancelOrder.rejected, (state, action) => {
                 state.loading = false;
