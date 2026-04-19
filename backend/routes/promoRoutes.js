@@ -4,6 +4,7 @@ import { validateVoucher } from '../utils/v2/voucherValidator.js';
 import { verifyUserAuth } from '../middleware/userAuth.js';
 import { isAuthenticatedAdmin } from '../middleware/adminAuth.js';
 import asyncErrorHandler from "../middleware/handleAsyncError.js";
+import Notification from '../models/notificationModel.js';
 
 const router = express.Router();
 
@@ -60,14 +61,23 @@ const createVoucher = asyncErrorHandler(async (req, res, next) => {
   
   const voucher = await Voucher.create(voucherData);
 
-  // TỰ ĐỘNG TẠO THÔNG BÁO NẾU LÀ VOUCHER PHỔ THÔNG
-  if (voucher.type === 'general' && voucher.targeting.isPublic) {
-    await Notification.create({
-      title: '🎁 Mã giảm giá mới cực hời!',
-      message: `Tobi Shop vừa tung mã [${voucher.code}] giảm ${voucher.discount.type === 'percentage' ? `${voucher.discount.value}%` : `${voucher.discount.value.toLocaleString('vi-VN')}₫`}. Dùng ngay kẻo lỡ!`,
-      type: 'promotion',
-      link: '/cart'
-    });
+  // TỰ ĐỘNG TẠO THÔNG BÁO CHO NGƯỜI DÙNG (CHỈ DÀNH CHO VOUCHER PHỔ THÔNG & CÔNG KHAI)
+  try {
+    const isGeneral = voucher.type === 'general';
+    const isPublic = voucher.targeting && voucher.targeting.isPublic;
+
+    if (isGeneral && isPublic) {
+      await Notification.create({
+        userId: null, // Thông báo chung cho mọi người
+        title: '🎁 Mã giảm giá mới cực hời!',
+        message: `Tobi Shop vừa tung mã [${voucher.code}] giảm ${voucher.discount.type === 'percentage' ? `${voucher.discount.value}%` : `${voucher.discount.value.toLocaleString('vi-VN')}₫`}. Dùng ngay kẻo lỡ!`,
+        type: 'promotion',
+        link: '/cart'
+      });
+    }
+  } catch (error) {
+    console.error("Lỗi khi tạo thông báo Voucher:", error.message);
+    // Không chặn luồng trả về voucher cho Admin
   }
 
   res.status(201).json({ 

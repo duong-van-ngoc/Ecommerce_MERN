@@ -58,7 +58,7 @@ import Footer from '@/shared/components/Footer'
 import { useSelector, useDispatch } from 'react-redux' // Thêm useDispatch
 import CheckoutPath from '@/pages/checkout/CheckoutPath'
 import { useNavigate } from 'react-router-dom'
-import { createOrder } from '@/features/orders/orderSlice' // Import createOrder thunk
+import { createOrder, removeSuccess } from '@/features/orders/orderSlice' // Import createOrder thunk và removeSuccess
 import OrderSuccess from '@/pages/checkout/OrderSuccess' // Import popup component
 import { toast } from 'react-toastify' // Import toast
 import { removeOrderedItems } from '@/features/cart/cartSlice'
@@ -453,6 +453,7 @@ function OrderConfirm() {
           orderId={createdOrderId}
           onClose={() => {
             setShowSuccessPopup(false)
+            dispatch(removeSuccess()) // Dọn dẹp state success trước khi chuyển trang
             navigate('/orders/user')
           }}
         />

@@ -46,82 +46,131 @@
  *    - Chú ý phần thiết kế `voucher-card`: Đây là một thiết kế đặc thù trong E-commerce, cần giữ đúng cấu trúc để hiển thị đẹp mắt trên cả Mobile và Desktop.
  *    - `AccountSidebar` cũng được tích hợp để đảm bảo người dùng có thể nhảy nhanh sang các mục quản lý tài khoản khác.
  */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AccountSidebar from "@/shared/components/AccountSidebar";
 import "@/pages/user/styles/Vouchers.css";
+import "@/pages/user/styles/AccountShared.css";
 import PageTitle from "@/shared/components/PageTitle";
 import Navbar from "@/shared/components/Navbar";
 import Footer from "@/shared/components/Footer";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchMyVouchers, fetchActiveVouchers, claimVoucher, resetClaimState } from "@/features/voucher/voucherSlice";
+import formatVND from "@/shared/utils/formatCurrency";
+import { Loader2, TicketPercent, Gift, Truck, Store } from "lucide-react";
+import { toast } from "react-toastify";
 
 const Vouchers = () => {
-   
+    const dispatch = useDispatch();
+    const { 
+        myVouchers, 
+        activeVouchers, 
+        loading, 
+        claimLoading, 
+        claimSuccess, 
+        error 
+    } = useSelector((state) => state.voucher);
+
+    const [viewMode, setViewMode] = useState("my_vouchers"); // my_vouchers | voucher_center
     const [activeTab, setActiveTab] = useState("all");
 
     const tabs = [
         { id: "all", label: "Tất Cả" },
         { id: "shop", label: "Voucher Của Shop" },
-        { id: "freeship", label: "Miễn Phí Vận Chuyển" },
-        { id: "discount", label: "Giảm Giá" },
     ];
 
-    const mockVouchers = [
-        {
-            id: 1, type: "freeship", icon: "🚚", discount: "Miễn phí vận chuyển",
-            title: "Giảm tối đa ₫15.000", condition: "Đơn tối thiểu ₫50.000",
-            expiry: "HSD: 28.02.2024", usedPercent: 76, saved: true,
-        },
-        {
-            id: 2, type: "discount", icon: "🎫", discount: "Giảm 30%",
-            title: "Giảm tối đa ₫50.000", condition: "Đơn tối thiểu ₫200.000",
-            expiry: "HSD: 15.02.2024", usedPercent: 45, saved: false,
-        },
-        {
-            id: 3, type: "shop", icon: "🏪", discount: "₫20K",
-            title: "Voucher ToBi Shop", condition: "Đơn tối thiểu ₫100.000",
-            expiry: "HSD: 10.02.2024", usedPercent: 90, saved: true,
-        },
-        {
-            id: 4, type: "freeship", icon: "🚚", discount: "Miễn phí vận chuyển",
-            title: "Giảm tối đa ₫25.000", condition: "Đơn tối thiểu ₫0",
-            expiry: "HSD: 20.02.2024", usedPercent: 30, saved: false,
-        },
-        {
-            id: 5, type: "discount", icon: "🎁", discount: "Giảm 50%",
-            title: "Giờ Vàng - Giảm tối đa ₫100.000", condition: "Đơn tối thiểu ₫500.000",
-            expiry: "HSD: 02.02.2024", usedPercent: 95, saved: true,
-        },
-        {
-            id: 6, type: "shop", icon: "🛍️", discount: "₫10K",
-            title: "Ưu đãi khách hàng mới", condition: "Không yêu cầu tối thiểu",
-            expiry: "HSD: 28.02.2024", usedPercent: 20, saved: false,
-        },
-    ];
+    useEffect(() => {
+        if (viewMode === "my_vouchers") {
+            dispatch(fetchMyVouchers());
+        } else {
+            dispatch(fetchActiveVouchers());
+        }
+    }, [dispatch, viewMode]);
+
+    useEffect(() => {
+        if (claimSuccess) {
+            toast.success("Lưu voucher thành công! Hãy kiểm tra trong kho của bạn.");
+            dispatch(resetClaimState());
+            setViewMode("my_vouchers"); // Chuyển sang kho sau khi lưu thành công
+        }
+        if (error && viewMode === "voucher_center") {
+            toast.error(error);
+            dispatch(resetClaimState());
+        }
+    }, [claimSuccess, error, dispatch, viewMode]);
+
+    const handleClaim = (voucherId) => {
+        dispatch(claimVoucher(voucherId));
+    };
+
+    // Mapping dữ liệu sang UI Schema
+    const transformVoucher = (data, isOwned = true) => {
+        const v = isOwned ? data.voucher : data;
+        if (!v) return null;
+
+        // Xác định icon và badge
+        let IconComponent = TicketPercent;
+        let badgeLabel = "Mã Khuyến Mãi";
+        if (v.type === "freeship") {
+            IconComponent = Truck;
+            badgeLabel = "Miễn Phí Vận Chuyển";
+        } else if (v.type === "shop") {
+            IconComponent = Store;
+            badgeLabel = "Độc Quyền Từ Shop";
+        } else if (v.type === "discount") {
+            IconComponent = Gift;
+            badgeLabel = "Siêu Giảm Giá";
+        }
+
+        const discountText = v.discount.type === "percentage" 
+            ? `Giảm ${v.discount.value}%` 
+            : `Giảm ${formatVND(v.discount.value)}`;
+
+        // Tính % đã sử dụng hệ thống (để hiện độ hot)
+        const systemUsedPercent = v.conditions.usageLimit > 0 
+            ? Math.round((v.usedCount / v.conditions.usageLimit) * 100) 
+            : 0;
+
+        return {
+            id: isOwned ? data._id : v._id,
+            originalId: v._id,
+            type: v.type,
+            Icon: IconComponent,
+            badgeLabel,
+            discount: discountText,
+            title: v.title || v.code,
+            condition: v.conditions.minOrderAmount > 0 
+                ? `Đơn tối thiểu ${formatVND(v.conditions.minOrderAmount)}` 
+                : "Không yêu cầu tối thiểu",
+            expiry: `HSD: ${new Date(v.conditions.endDate).toLocaleDateString("vi-VN")}`,
+            usedPercent: systemUsedPercent > 100 ? 100 : systemUsedPercent,
+            status: isOwned ? data.status : "available",
+            isOwned
+        };
+    };
+
+    const currentVouchers = viewMode === "my_vouchers" 
+        ? myVouchers.map(uv => transformVoucher(uv, true))
+        : activeVouchers.map(v => {
+            // Kiểm tra xem voucher này user đã sở hữu chưa
+            const alreadyOwned = myVouchers.some(uv => uv.voucher?._id === v._id || uv.voucher === v._id);
+            return transformVoucher(v, false, alreadyOwned);
+        });
 
     const filteredVouchers = activeTab === "all"
-        ? mockVouchers
-        : mockVouchers.filter(v => v.type === activeTab);
-
-   
-    
-    // Helper định danh nhãn nổi phía trên Icon (Chỉ là text UI)
-    const getBadgeLabel = (type) => {
-        if (type === 'freeship') return 'Miễn Phí Vận Chuyển';
-        if (type === 'discount') return 'Siêu Giảm Giá';
-        if (type === 'shop') return 'Độc Quyền Từ Shop';
-        return 'Mã Khuyến Mãi';
-    };
+        ? currentVouchers.filter(v => v !== null)
+        : currentVouchers.filter(v => v?.type === activeTab);
 
     return (
        <>
        <PageTitle title="Kho Voucher" />
        <Navbar />
-        <div className="vouchers-container">
-            <div className="vouchers-content">
+        <div className="account-container">
+            <div className="account-content">
                 <AccountSidebar />
-                <div className="vouchers-main">
+                <div className="account-main">
                     
-                    {/* BƯỚC 1: HERO HEADER (Nâng cấp từ thẻ H2 cũ) */}
-                    <div className="vouchers-hero">
+                    {/* BƯỚC 1: HERO HEADER (Đồng bộ) */}
+                    <div className="account-hero">
                         <div className="hero-content">
                             <span className="hero-badge">Trung Tâm Ưu Đãi</span>
                             <h1 className="hero-title">
@@ -129,13 +178,15 @@ const Vouchers = () => {
                                 <span className="hero-title-highlight">Của Bạn</span>
                             </h1>
                             <p className="hero-desc">
-                                Khám phá hàng loạt mã giảm giá hấp dẫn. Mua sắm thông minh, tiết kiệm tối đa cùng ToBi.
+                                Khám phá hàng loạt mã giảm giá hấp dẫn. Mua sắm thông minh, tiết kiệm tối đa cùng ToBi Shop.
                             </p>
                         </div>
                         <div className="hero-stats">
-                            <p className="hero-stats-label">Đang sở hữu</p>
+                            <p className="hero-stats-label">{viewMode === "my_vouchers" ? "Số lượng trong kho" : "Ưu đãi hiện có"}</p>
                             <div className="hero-stats-number">
-                                <span className="number">{mockVouchers.filter(v => v.saved).length || 6}</span>
+                                <span className="number">
+                                    {viewMode === "my_vouchers" ? currentVouchers.length : activeVouchers.length}
+                                </span>
                                 <span className="unit">mã</span>
                             </div>
                         </div>
@@ -143,13 +194,29 @@ const Vouchers = () => {
                         <div className="hero-decoration-2"></div>
                     </div>
 
-                    {/* BƯỚC 2: TABS BO TRÒN HIỆN ĐẠI */}
-                    <div className="vouchers-tab-group">
-                         <div className="voucher-tabs">
+                    {/* Thanh Tab Chế độ (Duy trì logic Vouchers) */}
+                    <div className="voucher-mode-selector">
+                        <button 
+                            className={`mode-btn ${viewMode === "my_vouchers" ? "active" : ""}`}
+                            onClick={() => { setViewMode("my_vouchers"); setActiveTab("all"); }}
+                        >
+                            Kho Voucher Của Tôi
+                        </button>
+                        <button 
+                            className={`mode-btn center ${viewMode === "voucher_center" ? "active" : ""}`}
+                            onClick={() => { setViewMode("voucher_center"); setActiveTab("all"); }}
+                        >
+                            Trung Tâm Voucher HOT
+                        </button>
+                    </div>
+
+                    {/* BƯỚC 2: TABS ĐỒNG BỘ */}
+                    <div className="account-tab-group">
+                         <div className="account-tabs">
                             {tabs.map(tab => (
                                 <button
                                     key={tab.id}
-                                    className={`voucher-tab ${activeTab === tab.id ? "active" : ""}`}
+                                    className={`account-tab ${activeTab === tab.id ? "active" : ""}`}
                                     onClick={() => setActiveTab(tab.id)}
                                 >
                                     {tab.label}
@@ -160,22 +227,28 @@ const Vouchers = () => {
 
                     {/* BƯỚC 3: CARD GRID UI */}
                     <div className="voucher-list">
-                        {filteredVouchers.length > 0 ? (
+                        {loading ? (
+                            <div className="loading-state">
+                                <Loader2 className="animate-spin" size={40} />
+                                <p>Đang tải kho voucher...</p>
+                            </div>
+                        ) : error ? (
+                             <div className="error-state">
+                                <p className="text-red-500">Lỗi: {error}</p>
+                                <button onClick={() => dispatch(fetchMyVouchers())} className="retry-btn">Thử lại</button>
+                            </div>
+                        ) : filteredVouchers.length > 0 ? (
                             filteredVouchers.map(voucher => (
-                                // Phân biệt schema giao diện thành 3 style bằng class "type-[id]"
-                                <div key={voucher.id} className={`voucher-card type-${voucher.type}`}>
+                                <div key={voucher.id} className={`voucher-card type-${voucher.type} ${voucher.status === 'used' ? 'grayscale' : ''}`}>
                                     
-                                    {/* Mảnh trái - Gradient */}
                                     <div className="voucher-left">
-                                        <span className="voucher-icon">{voucher.icon}</span>
-                                        <span className="voucher-badge-type">{getBadgeLabel(voucher.type)}</span>
+                                        <span className="voucher-icon"><voucher.Icon size={32} /></span>
+                                        <span className="voucher-badge-type">{voucher.badgeLabel}</span>
                                         <span className="voucher-discount">{voucher.discount}</span>
                                     </div>
                                     
-                                    {/* Rãnh cắt đứt xé voucher */}
                                     <div className="voucher-divider"></div>
 
-                                    {/* Mảnh phải - Thông tin & Action */}
                                     <div className="voucher-right">
                                         <div>
                                             <h3 className="voucher-title">{voucher.title}</h3>
@@ -183,37 +256,47 @@ const Vouchers = () => {
                                         </div>
                                         <div className="voucher-actions">
                                             <div className="voucher-status-info">
-                                                <span>Đã lấy {voucher.usedPercent}%</span>
+                                                <span>{viewMode === "my_vouchers" ? "Voucher đã lưu" : `Đã dùng ${voucher.usedPercent}%`}</span>
                                                 <span style={{textTransform: 'none'}}>{voucher.expiry}</span>
                                             </div>
                                             <div className="voucher-progress">
                                                 <div
                                                     className="progress-fill"
-                                                    // Giữ nguyên logic width: %
                                                     style={{ width: `${voucher.usedPercent}%` }}
                                                 />
                                             </div>
                                             
-                                            {/* Button giữ nguyên logic xử lý State */}
-                                            <button className={`use-btn ${voucher.saved ? "saved" : ""}`}>
-                                                {voucher.saved ? (
-                                                    <>
-                                                        <span style={{fontSize: "16px", fontWeight: "bold"}}>✓</span> Đã lưu
-                                                    </>
-                                                ) : "Lấy mã ngay"}
-                                            </button>
+                                            {viewMode === "my_vouchers" ? (
+                                                <button 
+                                                    className={`use-btn saved ${voucher.status === 'used' ? "used" : ""}`}
+                                                    disabled={voucher.status === 'used'}
+                                                >
+                                                    {voucher.status === 'used' ? "Đã sử dụng" : (
+                                                        <>
+                                                            <span style={{fontSize: "14px", fontWeight: "bold"}}>✓</span> Đã lưu
+                                                        </>
+                                                    )}
+                                                </button>
+                                            ) : (
+                                                <button 
+                                                    className={`use-btn claim-btn ${claimLoading ? "loading" : ""}`}
+                                                    disabled={claimLoading || voucher.usedPercent >= 100}
+                                                    onClick={() => handleClaim(voucher.originalId)}
+                                                >
+                                                    {claimLoading ? "Đang xử lý..." : voucher.usedPercent >= 100 ? "Hết lượt" : "Lấy mã ngay"}
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            // BƯỚC 4: EMPTY STATE (Tối ưu hóa spacing)
                             <div className="no-vouchers">
                                 <img
                                     src="https://deo.shopeemobile.com/shopee/shopee-pcmall-live-sg/assets/c9f754d67d6a5463.png"
                                     alt="No vouchers"
                                 />
-                                <p>Không tìm thấy khuyến mãi nào ở mục này</p>
+                                <p>Không tìm thấy mã giảm giá nào trong kho của bạn</p>
                             </div>
                         )}
                     </div>

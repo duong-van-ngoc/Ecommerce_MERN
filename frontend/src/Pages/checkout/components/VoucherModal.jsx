@@ -130,9 +130,10 @@ const VoucherModal = ({
           {activeVouchers && activeVouchers.length > 0 ? (
             activeVouchers.map((v) => {
               const isSelected = appliedCouponName === v.code;
-              const minOrderValue = v.minOrderValue || 0;
+              const minOrderValue = Number(v.conditions?.minOrderAmount || 0);
               const isInsufficient = subtotal < minOrderValue;
-              const discountValue = v.discountAmount || v.discount || 0;
+              const discountValue = Number(v.discount?.value || 0);
+              const isPercentage = v.discount?.type === 'percentage';
 
               return (
                 <div 
@@ -147,7 +148,7 @@ const VoucherModal = ({
                       ToBi Voucher
                     </div>
                     <div className={`mt-1 text-[12px] ${isSelected || !isInsufficient ? 'text-[#ff5a5f]' : 'text-gray-500'}`}>
-                      {v.discountType === 'percent' ? `Giảm ${discountValue}%` : `Giảm ${formatVND(discountValue)}`}
+                      {isPercentage ? `Giảm ${discountValue}%` : `Giảm ${formatVND(discountValue)}`}
                     </div>
                   </div>
 
@@ -155,11 +156,11 @@ const VoucherModal = ({
                   <div className="flex-1 px-4 py-4 flex items-center justify-between gap-4">
                     <div className="min-w-0">
                       <h3 className="text-[14px] font-medium text-[#222] leading-5 truncate">
-                        Giảm {v.discountType === 'percent' ? `${discountValue}%` : formatVND(discountValue)} 
+                        Giảm {isPercentage ? `${discountValue}%` : formatVND(discountValue)} 
                         {minOrderValue > 0 && ` cho đơn từ ${formatVND(minOrderValue)}`}
                       </h3>
                       <p className="mt-1 text-[12px] text-gray-500">
-                        HSD: {v.endDate ? new Date(v.endDate).toLocaleDateString('vi-VN') : 'Vô thời hạn'}
+                        HSD: {v.conditions?.endDate ? new Date(v.conditions.endDate).toLocaleDateString('vi-VN') : 'Vô thời hạn'}
                       </p>
                       
                       {isSelected ? (

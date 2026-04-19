@@ -61,6 +61,7 @@ import handleAsyncError from '../middleware/handleAsyncError.js';
 import APIFunctionality from '../utils/apiFunctionality.js';
 import { sendStatusEmail } from '../services/emailService.js';
 import Voucher from '../models/voucherModel.js';
+import Notification from '../models/notificationModel.js';
 import { validateVoucher } from '../utils/v2/voucherValidator.js';
 
 // Helper: Sinh mã đơn hàng ngẫu nhiên chuyên nghiệp: TB-YYYYMMDD-XXXXX
@@ -332,6 +333,23 @@ export const updateOrderStauts = handleAsyncError(async (req, res, next) => {
 
   // Gửi email thông báo (bất đồng bộ)
   sendStatusEmail(order, newStatus);
+
+  // TỰ ĐỘNG TẠO THÔNG BÁO CHO USER
+  let notificationMessage = `Đơn hàng #${order.orderCode} đã chuyển sang trạng thái: ${newStatus}`;
+  
+  // Bổ sung mã vận đơn cho các trạng thái giao vận theo yêu cầu
+  const shippingStatuses = ["Đang giao", "Đã giao"];
+  if (shippingStatuses.includes(newStatus) && order.trackingNumber) {
+    notificationMessage += `. Mã vận đơn: ${order.trackingNumber}`;
+  }
+
+  await Notification.create({
+    userId: order.user_id._id || order.user_id,
+    title: `📦 Cập nhật đơn hàng ${order.orderCode}`,
+    message: notificationMessage,
+    type: 'order',
+    link: '/orders/my'
+  });
 
   res.status(200).json({ success: true, order });
 });
