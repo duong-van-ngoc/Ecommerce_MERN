@@ -343,13 +343,16 @@ export const updateOrderStauts = handleAsyncError(async (req, res, next) => {
     notificationMessage += `. Mã vận đơn: ${order.trackingNumber}`;
   }
 
-  await Notification.create({
-    userId: order.user_id._id || order.user_id,
-    title: `📦 Cập nhật đơn hàng ${order.orderCode}`,
-    message: notificationMessage,
-    type: 'order',
-    link: '/orders/my'
-  });
+  // TỰ ĐỘNG TẠO THÔNG BÁO CHO USER (Chỉ nếu đơn hàng gắn với tài khoản user)
+  if (order.user_id) {
+    await Notification.create({
+      userId: order.user_id._id || order.user_id,
+      title: `📦 Cập nhật đơn hàng ${order.orderCode}`,
+      message: notificationMessage,
+      type: 'order',
+      link: '/orders/my'
+    });
+  }
 
   res.status(200).json({ success: true, order });
 });
@@ -393,8 +396,8 @@ export const cancelOrder = handleAsyncError(async (req, res, next) => {
       return next(new HandleError("Không tìm thấy đơn hàng", 404));
     }
 
-    // Kiểm tra quyền sở hữu
-    if (order.user_id.toString() !== req.user._id.toString()) {
+    // Kiểm tra quyền sở hữu (Chỉ người đặt hàng hoặc Admin mới có quyền hủy)
+    if (!order.user_id || order.user_id.toString() !== req.user._id.toString()) {
       if (session) await session.abortTransaction();
       return next(new HandleError("Bạn không có quyền hủy đơn hàng này", 403));
     }

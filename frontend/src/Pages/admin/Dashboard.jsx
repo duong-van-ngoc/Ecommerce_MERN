@@ -59,7 +59,7 @@ import React, { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
-import { fetchDashboardStats, fetchRecentOrders, fetchAllProducts } from '@/admin/adminSLice/adminSlice';
+import { fetchDashboardStats, fetchRecentOrders, fetchAllProducts, fetchRevenueAnalytics } from '@/admin/adminSLice/adminSlice';
 import { toJpeg } from 'html-to-image';
 import jsPDF from 'jspdf';
 
@@ -72,7 +72,7 @@ import formatVND from '@/shared/utils/formatCurrency.js';
 function Dashboard() {
     const dispatch = useDispatch();
     const { isAuthenticated, user } = useSelector(state => state.user);
-    const { stats, recentOrders, loading, error } = useSelector(state => state.admin);
+    const { stats, recentOrders, revenueAnalytics, loading, error } = useSelector(state => state.admin);
 
     const userRole = user?.role_id?.name || user?.role;
 
@@ -82,6 +82,7 @@ function Dashboard() {
             dispatch(fetchDashboardStats());
             dispatch(fetchRecentOrders(5));
             dispatch(fetchAllProducts());
+            dispatch(fetchRevenueAnalytics());
         }
     }, [dispatch, isAuthenticated, userRole]);
 
@@ -222,7 +223,7 @@ function Dashboard() {
 
             {/* Main Content Grid: Chart + Orders */}
             <div className="grid grid-cols-12 gap-6">
-                <RevenueChart />
+                <RevenueChart analyticsData={revenueAnalytics} loading={loading} />
                 <div className="col-span-12 lg:col-span-4">
                     {/* ToBi AI Stylist Insight Widget */}
                     <div className="bg-white rounded-2xl p-8 border border-[#dfbfc0]/10 h-full flex flex-col justify-between text-left relative overflow-hidden" 

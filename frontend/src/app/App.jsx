@@ -79,7 +79,7 @@ import MyOrders from "@/pages/orders/MyOrders";
 import OrderDetails from "@/pages/orders/OrderDetails";
 import OrderSuccess from "@/pages/checkout/OrderSuccess";
 import Notifications from "@/pages/user/Notifications";
-import Vouchers from "@/pages/user/Vouchers";
+import VoucherPage from "@/pages/user/voucher-page";
 import VnpayResult from "@/pages/checkout/VnpayResult";
 import AIChatBubble from "@/features/chat/components/AIChatBubble";
 
@@ -177,7 +177,7 @@ function App() {
         <Route path="/notifications/wallet" element={<ProtectedRoute element={<Notifications />} />} />
         <Route path="/notifications/shopee" element={<ProtectedRoute element={<Notifications />} />} />
 
-        <Route path="/vouchers" element={<ProtectedRoute element={<Vouchers />} />} />
+        <Route path="/vouchers" element={<ProtectedRoute element={<VoucherPage />} />} />
 
         {/* Admin Routes với Layout Premium */}
         <Route path="/admin" element={<AdminLayout />}>

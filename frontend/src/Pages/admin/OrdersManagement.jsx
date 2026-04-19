@@ -154,9 +154,11 @@ function OrdersManagement() {
 
     // Filter orders
     const filteredOrders = orders?.filter(order => {
+        if (!order) return false;
+        
         const matchesSearch =
             (order.orderCode && order.orderCode.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            order._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (order._id && order._id.toLowerCase().includes(searchTerm.toLowerCase())) ||
             order.user_id?.name?.toLowerCase().includes(searchTerm.toLowerCase());
 
         const matchesStatus = statusFilter === 'all' || order.orderStatus === statusFilter;

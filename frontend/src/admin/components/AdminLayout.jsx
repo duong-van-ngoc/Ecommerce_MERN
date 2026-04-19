@@ -16,7 +16,7 @@
  *    - Declarative Redirect: Sử dụng `<Navigate to="..." replace />` để chuyển hướng. Thuộc tính `replace` giúp ghi đè lên lịch sử trình duyệt, ngăn người dùng bấm nút "Quay lại" để cố vào lại trang cấm.
  *    - Redux Global State: Lấy thông tin xác thực từ Store. Đây là cách nhanh nhất để kiểm tra quyền mà không cần đợi API phản hồi lại từ Database.
  *    - Integration with Premium UI: Nhúng toàn bộ nội dung vào `DashboardLayout` (một thành phần UI cao cấp) để đảm bảo giao diện Admin trông chuyên nghiệp và sang trọng.
- * 
+ *
  * 5. INPUT / OUTPUT CỦA FILE:
  *    - Input: Trạng thái đăng nhập từ Redux và yêu cầu truy cập từ Router.
  *    - Output: Khung Dashboard hoàn chỉnh hoặc lệnh chuyển hướng (Redirect).

@@ -50,7 +50,7 @@ import cartReducer from '@/features/cart/cartSlice';
 import orderReducer from '@/features/orders/orderSlice';
 import addressReducer from '@/features/address/addressSlice';
 import adminReducer from '@/admin/adminSLice/adminSlice';
-import voucherReducer from '@/features/voucher/voucherSlice';
+import voucherReducer from '@/modules/voucher';
 import notificationReducer from '@/features/notification/notificationSlice';
 
 
