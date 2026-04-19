@@ -153,10 +153,18 @@ export const sendStatusEmail = async (order, status) => {
     }
 
     const html = emailLayout(content, order);
+    
+    // Xác định email nhận thông báo (Ưu tiên User Email -> Shipping Email)
+    const recipientEmail = order.user_id?.email || order.shippingInfo?.email;
+
+    if (!recipientEmail) {
+      console.warn(`[Email Service Warning]: Không có địa chỉ email để gửi thông báo cho đơn hàng ${order._id}.`);
+      return;
+    }
 
     const mailOptions = {
       from: `"Tobi Shop" <${process.env.SMTP_MAIL}>`,
-      to: order.user_id.email || order.shippingInfo.email, // fallback if user email not populated
+      to: recipientEmail,
       subject: subject,
       html: html,
     };

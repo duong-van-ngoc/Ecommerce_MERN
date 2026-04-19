@@ -90,6 +90,23 @@ export const fetchRecentOrders = createAsyncThunk(
 );
 
 /**
+ * Async Thunk - Lấy dữ liệu phân tích doanh thu (Chart)
+ */
+export const fetchRevenueAnalytics = createAsyncThunk(
+    'admin/fetchRevenueAnalytics',
+    async (_, { rejectWithValue }) => {
+        try {
+            const { data } = await axios.get('/api/v1/admin/analytics/revenue', {
+                withCredentials: true
+            });
+            return data.analytics;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Không thể tải dữ liệu biểu đồ');
+        }
+    }
+);
+
+/**
  * Async Thunk - Lấy tất cả sản phẩm (Admin)
  */
 export const fetchAllProducts = createAsyncThunk(
@@ -577,6 +594,11 @@ const adminSlice = createSlice({
         globalSearchQuery: '', // Từ khóa tìm kiếm toàn cục từ Header
         searchResults: [],    // Kết quả tìm kiếm sản phẩm API
         importResult: null,   // Kết quả import
+        revenueAnalytics: {   // Dữ liệu biểu đồ doanh thu thực tế
+            week: [],
+            month: [],
+            year: []
+        },
         loading: false,
         error: null
     },
@@ -616,6 +638,21 @@ const adminSlice = createSlice({
                 state.recentOrders = action.payload;
             })
             .addCase(fetchRecentOrders.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            });
+
+        // Fetch Revenue Analytics (Chart)
+        builder
+            .addCase(fetchRevenueAnalytics.pending, (state) => {
+                state.loading = true; // Dashboard dùng chung loading
+                state.error = null;
+            })
+            .addCase(fetchRevenueAnalytics.fulfilled, (state, action) => {
+                state.loading = false;
+                state.revenueAnalytics = action.payload;
+            })
+            .addCase(fetchRevenueAnalytics.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             });
@@ -702,9 +739,11 @@ const adminSlice = createSlice({
             })
             .addCase(updateOrderStatus.fulfilled, (state, action) => {
                 state.loading = false;
-                const index = state.orders.findIndex(o => o._id === action.payload._id);
-                if (index !== -1) {
-                    state.orders[index] = action.payload;
+                if (action.payload && action.payload._id) {
+                    const index = state.orders.findIndex(o => o._id === action.payload._id);
+                    if (index !== -1) {
+                        state.orders[index] = action.payload;
+                    }
                 }
             })
             .addCase(updateOrderStatus.rejected, (state, action) => {

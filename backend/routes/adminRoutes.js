@@ -43,13 +43,16 @@
  *    - Lưu ý: File này sử dụng một middleware riêng là `isAuthenticatedAdmin` (đã được định nghĩa trong `adminAuth.js`) thay vì dùng bộ đôi `verifyUserAuth` + `roleBasedAccess`. Điều này giúp code route Admin trở nên ngắn gọn hơn.
  */
 import express from 'express';
-import { getDashboardStats, getRecentOrders } from '../controllers/adminController.js';
+import { getDashboardStats, getRecentOrders, getRevenueAnalytics } from '../controllers/adminController.js';
 import { isAuthenticatedAdmin } from '../middleware/adminAuth.js';
 
 const router = express.Router();
 
 // Admin Dashboard Statistics
 router.get('/dashboard', isAuthenticatedAdmin, getDashboardStats);
+
+// Revenue Analytics (Chart)
+router.get('/analytics/revenue', isAuthenticatedAdmin, getRevenueAnalytics);
 
 // Recent Orders
 router.get('/orders/recent', isAuthenticatedAdmin, getRecentOrders);

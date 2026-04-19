@@ -148,3 +148,100 @@ export const getRecentOrders = asyncErrorHandler(async (req, res, next) => {
         orders: formattedOrders
     });
 });
+
+export const getRevenueAnalytics = asyncErrorHandler(async (req, res, next) => {
+    const now = new Date();
+    
+    // 1. Helper function để lấy start date
+    const getStartDate = (days) => {
+        const date = new Date();
+        date.setDate(date.getDate() - days);
+        date.setHours(0, 0, 0, 0);
+        return date;
+    };
+
+    const startOfWeek = getStartDate(6); // 7 ngày bao gồm hôm nay
+    const startOfMonth = getStartDate(29); // 30 ngày
+    const startOfYear = new Date(now.getFullYear(), 0, 1); // Từ đầu năm
+
+    // 2. Aggregation Pipeline Template
+    const getPipeline = (startDate, groupFormat, sortField) => [
+        {
+            $match: {
+                orderStatus: 'Đã giao',
+                deliveredAt: { $gte: startDate }
+            }
+        },
+        {
+            $project: {
+                revenue: { $subtract: ["$totalPrice", { $ifNull: ["$shippingPrice", 0] }] },
+                deliveredAt: 1
+            }
+        },
+        {
+            $group: {
+                _id: { $dateToString: { format: groupFormat, date: "$deliveredAt" } },
+                amount: { $sum: "$revenue" }
+            }
+        },
+        { $sort: { _id: 1 } }
+    ];
+
+    // 3. Thực hiện các truy vấn
+    const [weekData, monthData, yearData] = await Promise.all([
+        Order.aggregate(getPipeline(startOfWeek, "%Y-%m-%d")),
+        Order.aggregate(getPipeline(startOfMonth, "%Y-%m-%d")),
+        Order.aggregate(getPipeline(startOfYear, "%Y-%m"))
+    ]);
+
+    // 4. Helper to fill missing dates (để biểu đồ không bị đứt quãng)
+    const formatData = (data, startDate, days, formatType) => {
+        const result = [];
+        for (let i = 0; i <= days; i++) {
+            const date = new Date(startDate);
+            date.setDate(date.getDate() + i);
+            
+            let label, key;
+            if (formatType === 'day') {
+                key = date.toISOString().split('T')[0];
+                const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+                label = daysOfWeek[date.getDay()];
+                if (days > 7) label = `${date.getDate()}/${date.getMonth() + 1}`;
+            } else if (formatType === 'month') {
+                date.setMonth(i);
+                key = `${now.getFullYear()}-${(i + 1).toString().padStart(2, '0')}`;
+                label = `Thg ${i + 1}`;
+            }
+
+            const match = data.find(d => d._id === key);
+            result.push({
+                label,
+                amount: match ? Math.round(match.amount) : 0
+            });
+        }
+        return result;
+    };
+
+    // Format Year data riêng vì nó theo tháng
+    const formatYearData = (data) => {
+        const result = [];
+        for (let i = 1; i <= 12; i++) {
+            const key = `${now.getFullYear()}-${i.toString().padStart(2, '0')}`;
+            const match = data.find(d => d._id === key);
+            result.push({
+                label: `Thg ${i}`,
+                amount: match ? Math.round(match.amount) : 0
+            });
+        }
+        return result;
+    };
+
+    res.status(200).json({
+        success: true,
+        analytics: {
+            week: formatData(weekData, startOfWeek, 6, 'day'),
+            month: formatData(monthData, startOfMonth, 29, 'day'),
+            year: formatYearData(yearData)
+        }
+    });
+});
