@@ -1,7 +1,38 @@
-import Order from '../../models/orderModel.js';
+import Order from '../models/orderModel.js';
 
 /**
- * Validator chuyên sâu cho Voucher - Đồng bộ với Schema v2
+ * Validator cho bước CLAIM voucher - Không check minOrderAmount
+ * Chỉ kiểm tra: active, còn hạn, còn lượt phát hành
+ */
+const validateVoucherClaim = (voucher) => {
+    // 1. Check active status
+    if (voucher.status !== 'active') {
+        return { isValid: false, message: 'Mã giảm giá đã bị vô hiệu hóa.' };
+    }
+
+    const now = new Date();
+    const startDate = new Date(voucher.conditions.startDate);
+    const endDate = new Date(voucher.conditions.endDate);
+
+    // 2. Check date range
+    if (now < startDate) {
+        return { isValid: false, message: 'Chương trình ưu đãi chưa bắt đầu.' };
+    }
+    if (now > endDate) {
+        return { isValid: false, message: 'Mã giảm giá đã hết hạn sử dụng.' };
+    }
+
+    // 3. Check system-wide claim limit (using claimedCount if available, fallback to usedCount)
+    const claimedCount = voucher.claimedCount ?? voucher.usedCount ?? 0;
+    if (voucher.conditions.usageLimit !== -1 && claimedCount >= voucher.conditions.usageLimit) {
+        return { isValid: false, message: 'Rất tiếc, mã giảm giá đã hết lượt phát hành.' };
+    }
+
+    return { isValid: true, message: 'OK' };
+};
+
+/**
+ * Validator chuyên sâu cho Voucher khi APPLY vào đơn hàng - Đồng bộ với Schema v2
  * @param {Object} voucher - Object Voucher từ Database
  * @param {Object} user - Object User hiện tại
  * @param {Number} orderAmount - Tổng tiền đơn hàng chưa giảm
@@ -24,23 +55,23 @@ const validateVoucher = async (voucher, user, orderAmount) => {
         return { isValid: false, message: 'Mã giảm giá đã hết hạn sử dụng.', discount: 0 };
     }
 
-    // 3. Kiểm tra tổng lượt dùng toàn hệ thống
+    // 3. Kiểm tra tổng lượt dùng toàn hệ thống (usedCount = chỉ khi order thật)
     if (voucher.conditions.usageLimit !== -1 && voucher.usedCount >= voucher.conditions.usageLimit) {
         return { isValid: false, message: 'Rất tiếc, mã giảm giá đã hết lượt sử dụng.', discount: 0 };
     }
 
     // 4. Kiểm tra giá trị đơn hàng tối thiểu
     if (orderAmount < voucher.conditions.minOrderAmount) {
-        return { 
-            isValid: false, 
-            message: `Đơn hàng chưa đạt giá trị tối thiểu (Yêu cầu từ ${voucher.conditions.minOrderAmount.toLocaleString('vi-VN')}₫).`, 
-            discount: 0 
+        return {
+            isValid: false,
+            message: `Đơn hàng chưa đạt giá trị tối thiểu (Yêu cầu từ ${voucher.conditions.minOrderAmount.toLocaleString('vi-VN')}₫).`,
+            discount: 0
         };
     }
 
     // 5. Kiểm tra giới hạn sử dụng của từng User (Bằng cách đếm số Đơn Hàng không bị hủy)
-    const userUsageCount = await Order.countDocuments({ 
-        user_id: user._id, 
+    const userUsageCount = await Order.countDocuments({
+        user_id: user._id,
         voucher_id: voucher._id,
         orderStatus: { $ne: 'Đã hủy' }
     });
@@ -67,11 +98,11 @@ const validateVoucher = async (voucher, user, orderAmount) => {
     // Đảm bảo số tiền giảm không vượt quá giá trị đơn hàng
     const finalDiscount = Math.floor(Math.min(calculatedDiscount, orderAmount));
 
-    return { 
-        isValid: true, 
-        message: 'Áp dụng mã giảm giá thành công!', 
-        discount: finalDiscount 
+    return {
+        isValid: true,
+        message: 'Áp dụng mã giảm giá thành công!',
+        discount: finalDiscount
     };
 };
 
-export { validateVoucher };
+export { validateVoucher, validateVoucherClaim };

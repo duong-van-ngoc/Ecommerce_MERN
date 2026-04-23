@@ -103,7 +103,8 @@ const voucherSchema = new mongoose.Schema({
   },
 
   // 5. Trạng thái vận hành
-  usedCount: { type: Number, default: 0 }, // Số lượt đã sử dụng thực tế (Dùng để check nhanh)
+  usedCount: { type: Number, default: 0 }, // Số lượt đã dùng trong ĐƠN HÀNG THẬT (chỉ tăng khi tạo order)
+  claimedCount: { type: Number, default: 0 }, // Số lượt đã được CLAIM/DISTRIBUTE (tăng khi user lấy mã hoặc admin phát)
   status: { 
     type: String, 
     enum: ['active', 'disabled'], 

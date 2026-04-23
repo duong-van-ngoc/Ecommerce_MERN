@@ -81,12 +81,6 @@ function Home() {
     <>
       <PageTitle title="Trang chủ" />
 
-      {/* 
-               We wrap everything in a Fragment or div. 
-               Note: Navbar and Footer are existing components. 
-               We might need to check if they match the new style later, 
-               but for now we keep them to maintain navigation functionality.
-            */}
       <Navbar />
 
       {/* Main Content Area */}

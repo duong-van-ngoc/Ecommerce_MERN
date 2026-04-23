@@ -62,27 +62,27 @@ import APIFunctionality from '../utils/apiFunctionality.js';
 import { sendStatusEmail } from '../services/emailService.js';
 import Voucher from '../models/voucherModel.js';
 import Notification from '../models/notificationModel.js';
-import { validateVoucher } from '../utils/v2/voucherValidator.js';
+import { validateVoucher } from '../utils/voucherValidator.js';
 
 // Helper: Sinh mã đơn hàng ngẫu nhiên chuyên nghiệp: TB-YYYYMMDD-XXXXX
 const generateOrderCode = async () => {
   const date = new Date();
   const dateStr = date.toISOString().slice(0, 10).replace(/-/g, ""); // YYYYMMDD
-  
+
   let isUnique = false;
   let code = "";
-  
+
   while (!isUnique) {
     const randomStr = Math.random().toString(36).substring(2, 7).toUpperCase(); // 5 ký tự ngẫu nhiên
     code = `TB-${dateStr}-${randomStr}`;
-    
+
     // Kiểm tra tính duy nhất trong database
     const existingOrder = await Order.findOne({ orderCode: code });
     if (!existingOrder) {
       isUnique = true;
     }
   }
-  
+
   return code;
 };
 
@@ -103,15 +103,15 @@ const normalizeShippingAddress = (source) => ({
 
 // Tạo đơn hàng mới (dữ liệu snapshot được gởi từ Frontend sau Checkout)
 export const createNewOrder = handleAsyncError(async (req, res, next) => {
-  const { 
-    address_id, 
-    shippingInfo, 
-    saveAddress, 
-    orderItems, 
-    itemPrice, 
-    taxPrice, 
-    shippingPrice, 
-    totalPrice, 
+  const {
+    address_id,
+    shippingInfo,
+    saveAddress,
+    orderItems,
+    itemPrice,
+    taxPrice,
+    shippingPrice,
+    totalPrice,
     paymentMethod,
     voucher_id,
     voucherCode,
@@ -124,7 +124,7 @@ export const createNewOrder = handleAsyncError(async (req, res, next) => {
   if (address_id) {
     // TH1: Chọn từ Sổ địa chỉ
     const savedAddress = await Address.findById(address_id);
-    
+
     if (!savedAddress) {
       return next(new HandleError("Địa chỉ đã chọn không tồn tại", 404));
     }
@@ -150,7 +150,7 @@ export const createNewOrder = handleAsyncError(async (req, res, next) => {
     if (saveAddress === true) {
       // Kiểm tra user đã có địa chỉ nào chưa để quyết định isDefault
       const addressCount = await Address.countDocuments({ user_id: req.user.id });
-      
+
       await Address.create({
         user_id: req.user.id,
         ...finalShippingInfo,
@@ -239,15 +239,20 @@ export const createNewOrder = handleAsyncError(async (req, res, next) => {
   });
 });
 
+// Helper: Check admin role (supports both legacy `role` field and new `role_id.name` field)
+const isAdmin = (user) => {
+  return user.role === 'admin' || user.role_id?.name === 'admin';
+};
+
 // Xem chi tiết nội dung của một đơn hàng
 export const getSingleOrder = handleAsyncError(async (req, res, next) => {
   const order = await Order.findById(req.params.id).populate("user_id", "name email")
   if (!order) {
     return next(new HandleError("Không tìm thấy đơn đặt hàng", 404))
   }
-  
+
   // Check access: only admin or the order owner can view
-  if (req.user.role !== 'admin' && order.user_id?.toString() !== req.user.id.toString()) {
+  if (!isAdmin(req.user) && order.user_id?.toString() !== req.user.id.toString()) {
     return next(new HandleError("Bạn không có quyền truy cập đơn hàng này", 403));
   }
 
@@ -324,9 +329,14 @@ export const updateOrderStauts = handleAsyncError(async (req, res, next) => {
     }
   }
 
-  if (newStatus === "Đã hủy") {
+  if (newStatus === "Đã hủy" && order.orderStatus !== "Đã hủy") {
     order.cancelledAt = Date.now();
     order.cancelledBy = req.user._id;
+
+    // Hoàn lại lượt dùng voucher nếu đơn bị hủy
+    if (order.voucher_id) {
+      await Voucher.findByIdAndUpdate(order.voucher_id, { $inc: { usedCount: -1 } });
+    }
   }
 
   await order.save({ validateBeforeSave: false });
@@ -336,7 +346,7 @@ export const updateOrderStauts = handleAsyncError(async (req, res, next) => {
 
   // TỰ ĐỘNG TẠO THÔNG BÁO CHO USER
   let notificationMessage = `Đơn hàng #${order.orderCode} đã chuyển sang trạng thái: ${newStatus}`;
-  
+
   // Bổ sung mã vận đơn cho các trạng thái giao vận theo yêu cầu
   const shippingStatuses = ["Đang giao", "Đã giao"];
   if (shippingStatuses.includes(newStatus) && order.trackingNumber) {
@@ -362,13 +372,13 @@ export const updateOrderStauts = handleAsyncError(async (req, res, next) => {
 
 async function updateQuantity(id, quantity) {
   const product = await Product.findById(id);
-  
+
   // [Graceful Skip]: Bỏ qua việc trừ tồn kho đối với các sản phẩm đã bị xóa hoặc không còn tồn tại
   if (!product) {
     console.warn(`[Stock System Warning]: Bỏ qua trừ kho. Cảnh báo - không tìm thấy Sản phẩm mang ID: ${id} (Có thể đã bị xóa khỏi hệ thống).`);
     return;
   }
-  
+
   product.stock -= quantity;
   await product.save({ validateBeforeSave: false });
 }
@@ -435,6 +445,15 @@ export const cancelOrder = handleAsyncError(async (req, res, next) => {
     order.cancelledBy = req.user._id;
     order.cancellationReason = req.body.reason || "";
 
+    // Hoàn lại lượt dùng voucher nếu đơn bị hủy
+    if (order.voucher_id) {
+      await Voucher.findByIdAndUpdate(
+        order.voucher_id,
+        { $inc: { usedCount: -1 } },
+        queryOptions
+      );
+    }
+
     await order.save({ ...queryOptions, validateBeforeSave: false });
 
     if (session) await session.commitTransaction();
@@ -449,5 +468,33 @@ export const cancelOrder = handleAsyncError(async (req, res, next) => {
   } finally {
     if (session) session.endSession();
   }
+});
+
+// Admin xóa đơn hàng
+export const deleteOrder = handleAsyncError(async (req, res, next) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) {
+    return next(new HandleError("Không tìm thấy đơn hàng", 404));
+  }
+
+  // Khôi phục số lượng kho nếu đơn hàng bị xóa khi chưa hủy (đang giao, đã giao)
+  // Thực tế admin nên hủy trước khi xóa, nhưng backup logic:
+  if (order.orderStatus === "Đang giao" || order.orderStatus === "Đã giao") {
+    for (const item of order.orderItems) {
+      await updateQuantity(item.product_id, -item.quantity);
+    }
+  }
+
+  // Hoàn lại lượt voucher nếu đơn chưa bị hủy trước đó
+  if (order.orderStatus !== "Đã hủy" && order.voucher_id) {
+    await Voucher.findByIdAndUpdate(order.voucher_id, { $inc: { usedCount: -1 } });
+  }
+
+  await order.deleteOne();
+
+  res.status(200).json({
+    success: true,
+    message: "Xóa đơn hàng thành công",
+  });
 });
 

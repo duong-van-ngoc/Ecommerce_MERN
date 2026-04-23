@@ -62,7 +62,7 @@ export const getDashboardStats = asyncErrorHandler(async (req, res, next) => {
    
     const currentMonthOrders = await Order.find({
         createdAt: { $gte: lastMonth },
-        orderStatus: { $ne: 'Cancelled' }
+        orderStatus: { $ne: 'Đã hủy' }
     });
 
     const currentMonthRevenue = currentMonthOrders.reduce((total, order) => {
@@ -72,7 +72,7 @@ export const getDashboardStats = asyncErrorHandler(async (req, res, next) => {
     // Doanh thu tháng trước
     const previousMonthOrders = await Order.find({
         createdAt: { $gte: twoMonthsAgo, $lt: lastMonth },
-        orderStatus: { $ne: 'Cancelled' }
+        orderStatus: { $ne: 'Đã hủy' }
     });
 
     const previousMonthRevenue = previousMonthOrders.reduce((total, order) => {

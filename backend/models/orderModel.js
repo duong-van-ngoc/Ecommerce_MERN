@@ -186,9 +186,11 @@ orderSchema.index({ user_id: 1, voucher_id: 1, orderStatus: 1 });
 
 
 // Middleware tính tổng tiền trước khi lưu đơn hàng
+// Rule: totalPrice = itemsPrice + taxPrice + shippingPrice - discountAmount (min 0)
 orderSchema.pre('save', function(next) {
   this.itemsPrice = this.orderItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-  this.totalPrice = this.itemsPrice + this.taxPrice + this.shippingPrice;
+  const discount = Number(this.discountAmount) || 0;
+  this.totalPrice = Math.max(0, this.itemsPrice + this.taxPrice + this.shippingPrice - discount);
   next();
 });
 
