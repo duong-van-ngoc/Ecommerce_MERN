@@ -59,7 +59,7 @@ import PageTitle from "@/shared/components/PageTitle";
 import Navbar from "@/shared/components/Navbar";
 import Footer from "@/shared/components/Footer";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchMyVouchers, fetchActiveVouchers, claimVoucher, resetClaimState } from "@/modules/voucher";
+import { fetchMyVouchers, fetchActiveVouchers, claimVoucher, resetClaimState } from "@/features/vouchers/voucherSlice";
 import formatVND from "@/shared/utils/formatCurrency";
 import { Loader2, TicketPercent, Gift, Truck, Store } from "lucide-react";
 import { toast } from "react-toastify";

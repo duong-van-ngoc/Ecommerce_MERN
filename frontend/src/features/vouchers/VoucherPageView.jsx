@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-import AccountSidebar from "@/shared/components/AccountSidebar";
+import AccountSidebar from "@/features/user/components/AccountSidebar";
 import PageTitle from "@/shared/components/PageTitle";
 import Navbar from "@/shared/components/Navbar";
 import Footer from "@/shared/components/Footer";
-import "@/pages/user/styles/Vouchers.css";
-import "@/pages/user/styles/AccountShared.css";
+import "@/Pages/user/styles/Vouchers.css";
+import "@/Pages/user/styles/AccountShared.css";
 
 // Import từ module Voucher (Mô hình mới)
-import { useVouchers, VoucherList } from "@/modules/voucher";
+import { useVouchers } from "@/features/vouchers/hooks/useVouchers";
+import VoucherList from "@/features/vouchers/components/VoucherList";
 
 /**
  * PAGE: Kho Voucher / Mã giảm giá

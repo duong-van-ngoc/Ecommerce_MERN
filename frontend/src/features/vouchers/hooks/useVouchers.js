@@ -6,7 +6,7 @@ import {
     fetchActiveVouchers, 
     claimVoucher, 
     resetClaimState 
-} from "../store/voucherSlice";
+} from "../voucherSlice";
 import formatVND from "@/shared/utils/formatCurrency";
 import { TicketPercent, Gift, Truck, Store } from "lucide-react";
 

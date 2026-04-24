@@ -1,21 +1,14 @@
-/**
- * FILE: frontend/src/features/voucher/voucherSlice.js
- * VAI TRÒ: Quản lý trạng thái Voucher (Mã giảm giá) tại Frontend.
- * CHỨC NĂNG: Gọi API kiểm tra mã, lưu trữ số tiền giảm giá và thông báo lỗi.
- */
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "@/shared/api/http.js";
+import { voucherApi } from "./api/voucherApi";
 
-// Thunk: Kiểm tra và áp dụng Voucher
+/**
+ * Thunk: Kiểm tra và áp dụng Voucher vào đơn hàng
+ */
 export const applyVoucher = createAsyncThunk(
   "voucher/applyVoucher",
   async ({ voucherCode, itemPrice }, { rejectWithValue }) => {
     try {
-      const { data } = await axios.post("/api/v1/vouchers/apply", { 
-        voucherCode, 
-        itemPrice 
-      });
-      return data; // { success, isValid, discountAmount, voucherCode, message }
+      return await voucherApi.applyVoucher(voucherCode, itemPrice);
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Không thể áp dụng mã giảm giá"
@@ -24,13 +17,14 @@ export const applyVoucher = createAsyncThunk(
   }
 );
 
-// Thunk: Lấy danh sách Voucher công khai đang hoạt động
+/**
+ * Thunk: Lập danh sách Voucher hệ thống
+ */
 export const fetchActiveVouchers = createAsyncThunk(
   "voucher/fetchActiveVouchers",
   async (_, { rejectWithValue }) => {
     try {
-      const { data } = await axios.get("/api/v1/vouchers/all");
-      return data.vouchers;
+      return await voucherApi.fetchActiveVouchers();
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Không thể lấy danh sách mã giảm giá"
@@ -39,13 +33,14 @@ export const fetchActiveVouchers = createAsyncThunk(
   }
 );
 
-// Thunk: Lấy danh sách Voucher người dùng đang sở hữu
+/**
+ * Thunk: Lấy kho voucher cá nhân
+ */
 export const fetchMyVouchers = createAsyncThunk(
   "voucher/fetchMyVouchers",
   async (_, { rejectWithValue }) => {
     try {
-      const { data } = await axios.get("/api/v1/user-vouchers/me");
-      return data.vouchers;
+      return await voucherApi.fetchMyVouchers();
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Không thể lấy kho voucher của bạn"
@@ -54,13 +49,14 @@ export const fetchMyVouchers = createAsyncThunk(
   }
 );
 
-// Thunk: User bấm "Lấy mã" (Claim Voucher)
+/**
+ * Thunk: Lưu voucher vào tài khoản
+ */
 export const claimVoucher = createAsyncThunk(
   "voucher/claimVoucher",
   async (voucherId, { rejectWithValue }) => {
     try {
-      const { data } = await axios.post(`/api/v1/user-vouchers/claim/${voucherId}`);
-      return data;
+      return await voucherApi.claimVoucher(voucherId);
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Không thể lưu mã giảm giá"
@@ -72,15 +68,15 @@ export const claimVoucher = createAsyncThunk(
 const voucherSlice = createSlice({
   name: "voucher",
   initialState: {
-    activeVouchers: [],   // Danh sách voucher công khai từ kho (hệ thống)
-    myVouchers: [],       // Danh sách voucher người dùng đang sở hữu
-    appliedVoucher: null, // Lưu kết quả validation từ server
-    voucherCode: "",      // Mã đang nhập hoặc đã apply
+    activeVouchers: [],
+    myVouchers: [],
+    appliedVoucher: null,
+    voucherCode: "",
     loading: false,
-    claimLoading: false,  // Loading riêng cho hành động claim
+    claimLoading: false,
     error: null,
     success: false,
-    claimSuccess: false,  // Cờ báo claim thành công
+    claimSuccess: false,
   },
   reducers: {
     resetVoucher: (state) => {
@@ -100,7 +96,6 @@ const voucherSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Apply Voucher
       .addCase(applyVoucher.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -118,7 +113,6 @@ const voucherSlice = createSlice({
         state.appliedVoucher = null;
         state.success = false;
       })
-      // Fetch Active Vouchers
       .addCase(fetchActiveVouchers.pending, (state) => {
         state.loading = true;
       })
@@ -130,7 +124,6 @@ const voucherSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // Fetch My Vouchers
       .addCase(fetchMyVouchers.pending, (state) => {
         state.loading = true;
       })
@@ -142,7 +135,6 @@ const voucherSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // Claim Voucher
       .addCase(claimVoucher.pending, (state) => {
         state.claimLoading = true;
         state.error = null;
@@ -150,8 +142,6 @@ const voucherSlice = createSlice({
       .addCase(claimVoucher.fulfilled, (state) => {
         state.claimLoading = false;
         state.claimSuccess = true;
-        // Tùy chọn: Có thể refetch hoặc push vào myVouchers
-        // Ở đây ta để UI tự refetch hoặc user chuyển trang
       })
       .addCase(claimVoucher.rejected, (state, action) => {
         state.claimLoading = false;
