@@ -66,7 +66,6 @@ function Register() {
         password:''
     })
     const [avatar, setAvatar] = useState("")
-    const [showPassword, setShowPassword] = useState(false)
     const [avatarPreview, setAvatarPreview] = useState(DEFAULT_AVATAR_PREVIEW)
      const {name, email, password} = user
     const {success, loading, error} = useSelector(state => state.user)
@@ -125,7 +124,7 @@ function Register() {
                 dispatch(removeSuccess())
                 navigate('/login')
               }
-            }, [dispatch, success])
+            }, [dispatch, success, navigate])
 
   return (
     <main className="register-page">
@@ -151,7 +150,7 @@ function Register() {
                             <div className="register-avatar-shell">
                                 <img
                                     src={avatarPreview}
-                                    alt="Avatar Preview"
+                                    alt="Xem trước ảnh đại diện"
                                     className="register-avatar-image"
                                 />
                                 <div className="register-avatar-hover">
@@ -204,7 +203,7 @@ function Register() {
                                 id="register-email"
                                 type="email"
                                 name="email"
-                                placeholder="name@example.com"
+                                placeholder="ban@vidu.com"
                                 value={email}
                                 onChange={registerDataChange}
                             />
@@ -221,7 +220,7 @@ function Register() {
                             </span>
                             <input
                                 id="register-password"
-                                type={showPassword ? 'text' : 'password'}
+                                type="password"
                                 name="password"
                                 placeholder="Nhập mật khẩu"
                                 value={password}

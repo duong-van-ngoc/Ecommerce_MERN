@@ -55,6 +55,15 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '@/shared/api/http.js';
 
+const getOrderTimestamp = (order) => {
+    const rawDate = order?.createdAt || order?.orderDate || order?.created_at || order?.updatedAt;
+    const timestamp = rawDate ? new Date(rawDate).getTime() : Number.NaN;
+    return Number.isFinite(timestamp) ? timestamp : -1;
+};
+
+const sortOrdersByNewest = (orders = []) =>
+    [...orders].sort((a, b) => getOrderTimestamp(b) - getOrderTimestamp(a));
+
 /**
  * Async Thunk - Lấy thống kê dashboard
  */
@@ -405,6 +414,20 @@ export const updateOrderStatus = createAsyncThunk(
     }
 );
 
+export const generateTrackingCode = createAsyncThunk(
+    'admin/generateTrackingCode',
+    async (_, { rejectWithValue }) => {
+        try {
+            const { data } = await axios.get('/api/v1/admin/orders/tracking-code', {
+                withCredentials: true
+            });
+            return data.trackingCode;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Không thể tạo mã vận đơn');
+        }
+    }
+);
+
 /**
  * Async Thunk - Xóa đơn hàng
  */
@@ -725,7 +748,7 @@ const adminSlice = createSlice({
             })
             .addCase(fetchAllOrders.fulfilled, (state, action) => {
                 state.loading = false;
-                state.orders = action.payload;
+                state.orders = sortOrdersByNewest(action.payload || []);
             })
             .addCase(fetchAllOrders.rejected, (state, action) => {
                 state.loading = false;
@@ -743,6 +766,7 @@ const adminSlice = createSlice({
                     const index = state.orders.findIndex(o => o._id === action.payload._id);
                     if (index !== -1) {
                         state.orders[index] = action.payload;
+                        state.orders = sortOrdersByNewest(state.orders);
                     }
                 }
             })
@@ -1009,7 +1033,7 @@ const adminSlice = createSlice({
             });
 
         builder
-            .addCase(toggleVoucherStatus.pending, (state) => {
+            .addCase(toggleVoucherStatus.pending, () => {
                 // state.loading = true; // Thường không set loading cho toggle để mượt mà hơn
             })
             .addCase(toggleVoucherStatus.fulfilled, (state, action) => {

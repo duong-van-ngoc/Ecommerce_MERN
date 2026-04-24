@@ -47,6 +47,8 @@
  *    - Khoảng cách cuộn `scrollAmount = 300`: Có thể điều chỉnh con số này nếu muốn thanh trượt di chuyển xa hơn hoặc ngắn hơn trong mỗi lần nhấn.
  *    - Lưu ý thuộc tính `overflow-x: auto` trong CSS đi kèm: Nó cho phép người dùng dùng chuột/tay vuốt (swipe) tự nhiên bên cạnh việc nhấn nút.
  */
+// @deprecated Legacy home component. The active homepage uses features/home/components/HomeFeaturedProducts.jsx and HomeFlashSale.jsx.
+// Keep temporarily for audit/history; do not use for new homepage work.
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Product from '@/shared/components/Product';
@@ -120,4 +122,3 @@ const NewArrivals = ({ products, loading }) => {
 };
 
 export default NewArrivals;
-

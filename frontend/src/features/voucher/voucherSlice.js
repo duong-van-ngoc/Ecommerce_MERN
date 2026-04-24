@@ -147,7 +147,7 @@ const voucherSlice = createSlice({
         state.claimLoading = true;
         state.error = null;
       })
-      .addCase(claimVoucher.fulfilled, (state, action) => {
+      .addCase(claimVoucher.fulfilled, (state) => {
         state.claimLoading = false;
         state.claimSuccess = true;
         // Tùy chọn: Có thể refetch hoặc push vào myVouchers
@@ -163,4 +163,3 @@ const voucherSlice = createSlice({
 
 export const { resetVoucher, clearVoucherErrors, resetClaimState } = voucherSlice.actions;
 export default voucherSlice.reducer;
-

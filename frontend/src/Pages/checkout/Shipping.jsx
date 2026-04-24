@@ -17,8 +17,8 @@ function Shipping() {
 
     // 1. Kết nối Selectors
     const { shippingInfo } = useSelector(state => state.cart)
-    const { user, isAuthenticated } = useSelector(state => state.user)
-    const { addresses, loading: addressLoading } = useSelector(state => state.address)
+    const { isAuthenticated } = useSelector(state => state.user)
+    const { addresses } = useSelector(state => state.address)
 
     // State cho Form
     const [address, setAddress] = useState(shippingInfo?.address || "")
@@ -111,12 +111,12 @@ function Shipping() {
                     setWardsList([]);
                     setWardCode("");
                 }
-            } catch (err) {
+            } catch {
                 toast.error("Không tải được danh sách quận/huyện");
             }
         };
         fetchDistricts();
-    }, [provinceCode]);
+    }, [provinceCode, districtCode]);
 
     // 4.2 Xử lý Quận -> Xã: Cascading Dropdown thông minh
     useEffect(() => {
@@ -136,12 +136,12 @@ function Shipping() {
                 if (!isValid) {
                     setWardCode("");
                 }
-            } catch (err) {
+            } catch {
                 toast.error("Không tải được danh sách phường/xã");
             }
         };
         fetchWards();
-    }, [districtCode]);
+    }, [districtCode, wardCode]);
 
     const shippingInfoSubmit = (e) => {
         e.preventDefault();

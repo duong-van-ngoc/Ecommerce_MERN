@@ -72,15 +72,15 @@ function UserDashboard({ user }) {
     }
 
     const options = [
-        { name: 'Orders', funcName: orders },
-        { name: 'Account', funcName: profile },
-        { name: `Cart(${cartItems.length})`, funcName: myCart, isCart: true },
-        { name: 'Logout', funcName: logoutUser },
+        { name: 'Đơn hàng', funcName: orders },
+        { name: 'Tài khoản', funcName: profile },
+        { name: `Giỏ hàng (${cartItems.length})`, funcName: myCart, isCart: true },
+        { name: 'Đăng xuất', funcName: logoutUser },
     ]
     const userRole = user?.role_id?.name || user?.role;
     if (userRole === 'admin') {
         options.unshift({
-            name: 'Admin Dashboard', funcName: dashboard
+            name: 'Trang quản trị', funcName: dashboard
         })
     }
     function orders() {
@@ -120,12 +120,12 @@ function UserDashboard({ user }) {
             <div className="dashboard-container">
                 <div className="profile-header" onClick={toggleMennu}>
                     <img src={user.avatar.url ? user.avatar.url : 'images/profile.png'}
-                        alt="Profile Picture"
+                        alt="Ảnh đại diện"
                         className='profile-avatar'
                         style={{ width: '36px', height: '36px' }}
                     />
 
-                    <span className="profile-name">{user.name || 'user'}</span>
+                    <span className="profile-name">{user.name || 'Người dùng'}</span>
 
                     {menuVisible && (
                         // phần menu tùy chọn

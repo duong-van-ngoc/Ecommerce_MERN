@@ -58,6 +58,7 @@ const CancelOrderModal = ({ isOpen, onClose, onConfirm, orderId }) => {
                     <div className="com-hint">
                         <FiAlertCircle className="com-hint-icon" size={20} />
                         <p className="com-hint-text">
+                            {orderId ? `Đơn hàng #${String(orderId).slice(-8).toUpperCase()}. ` : ''}
                             Vui lòng chọn lý do hủy đơn. Lưu ý: Thao tác này không thể hoàn tác và các mã giảm giá (nếu có) có thể không còn hiệu lực.
                         </p>
                     </div>

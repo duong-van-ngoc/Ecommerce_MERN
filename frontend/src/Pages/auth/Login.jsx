@@ -131,7 +131,7 @@ function Login() {
                             id="login-email"
                             name="email"
                             type="email"
-                            placeholder="name@company.com"
+                            placeholder="ban@vidu.com"
                             value={loginEmail}
                             onChange={(e) => {setLoginEmail(e.target.value)}}
                             className="login-input"

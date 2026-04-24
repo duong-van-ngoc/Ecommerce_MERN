@@ -63,6 +63,7 @@ import { sendStatusEmail } from '../services/emailService.js';
 import Voucher from '../models/voucherModel.js';
 import Notification from '../models/notificationModel.js';
 import { validateVoucher } from '../utils/voucherValidator.js';
+import { createUniqueTrackingCode, normalizeTrackingCode } from '../utils/trackingCode.js';
 
 // Helper: Sinh mã đơn hàng ngẫu nhiên chuyên nghiệp: TB-YYYYMMDD-XXXXX
 const generateOrderCode = async () => {
@@ -176,10 +177,10 @@ export const createNewOrder = handleAsyncError(async (req, res, next) => {
   // BƯỚC 4: XỬ LÝ VOUCHER & TÍNH TOÁN LẠI TỔNG TIỀN (BACKEND VALIDATION)
   let serverDiscountAmount = 0;
   let serverVoucherInfo = {
-    voucher_id: null,
-    voucherCode: "",
-    voucherType: "",
-    voucherValue: 0
+    voucher_id: undefined,
+    voucherCode: undefined,
+    voucherType: undefined,
+    voucherValue: undefined
   };
 
   if (voucher_id) {
@@ -211,7 +212,7 @@ export const createNewOrder = handleAsyncError(async (req, res, next) => {
   // BƯỚC 5: KHỞI TẠO ĐƠN HÀNG
   const orderCode = await generateOrderCode();
 
-  const order = await Order.create({
+  const orderPayload = {
     shippingInfo: finalShippingInfo,
     orderItems: normalizedItems,
     paymentMethod: paymentMethod || req.body.paymentInfo?.method || "COD",
@@ -221,16 +222,21 @@ export const createNewOrder = handleAsyncError(async (req, res, next) => {
     shippingPrice: shippingPrice || 0,
     totalPrice: serverTotal,
     discountAmount: serverDiscountAmount,
-    voucherCode: serverVoucherInfo.voucherCode,
-    voucher_id: serverVoucherInfo.voucher_id,
-    voucherType: serverVoucherInfo.voucherType,
-    voucherValue: serverVoucherInfo.voucherValue,
     paidAt: null,
     user_id: req.user._id,
     orderCode: orderCode,
     orderStatus: "Chờ xử lý",
     isPaid: false,
-  });
+  };
+
+  if (serverVoucherInfo.voucher_id) {
+    orderPayload.voucherCode = serverVoucherInfo.voucherCode;
+    orderPayload.voucher_id = serverVoucherInfo.voucher_id;
+    orderPayload.voucherType = serverVoucherInfo.voucherType;
+    orderPayload.voucherValue = serverVoucherInfo.voucherValue;
+  }
+
+  const order = await Order.create(orderPayload);
 
   res.status(200).json({
     success: true,
@@ -290,6 +296,19 @@ export const getAllOrder = handleAsyncError(async (req, res, next) => {
   })
 })
 
+export const generateAdminTrackingCode = handleAsyncError(async (req, res) => {
+  const existingTrackingCodes = await Order.distinct("trackingNumber", {
+    trackingNumber: { $exists: true, $nin: [null, ""] },
+  });
+
+  const trackingCode = createUniqueTrackingCode(existingTrackingCodes);
+
+  res.status(200).json({
+    success: true,
+    trackingCode,
+  });
+});
+
 // cập nhật trạng thái đơn hàng
 export const updateOrderStauts = handleAsyncError(async (req, res, next) => {
   const order = await Order.findById(req.params.id).populate("user_id", "name email");
@@ -297,10 +316,26 @@ export const updateOrderStauts = handleAsyncError(async (req, res, next) => {
 
   const newStatus = req.body.status;
   const { trackingNumber, cancellationReason } = req.body;
+  const normalizedTrackingNumber = normalizeTrackingCode(trackingNumber);
 
   const allowed = ["Chờ xử lý", "Đang giao", "Đã giao", "Đã hủy"];
   if (!allowed.includes(newStatus)) {
     return next(new HandleError("Trạng thái không hợp lệ", 400));
+  }
+
+  if (newStatus === "Đang giao" && !normalizedTrackingNumber && !order.trackingNumber) {
+    return next(new HandleError("Vui lòng cung cấp mã vận đơn hợp lệ", 400));
+  }
+
+  if (normalizedTrackingNumber) {
+    const duplicateOrder = await Order.findOne({
+      _id: { $ne: order._id },
+      trackingNumber: normalizedTrackingNumber,
+    }).select("_id");
+
+    if (duplicateOrder) {
+      return next(new HandleError("Mã vận đơn đã tồn tại. Vui lòng tạo mã khác.", 400));
+    }
   }
 
   if (order.orderStatus === "Đã giao") {
@@ -314,7 +349,7 @@ export const updateOrderStauts = handleAsyncError(async (req, res, next) => {
   }
 
   order.orderStatus = newStatus;
-  if (trackingNumber) order.trackingNumber = trackingNumber;
+  if (normalizedTrackingNumber) order.trackingNumber = normalizedTrackingNumber;
   if (cancellationReason) order.cancellationReason = cancellationReason;
 
   if (newStatus === "Đã giao") {
@@ -497,4 +532,3 @@ export const deleteOrder = handleAsyncError(async (req, res, next) => {
     message: "Xóa đơn hàng thành công",
   });
 });
-

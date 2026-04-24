@@ -87,7 +87,7 @@ function ForgotPassword() {
             navigate('/login');
         }
 
-    },[dispatch, success])
+    },[dispatch, success, message, navigate])
 
   return (
     <>
@@ -126,7 +126,7 @@ function ForgotPassword() {
                                     <input
                                         id="forgot-password-email"
                                         type="email"
-                                        placeholder="name@company.com"
+                                        placeholder="ban@vidu.com"
                                         name="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}

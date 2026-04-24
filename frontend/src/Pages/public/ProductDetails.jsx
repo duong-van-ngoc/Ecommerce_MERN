@@ -77,7 +77,7 @@ function ProductDetails() {
   // State của Redux
   const { loading, error, product } = useSelector((state) => state.product)
   const { loading: cartLoading, error: cartError, success, message } = useSelector((state) => state.cart)
-  const { isAuthenticated, user } = useSelector((state) => state.user)
+  const { isAuthenticated } = useSelector((state) => state.user)
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -107,14 +107,14 @@ function ProductDetails() {
   // Dữ liệu thực từ API (có fallback nếu thiếu)
   const productColors = product?.colors?.length > 0
     ? product.colors.map(c => {
-        const cleanColor = typeof c === 'string' ? c.replace(/[\[\]"'\\]/g, "").trim() : String(c);
+        const cleanColor = typeof c === 'string' ? c.replace(/[[\]"'\\]/g, "").trim() : String(c);
         return { name: cleanColor, code: colorMap[cleanColor] || '#cccccc' };
       })
     : [];
 
   const productSizes = product?.sizes?.length > 0
     ? product.sizes.map(s => {
-        const cleanSize = typeof s === 'string' ? s.replace(/[\[\]"'\\]/g, "").trim() : String(s);
+        const cleanSize = typeof s === 'string' ? s.replace(/[[\]"'\\]/g, "").trim() : String(s);
         return { name: cleanSize, available: true };
       })
     : [];
@@ -131,9 +131,9 @@ function ProductDetails() {
 
   // TODO: Cần API riêng cho Sản Phẩm Liên Quan. Tạm thời vẫn mock hoặc lọc từ Tất Cả Sản Phẩm
   const mockRelatedProducts = [
-    { id: 1, name: "Áo Polo Nam Basic", price: 349000, originalPrice: 499000, image: "https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9?w=300&h=300&fit=crop", badge: "NEW" },
+    { id: 1, name: "Áo Polo Nam Basic", price: 349000, originalPrice: 499000, image: "https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9?w=300&h=300&fit=crop", badge: "MỚI" },
     { id: 2, name: "Áo Sơ Mi Oxford", price: 399000, image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=300&h=300&fit=crop" },
-    { id: 3, name: "Quần Jean Slim Fit", price: 599000, originalPrice: 799000, image: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=300&h=300&fit=crop", badge: "HOT" },
+    { id: 3, name: "Quần Jean Slim Fit", price: 599000, originalPrice: 799000, image: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=300&h=300&fit=crop", badge: "NỔI BẬT" },
     { id: 4, name: "Áo Hoodie Premium", price: 699000, image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop" },
   ];
 
@@ -487,8 +487,8 @@ function ProductDetails() {
                       <tbody>
                         <tr><td>Chất liệu</td><td>100% Cotton</td></tr>
                         <tr><td>Xuất xứ</td><td>Việt Nam</td></tr>
-                        <tr><td>Kiểu dáng</td><td>Regular Fit</td></tr>
-                        <tr><td>Phong cách</td><td>Casual, Streetwear</td></tr>
+                        <tr><td>Kiểu dáng</td><td>Dáng suông vừa</td></tr>
+                        <tr><td>Phong cách</td><td>Thường ngày, đường phố</td></tr>
                         <tr><td>Độ dày</td><td>Vừa phải</td></tr>
                       </tbody>
                     </table>

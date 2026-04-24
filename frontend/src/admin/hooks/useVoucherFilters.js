@@ -28,13 +28,13 @@ export const useVoucherFilters = () => {
         return count;
     }, [filters]);
 
-    const updateFilters = (newFilters) => {
+    const updateFilters = useCallback((newFilters) => {
         setFilters(prev => ({ ...prev, ...newFilters }));
-    };
+    }, []);
 
-    const resetFilters = () => {
+    const resetFilters = useCallback(() => {
         setFilters(initialFilters);
-    };
+    }, []);
 
     return {
         filters,

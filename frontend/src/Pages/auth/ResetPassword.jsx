@@ -60,7 +60,7 @@ import { toast } from 'react-toastify';
 import Footer from '@/shared/components/Footer';
 function ResetPassword() {
 
-    const {success, loading, error} = useSelector(state=>state.user)
+    const {success, error} = useSelector(state=>state.user)
     const dispatch  = useDispatch()
     const navigate = useNavigate()
 
@@ -68,7 +68,6 @@ function ResetPassword() {
     const [confirmPassword, setConfirmPassword] = useState("")
 
     const {token} = useParams()
-    console.log(useParams());
     
 
     const resetPasswordSubmit = (e) => {
@@ -117,7 +116,7 @@ function ResetPassword() {
                         <input type="password" 
                                name="password"  
 
-                               placeholder='Nhap Mật khẩu mới' 
+                               placeholder='Nhập mật khẩu mới' 
                                value= {password} 
                                onChange={(e) => setPassWord(e.target.value)}/>
                     </div>

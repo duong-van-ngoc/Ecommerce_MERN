@@ -182,11 +182,14 @@ function OrderConfirm() {
       taxPrice: Number(tax),
       shippingPrice: Number(shippingCharges),
       discountAmount: Number(discountAmount),
-      voucherCode: voucherCode,
-      voucher_id: appliedVoucher?.voucher_id || null,
-      voucherType: appliedVoucher?.voucherType || "",
-      voucherValue: Number(appliedVoucher?.voucherValue || 0),
       totalPrice: Number(total)
+    }
+
+    if (appliedVoucher?.voucher_id) {
+      orderData.voucherCode = voucherCode
+      orderData.voucher_id = appliedVoucher.voucher_id
+      orderData.voucherType = appliedVoucher.voucherType
+      orderData.voucherValue = Number(appliedVoucher.voucherValue || 0)
     }
 
     try {
@@ -331,14 +334,14 @@ function OrderConfirm() {
                         <div className="flex flex-grow flex-col justify-between py-2">
                           <div>
                             <h4 className="text-lg font-bold uppercase tracking-tight text-slate-900">{item.name}</h4>
-                            <p className="mt-1 text-sm text-slate-500 italic">Premium Collection</p>
+                            <p className="mt-1 text-sm text-slate-500 italic">Bộ sưu tập cao cấp</p>
                           </div>
                           <div className="mt-4 flex items-center justify-between">
                             <div className="flex flex-col gap-1">
                               <p className="font-bold text-[#702e36] text-lg">{formatVND(item.price)}</p>
                               {(item.size || item.color) && (
                                 <div className="flex gap-3 text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                  {item.size && <span>Size: <span className="text-slate-900">{item.size}</span></span>}
+                                  {item.size && <span>Kích cỡ: <span className="text-slate-900">{item.size}</span></span>}
                                   {item.color && <span>Màu: <span className="text-slate-900">{item.color}</span></span>}
                                 </div>
                               )}

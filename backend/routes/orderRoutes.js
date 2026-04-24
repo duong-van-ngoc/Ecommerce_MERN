@@ -48,7 +48,7 @@
  */
 import express from "express";
 import { roleBasedAccess, verifyUserAuth } from "../middleware/userAuth.js";
-import { allMyOrder, cancelOrder, createNewOrder, getAllOrder, getSingleOrder ,updateOrderStauts, deleteOrder} from "../controllers/orderController.js";
+import { allMyOrder, cancelOrder, createNewOrder, generateAdminTrackingCode, getAllOrder, getSingleOrder ,updateOrderStauts, deleteOrder} from "../controllers/orderController.js";
 
 const router = express.Router()
 
@@ -60,6 +60,7 @@ router.route("/admin/order/:id")
 .get(verifyUserAuth,roleBasedAccess('admin'), getSingleOrder)
 .delete(verifyUserAuth,roleBasedAccess('admin'), deleteOrder)
 
+router.route("/admin/orders/tracking-code").get(verifyUserAuth, roleBasedAccess('admin'), generateAdminTrackingCode)
 router.route("/admin/orders/").get(verifyUserAuth,roleBasedAccess('admin'), getAllOrder)
 router.route("/orders/user").get(verifyUserAuth, allMyOrder)
 

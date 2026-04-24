@@ -44,6 +44,8 @@
  *    - Chú ý phần `vertical-text-content`: Đây là một kỹ thuật thiết kế Typography theo chiều dọc (Vertical Text) giúp layout trông như một tạp chí thời trang chuyên nghiệp.
  *    - Các Link dẫn đến `/products?sort=newest` và `/products?category=accessories` là những "điểm chạm" quan trọng để tăng tỷ lệ chuyển đổi (Conversion Rate).
  */
+// @deprecated Legacy home component. The active homepage uses features/home/components/HomeHero.jsx.
+// Keep temporarily for audit/history; do not use for new homepage work.
 import React from 'react';
 import { Link } from 'react-router-dom';
 import '@/shared/components/styles/HeroSection.css';
@@ -113,4 +115,3 @@ const HeroSection = () => {
 };
 
 export default HeroSection;
-

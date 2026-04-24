@@ -1,4 +1,9 @@
 /**
+ * @deprecated Legacy/alternate voucher page.
+ * Active /vouchers route uses Pages/user/voucher-page.jsx -> features/vouchers/VoucherPageView.jsx.
+ * Keep this file for audit/history until the voucher module is consolidated.
+ */
+/**
  * 1. FILE NÀY LÀ GÌ: 
  *    Đây là Component "Kho Voucher / Mã giảm giá" (Vouchers / Coupon Wallet).
  * 
@@ -75,7 +80,7 @@ const Vouchers = () => {
 
     const tabs = [
         { id: "all", label: "Tất Cả" },
-        { id: "shop", label: "Voucher Của Shop" },
+        { id: "shop", label: "Voucher của cửa hàng" },
     ];
 
     useEffect(() => {
@@ -88,7 +93,7 @@ const Vouchers = () => {
 
     useEffect(() => {
         if (claimSuccess) {
-            toast.success("Lưu voucher thành công! Hãy kiểm tra trong kho của bạn.");
+            toast.success("Đã lưu voucher vào kho của bạn.");
             dispatch(resetClaimState());
             setViewMode("my_vouchers"); // Chuyển sang kho sau khi lưu thành công
         }
@@ -109,16 +114,16 @@ const Vouchers = () => {
 
         // Xác định icon và badge
         let IconComponent = TicketPercent;
-        let badgeLabel = "Mã Khuyến Mãi";
+        let badgeLabel = "Mã khuyến mãi";
         if (v.type === "freeship") {
             IconComponent = Truck;
-            badgeLabel = "Miễn Phí Vận Chuyển";
+            badgeLabel = "Miễn phí vận chuyển";
         } else if (v.type === "shop") {
             IconComponent = Store;
-            badgeLabel = "Độc Quyền Từ Shop";
+            badgeLabel = "Độc quyền từ cửa hàng";
         } else if (v.type === "discount") {
             IconComponent = Gift;
-            badgeLabel = "Siêu Giảm Giá";
+            badgeLabel = "Ưu đãi giảm giá";
         }
 
         const discountText = v.discount.type === "percentage" 
@@ -172,13 +177,13 @@ const Vouchers = () => {
                     {/* BƯỚC 1: HERO HEADER (Đồng bộ) */}
                     <div className="account-hero">
                         <div className="hero-content">
-                            <span className="hero-badge">Trung Tâm Ưu Đãi</span>
+                            <span className="hero-badge">Trung tâm ưu đãi</span>
                             <h1 className="hero-title">
-                                Kho Voucher <br />
-                                <span className="hero-title-highlight">Của Bạn</span>
+                                Kho voucher <br />
+                                <span className="hero-title-highlight">của bạn</span>
                             </h1>
                             <p className="hero-desc">
-                                Khám phá hàng loạt mã giảm giá hấp dẫn. Mua sắm thông minh, tiết kiệm tối đa cùng ToBi Shop.
+                                Khám phá các ưu đãi đang có và lưu voucher phù hợp cho lần mua sắm tiếp theo.
                             </p>
                         </div>
                         <div className="hero-stats">
@@ -200,13 +205,13 @@ const Vouchers = () => {
                             className={`mode-btn ${viewMode === "my_vouchers" ? "active" : ""}`}
                             onClick={() => { setViewMode("my_vouchers"); setActiveTab("all"); }}
                         >
-                            Kho Voucher Của Tôi
+                            Kho voucher của tôi
                         </button>
                         <button 
                             className={`mode-btn center ${viewMode === "voucher_center" ? "active" : ""}`}
                             onClick={() => { setViewMode("voucher_center"); setActiveTab("all"); }}
                         >
-                            Trung Tâm Voucher HOT
+                            Voucher nổi bật
                         </button>
                     </div>
 

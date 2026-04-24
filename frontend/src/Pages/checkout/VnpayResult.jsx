@@ -84,7 +84,7 @@ const VnpayResult = () => {
         return messages[code] || 'Giao dịch không thành công. Đã có lỗi xảy ra.';
     };
 
-    const { userId, cartItems } = useSelector((state) => state.cart);
+    const { userId } = useSelector((state) => state.cart);
     const { isAuthenticated } = useSelector((state) => state.user);
 
     useEffect(() => {

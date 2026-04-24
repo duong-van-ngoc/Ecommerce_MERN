@@ -43,6 +43,8 @@
  *    - Lưu ý các class `delay-100`, `delay-200`...: Chúng phối hợp với thư viện AOS (hoặc CSS animation) để các ô xuất hiện tuần tự khi cuộn trang.
  *    - Tên category trong URL (`?category=Quần áo`) phải khớp chính xác với `name` trong Database để filter hoạt động đúng.
  */
+// @deprecated Legacy home component. The active homepage uses features/home/components/HomeCategoryGrid.jsx.
+// Keep temporarily for audit/history; do not use for new homepage work.
 import React from 'react';
 import { Link } from 'react-router-dom';
 import '@/shared/components/styles/CategoryGrid.css';
@@ -128,4 +130,3 @@ const CategoryGrid = () => {
 };
 
 export default CategoryGrid;
-

@@ -173,6 +173,9 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess }) {
             formData.append("rating", Number(rating));
             formData.append("comment", finalComment);
             formData.append("productId", product._id);
+            if (orderId) {
+                formData.append("orderId", orderId);
+            }
             
             images.forEach((img) => {
                 formData.append("images", img);
@@ -190,7 +193,7 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess }) {
         } finally {
             setLoading(false);
         }
-    }, [product, rating, comment, selectedTags, images, onSuccess]);
+    }, [product, rating, comment, selectedTags, images, onSuccess, orderId]);
 
     const handleClose = useCallback(() => {
         setRating(5);

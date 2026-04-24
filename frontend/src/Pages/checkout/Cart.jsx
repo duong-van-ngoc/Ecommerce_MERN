@@ -7,8 +7,8 @@ import Navbar from '@/shared/components/Navbar'
 import Footer from '@/shared/components/Footer'
 import { useSelector, useDispatch } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
-import { addItemsToCart, removeItemFromCart, removeMessage, removeErrors, removeOrderedItems } from '@/features/cart/cartSlice'
-import { fetchActiveVouchers, applyVoucher, resetVoucher, clearVoucherErrors } from '@/modules/voucher'
+import { addItemsToCart, removeItemFromCart, removeMessage, removeErrors } from '@/features/cart/cartSlice'
+import { fetchActiveVouchers, applyVoucher, resetVoucher } from '@/modules/voucher'
 import { formatVND } from '@/shared/utils/formatCurrency'
 import { toast } from 'react-toastify'
 import VoucherModal from './components/VoucherModal'
@@ -19,6 +19,7 @@ function Cart() {
 
   // Logic/State: Giữ nguyên tuyệt đối
   const { cartItems, loading, success, message, error } = useSelector((state) => state.cart)
+  const { isAuthenticated } = useSelector((state) => state.user)
   const {
     activeVouchers,
     appliedVoucher: serverVoucher,
@@ -31,7 +32,6 @@ function Cart() {
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false)
 
   const [appliedCoupon, setAppliedCoupon] = useState(null)
-  const [couponSuccess, setCouponSuccess] = useState("")
 
   const getItemKey = (item) => `${item.product}-${item.size || ''}-${item.color || ''}`
 
@@ -48,8 +48,12 @@ function Cart() {
         discount: Number(serverVoucher.discountAmount || serverVoucher.discount || 0),
         desc: serverVoucher.message
       })
-      setCouponSuccess("Áp dụng mã thành công!")
       setIsVoucherModalOpen(false) // Tự động đóng modal khi áp dụng thành công
+      toast.success(serverVoucher.message || "Áp dụng mã thành công!", {
+        position: 'top-center',
+        autoClose: 2000,
+        toastId: 'voucher-success'
+      })
     }
   }, [vSuccess, serverVoucher])
 
@@ -149,13 +153,12 @@ function Cart() {
       sessionStorage.removeItem("appliedVoucher");
     }
 
-    navigate('/login?redirect=/shipping')
+    navigate(isAuthenticated ? '/shipping' : '/login?redirect=/shipping')
   }
 
   const handleRemoveCoupon = () => {
     dispatch(resetVoucher())
     setAppliedCoupon(null)
-    setCouponSuccess("")
     toast.info("Đã gỡ mã giảm giá", { position: 'top-center', autoClose: 1500 })
   }
 
@@ -258,7 +261,7 @@ function Cart() {
               >
                 <div className="flex items-center gap-2.5 text-[#ff5a5f]">
                   <span className="material-symbols-outlined text-[20px] font-variation-fill">confirmation_number</span>
-                  <span className="text-[14px] font-normal">ToBi Voucher</span>
+                  <span className="text-[14px] font-normal">Voucher ToBi</span>
                 </div>
                 
                 <div className="flex items-center gap-2 text-[#0055aa] text-[14px]">

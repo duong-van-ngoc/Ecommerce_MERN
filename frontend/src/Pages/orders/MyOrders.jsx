@@ -302,7 +302,7 @@ function MyOrders() {
                         {/* Order Header */}
                         <div className="order-card-header">
                           <div className="order-header-left">
-                            <span className="shop-name">{user?.name || "Shop"}</span>
+                            <span className="shop-name">{user?.name || "ToBi Shop"}</span>
                             <span className="header-divider">|</span>
                             <span className={`status-badge ${statusConfig.className}`}>
                               {statusConfig.text}
@@ -374,7 +374,7 @@ function MyOrders() {
                                   >
                                     Đánh giá
                                   </button>
-                                  <button className="btn-rebuy">Mua Lại</button>
+                                  <button className="btn-rebuy">Mua lại</button>
                                 </>
                               )}
                             </div>
@@ -396,6 +396,8 @@ function MyOrders() {
       {/* Review Modal */}
       <ReviewComment
         isOpen={!!reviewProduct}
+        product={reviewProduct}
+        orderId={reviewOrderId}
         onClose={() => {
           setReviewProduct(null);
           setReviewOrderId(null);

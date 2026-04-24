@@ -38,7 +38,7 @@ export const useVouchers = (viewMode) => {
     // Xử lý thông báo sau khi lưu voucher
     useEffect(() => {
         if (claimSuccess) {
-            toast.success("Lưu voucher thành công! Hãy kiểm tra trong kho của bạn.");
+            toast.success("Đã lưu voucher vào kho của bạn.");
             dispatch(resetClaimState());
         }
         if (error && viewMode === "voucher_center") {
@@ -60,10 +60,10 @@ export const useVouchers = (viewMode) => {
 
         // Xác định icon và badge dựa trên type
         const typeConfigs = {
-            freeship: { Icon: Truck, label: "Miễn Phí Vận Chuyển" },
-            shop: { Icon: Store, label: "Độc Quyền Từ Shop" },
-            discount: { Icon: Gift, label: "Siêu Giảm Giá" },
-            default: { Icon: TicketPercent, label: "Mã Khuyến Mãi" }
+            freeship: { Icon: Truck, label: "Miễn phí vận chuyển" },
+            shop: { Icon: Store, label: "Độc quyền từ cửa hàng" },
+            discount: { Icon: Gift, label: "Ưu đãi giảm giá" },
+            default: { Icon: TicketPercent, label: "Mã khuyến mãi" }
         };
 
         const config = typeConfigs[v.type] || typeConfigs.default;

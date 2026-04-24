@@ -892,8 +892,18 @@ export const searchProducts = handleAsyncError(async (req, res, next) => {
         return next(new HandleError("Vui lòng nhập tên sản phẩm để tìm kiếm", 400));
     }
 
+    const normalizedKeyword = name.trim().replace(/\s+/g, " ");
+    const escapedKeyword = normalizedKeyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const searchRegex = new RegExp(escapedKeyword, "i");
+
     const products = await Product.find({
-        name: { $regex: name.trim(), $options: 'i' }
+        $or: [
+            { name: searchRegex },
+            { sku: searchRegex },
+            { "category.level1": searchRegex },
+            { "category.level2": searchRegex },
+            { "category.level3": searchRegex }
+        ]
     }).select('_id name stock price category images');
 
     res.status(200).json({

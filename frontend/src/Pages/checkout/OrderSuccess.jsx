@@ -87,7 +87,7 @@ function OrderSuccess({ orderId, onClose }) {
         <button
           className="os-close hover-icon-btn"
           type="button"
-          aria-label="Close"
+          aria-label="Đóng"
           onClick={onClose}
         >
           <svg
