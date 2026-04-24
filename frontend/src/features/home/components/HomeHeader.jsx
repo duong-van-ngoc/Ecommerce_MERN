@@ -3,7 +3,7 @@ import { Bell, Search, ShoppingCart, UserRound } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import useHomeSearch from "@/features/home/hooks/useHomeSearch";
-import { fetchNotifications } from "@/features/notification/notificationSlice";
+import { fetchNotifications } from "@/features/notifications/notificationSlice";
 
 function HomeHeader() {
   const dispatch = useDispatch();

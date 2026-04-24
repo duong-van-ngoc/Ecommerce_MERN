@@ -50,10 +50,10 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchNotifications, markAsRead, markAllRead, readLocal, readAllLocal } from "@/features/notification/notificationSlice";
-import AccountSidebar from "@/shared/components/AccountSidebar";
-import "@/pages/user/styles/Notifications.css";
-import "@/pages/user/styles/AccountShared.css";
+import { fetchNotifications, markAsRead, markAllRead, readLocal, readAllLocal } from "@/features/notifications/notificationSlice";
+import AccountSidebar from "@/features/user/components/AccountSidebar";
+import "@/Pages/user/styles/Notifications.css";
+import "@/Pages/user/styles/AccountShared.css";
 import PageTitle from "@/shared/components/PageTitle";
 import { TicketPercent, Package, Wallet, ShoppingBag, Bell } from "lucide-react";
 

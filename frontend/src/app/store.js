@@ -51,7 +51,7 @@ import orderReducer from '@/features/orders/orderSlice';
 import addressReducer from '@/features/address/addressSlice';
 import adminReducer from '@/admin/adminSLice/adminSlice';
 import voucherReducer from '@/features/vouchers/voucherSlice';
-import notificationReducer from '@/features/notification/notificationSlice';
+import notificationReducer from '@/features/notifications/notificationSlice';
 
 
 export const store = configureStore({
