@@ -49,6 +49,14 @@ export default (err, req, res, next) => {
     err.statusCode = err.statusCode || 500;
     err.message = err.message || "May chu gap su co, vui long thu lai sau";
 
+    if (err.name === "TokenExpiredError") {
+        err = new HandleError("Phien dang nhap da het han. Vui long dang nhap lai", 401);
+    }
+
+    if (err.name === "JsonWebTokenError") {
+        err = new HandleError("Token khong hop le. Vui long dang nhap lai", 401);
+    }
+
     if (err.name === "CastError") {
         const message = `Khong tim thay: ${err.path}`;
         err = new HandleError(message, 404);

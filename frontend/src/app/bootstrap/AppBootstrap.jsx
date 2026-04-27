@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import {
@@ -12,22 +12,40 @@ function AppBootstrap({ children }) {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const user = useSelector(selectCurrentUser);
+  const [authResolved, setAuthResolved] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      dispatch(loaderUser());
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setAuthResolved(true);
+      return;
     }
-  }, [dispatch, isAuthenticated]);
+
+    let isMounted = true;
+
+    dispatch(loaderUser()).finally(() => {
+      if (isMounted) {
+        setAuthResolved(true);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [dispatch]);
 
   useEffect(() => {
+    if (!authResolved) return;
+
     const userId = user?._id ?? null;
 
     dispatch(syncCartWithUser(userId));
 
-    if (userId) {
+    if (isAuthenticated && userId) {
       dispatch(fetchCart());
     }
-  }, [dispatch, user]);
+  }, [authResolved, dispatch, isAuthenticated, user]);
 
   return children;
 }
