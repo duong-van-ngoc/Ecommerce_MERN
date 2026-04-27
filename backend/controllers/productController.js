@@ -147,7 +147,7 @@ export const createProducts = handleAsyncError(async (req, res, next) => {
 
 // Lấy tất cả sản phẩm 
 export const getAllProducts = handleAsyncError(async (req, res, next) => {
-    const resultPerPage = 10
+    const resultPerPage = 20
 
     const apiFeatures = new APIFunctionality(Product.find(), req.query)
         .search().filter().sort()

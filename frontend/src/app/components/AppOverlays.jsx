@@ -5,7 +5,7 @@ import {
   selectIsAuthenticated,
 } from "@/features/auth/authSelectors";
 import AIChatBubble from "@/features/chat/components/AIChatBubble";
-import UserDashboard from "@/Pages/user/UserDashboard";
+import UserDashboard from "@/features/user/UserDashboardView";
 
 function AppOverlays() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -13,7 +13,7 @@ function AppOverlays() {
 
   return (
     <>
-      {isAuthenticated && <UserDashboard user={user} />}
+      {/* UserDashboard moved to Navbar to prevent overlap issues */}
       <AIChatBubble />
     </>
   );

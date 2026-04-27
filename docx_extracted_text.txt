@@ -1,0 +1,1972 @@
+﻿DƯƠNG VĂN NGỌC                                                    CÔNG NGHỆ THÔNG TIN
+BỘ GIÁO DỤC VÀ ĐÀO TẠO
+ĐẠI HỌC PHENIKAA
+ĐỒ ÁN TỐT NGHIỆP
+XÂY DỰNG ỨNG DỤNG THƯƠNG MẠI ĐIỆN TỬ BÁN QUẦN ÁO VÀ PHỤ KIỆN
+Sinh viên: Dương Văn Ngọc
+Khóa: Khóa 15
+Mã số sinh viên: 21012887
+Hệ: Đại học chínhquy
+Ngành: Công nghệ thông tin
+Giảng viên hướng dẫn: TS. Nguyễn Thị Thùy Liên
+Hà Nội – 2026
+BỘ GIÁO DỤC VÀ ĐÀO TẠO
+ĐẠI HỌC PHENIKA
+ĐỒ ÁN TỐT NGHIỆP
+XÂY DỰNG ỨNG DỤNG THƯƠNG MẠI ĐIỆN TỬ BÁN QUẦN ÁO VÀ PHỤ KIỆN
+Sinh viên: Dương Văn Ngọc
+Khóa: Khóa 15
+Mã số sinh viên: 21012887
+Hệ: Đại học chínhquy
+Ngành: Công nghệ thông tin
+Giảng viên hướng dẫn: TS. Nguyễn Thị Thùy Liên
+Hà Nội – 2026
+TÓM TẮT
+Trong bối cảnh thương mại điện tử tại Việt Nam phát triển mạnh mẽ cùng với sự phổ biến của điện thoại thông minh và thói quen mua sắm trực tuyến, nhu cầu tìm kiếm, lựa chọn và đặt mua các mặt hàng thời trang như quần áo và phụ kiện ngày càng gia tăng. Tuy nhiên, nhiều cửa hàng thời trang vẫn còn vận hành dựa trên hình thức quản lý thủ công, bán hàng qua mạng xã hội hoặc sử dụng các website đơn giản. Các phương thức này tuy hỗ trợ tiếp cận khách hàng nhưng vẫn tồn tại nhiều hạn chế như thông tin sản phẩm thiếu đồng bộ, khó kiểm soát tồn kho, quy trình xử lý đơn hàng rời rạc, quản lý khuyến mãi chưa hiệu quả và trải nghiệm người dùng chưa được tối ưu.
+Trước thực trạng đó, đề tài “Xây dựng ứng dụng thương mại điện tử bán quần áo và phụ kiện” được thực hiện nhằm xây dựng một hệ thống bán hàng trực tuyến chuyên biệt, hỗ trợ cả người mua và quản trị viên trong quá trình mua sắm, thanh toán và vận hành cửa hàng. Hệ thống tập trung vào việc quản lý tập trung dữ liệu, đồng bộ thông tin sản phẩm, giỏ hàng, đơn hàng và khuyến mãi, qua đó giảm thiểu sai sót trong vận hành và nâng cao hiệu quả quản lý.
+Về chức năng, hệ thống cung cấp các nghiệp vụ chính như quản lý sản phẩm, danh mục, tài khoản người dùng, địa chỉ giao hàng, giỏ hàng, đơn hàng, voucher/mã giảm giá, thông báo và dashboard quản trị. Người dùng có thể tìm kiếm, lọc sản phẩm, thêm sản phẩm vào giỏ hàng, áp dụng voucher, lựa chọn phương thức thanh toán khi nhận hàng hoặc thanh toán trực tuyến qua VNPay. Bên cạnh đó, hệ thống tích hợp trợ lý AI sử dụng Gemini API nhằm hỗ trợ tư vấn sản phẩm và cải thiện trải nghiệm mua sắm.
+Về công nghệ, hệ thống được xây dựng theo mô hình MERN với React.js và Redux ở phía frontend, Node.js và Express.js ở phía backend, MongoDB làm cơ sở dữ liệu. Ngoài ra, hệ thống còn tích hợp Cloudinary để lưu trữ hình ảnh, VNPay để xử lý thanh toán trực tuyến và Gemini API cho chức năng chatbot AI. Kết quả của đề tài là một ứng dụng thương mại điện tử có tính thực tiễn trong lĩnh vực bán lẻ thời trang, giúp nâng cao hiệu quả quản lý cho cửa hàng, cải thiện trải nghiệm người dùng và có khả năng mở rộng cho các mô hình kinh doanh trực tuyến khác trong tương lai.
+LỜI CAM ĐOAN
+Họ và tên sinh viên: Dương Văn Ngọc
+Mã sinh viên:21012887Ngành: Công nghệ thông tin
+Lớp: CNTT5-K15Hệ đào tạo: Đại học chính quy
+Tôi đã thực hiện đồ án tốt nghiệp với đề tài: Xây dựng ứng dụng thương mại điện tử bán quần áo và phụ kiện.
+Tôi xin cam đoan rằng đồ án tốt nghiệp với đề tài “Xây dựng ứng dụng thương mại điện tử bán quần áo và phụ kiện” là kết quả nghiên cứu và thực hiện của cá nhân tôi dưới sự hướng dẫn của giảng viên hướng dẫn.
+Các nội dung, kết quả và sản phẩm được trình bày trong đồ án được thực hiện trên cơ sở tìm hiểu, phân tích, tổng hợp tài liệu và quá trình triển khai thực tế của bản thân, không sao chép từ bất kỳ công trình nào của người khác dưới mọi hình thức.Nếu phát hiện có bất kỳ hình thức gian lận nào tôi xin hoàn toàn chịu trách nhiệm trước pháp luật.
+GIẢNG VIÊN HƯỚNG DẪNHà Nội, … ngày, … tháng năm 2026
+SINH VIÊN
+LỜI CẢM ƠN
+Trong quá trình thực hiện đồ án tốt nghiệp với đề tài “Xây dựng website bán quần áo và phụ kiện”, em đã có cơ hội vận dụng những kiến thức đã học, đồng thời học hỏi thêm nhiều kỹ năng mới về công nghệ và tư duy xây dựng hệ thống. Đây là một quá trình nỗ lực không ngừng, đi kèm với nhiều khó khăn, thử thách và cả những sai sót trong quá trình triển khai hệ thống.
+Trước hết, em xin gửi lời cảm ơn chân thành và sâu sắc đến Ban Giám hiệu Nhà trường, Khoa Công nghệ Thông tin cùng toàn thể quý thầy cô đã trực tiếp giảng dạy, truyền đạt cho em những kiến thức nền tảng và chuyên môn quý báu trong suốt 4 năm học tập tại trường. Những kiến thức và kỹ năng này là hành trang quan trọng giúp em có thể thực hiện và hoàn thành đồ án tốt nghiệp.
+Em xin bày tỏ lòng biết ơn đặc biệt tới TS. Nguyễn Thị Thuỳ Liên. Cô là người đã trực tiếp hướng dẫn, tận tình chỉ bảo, góp ý và định hướng cho em trong suốt quá trình thực hiện đồ án tốt nghiệp với đề tài “Xây dựng website bán quần áo và phụ kiện”. Những góp ý chuyên môn và sự hỗ trợ kịp thời của Cô đã giúp em khắc phục nhiều khó khăn, hoàn thiện hệ thống cả về mặt kỹ thuật lẫn tư duy xây dựng ứng dụng.
+Bên cạnh đó, em xin gửi lời cảm ơn đến gia đình và bạn bè đã luôn động viên, khích lệ tinh thần và tạo điều kiện thuận lợi để em có thể yên tâm học tập và hoàn thành đồ án đúng tiến độ.
+Mặc dù đã nỗ lực hết sức, nhưng do thời gian và kiến thức còn hạn chế, đồ án không tránh khỏi những thiếu sót. Em kính mong nhận được sự đóng góp ý kiến quý báu từ Hội đồng chấm đồ án để đề tài được hoàn thiện hơn.
+Kính chúc quý thầy cô sức khỏe, thành công và luôn nhiệt huyết trong sự nghiệp trồng người.
+Em xin chân thành cảm ơn!
+MỤC LỤC
+TÓM TẮTIII
+LỜI CAM ĐOANIV
+SINH VIÊNIV
+LỜI CẢM ƠNV
+DANH MỤC HÌNH ẢNHIX
+DANH MỤC BẢNG BIỂUXI
+DANH MỤC CÁC TỪ VIẾT TẮTXII
+DANH MỤC THUẬT NGỮXIII
+MỞ ĐẦU1
+CHƯƠNG 1: TỔNG QUAN ĐỀ TÀI2
+1.1. Đặt vấn đề2
+1.2. Mục tiêu và phạm vi đề tài2
+1.2.1. Mục tiêu của đề tài2
+1.2.2. Phạm vi của đề tài3
+1.3. Định hướng giải pháp4
+1.4. Công nghệ sử dụng5
+1.4.1. Công nghệ phía người dùng5
+1.4.2. Công nghệ phía máy chủ6
+1.4.3. Cơ sở dữ liệu6
+1.5. Khảo sát thực tế7
+1.5.1. Khảo sát hiện trạng7
+1.5.2. Phương pháp và đối tượng khảo sát8
+1.5.3. Hành vi mua sắm thời trang trực tuyến9
+1.5.4. Các vấn đề người dùng gặp phải9
+1.5.5. Sàn thương mại điện tử9
+1.5.6. Mạng xã hội và TikTok Shop10
+1.6. Bố cục đồ án tốt nghiệp10
+CHƯƠNG 2: PHÂN TÍCH VÀ THIẾT KẾ HỆ THỐNG11
+2.1. Phân tích yêu cầu các tác nhân11
+2.2. Phân tích yêu cầu chức năng11
+2.2.1. Chức năng dành cho khách12
+2.2.2. Chức năng dành cho người dùng12
+2.2.3. Chức năng dành cho quản trị viên13
+2.3. Phân tích yêu cầu phi chức năng13
+2.4. Thiết kế biểu đồ hệ thống14
+2.4.1. Sơ đồ usecase tổng quát14
+2.4.2. Sơ đồ usecase phân rã16
+2.4.3. Đặc tả usecase25
+2.5. Thiết kế sơ đồ quy trình nghiệp vụ43
+2.5.1. Nghiệp vụ đăng ký tài khoản43
+2.5.2. Nghiệp vụ đăng nhập tài khoản44
+2.5.3. Nghiệp vụ tìm kiếm và lọc sản phẩm45
+2.5.4. Nghiệp vụ mua hàng46
+2.5.5. Nghiệp vụ quản lý đơn hàng47
+2.5.6. Nghiệp vụ quản lý sản phẩm48
+2.5.7. Nghiệp vụ quản lý người dùng49
+2.5.8. Nghiệp vụ trợ lý AI50
+2.6. Thiết kế sơ đồ tuần tự51
+2.6.1. Sơ đồ tuần tự đăng ký51
+2.6.2. Sơ đồ tuần tự đăng nhập52
+2.6.3. Sơ đồ tuần tự đặt hàng53
+2.6.4. Sơ đồ tuần tự tìm kiếm và lọc sản phẩm54
+2.6.5. Sơ đồ tuần tự quản lý đơn hàng55
+2.6.6. Sơ đồ tuần tự quản lý sản phẩm56
+2.6.7. Sơ đồ tuần tự quản lý người dùng57
+2.6.8. Sơ đồ tuần tự thanh toán58
+2.6.9. Sơ đồ tuần tự trợ lý AI59
+2.7. Thiết kế cơ sở dữ liệu60
+2.7.1. Giới thiệu về MongoDB60
+2.7.2. Lý do lựa chọn MongoDB60
+2.7.3. Lược đồ cơ sở dữ liệu61
+2.7.4. Các bảng cơ sở dữ liệu63
+CHƯƠNG 3: CÀI ĐẶT VÀ KIỂM THỬ ỨNG DỤNG72
+3.1. Sơ đồ kiến trúc tổng thể72
+3.2. Cài đặt hệ thống72
+3.2.1. Thư viện và công  sử dụng72
+3.2.2. Giới thiệu về ReactJS74
+3.2.3. Giới thiệu về NodeJS75
+3.2.4. Giới thiệu về Express75
+3.2.5. Visual Studio Code75
+3.2.6. Công nghệ thanh toán trực tuyến76
+3.2.7. Công nghệ bảo mật và xác thực76
+3.2.8. Công nghệ Chatbot  với API Gemini77
+3.3. Giao diện hệ thống77
+3.3.1. Màn hình đăng nhập78
+3.3.2. Màn hình đăng ký79
+3.3.3. Màn hình quên mật khẩu79
+3.3.4. Màn hình trang chủ80
+3.3.5. Màn hình  sản phẩm81
+3.3.6. Màn hình giỏ hàng81
+3.3.7. Màn hình thông tin giao hàng82
+3.3.8. Màn hình xác nhận đơn hàng82
+3.3.9. Màn hình đặt hàng thành công83
+3.3.10. Màn hình hồ sơ người dùng83
+3.3.11. Màn hình đơn hàng84
+3.3.12. Màn hình thông báo85
+3.3.13. Màn hình voucher86
+3.3.14. Màn hình cập nhật hồ sơ86
+3.3.15. Màn hình dashboard87
+3.3.16. Màn hình quản lý sản phẩm87
+3.3.17. Màn hình quản lý người dùng88
+3.3.18. Màn hình quản lý đơn hàng88
+3.3.19. Mành hình quản lý voucher90
+3.3.20. Màn hình thêm mới voucher90
+3.3.21. Mà hình thêm và cập nhật sản phẩm91
+3.3.22. Màn hình thêm sản phẩm bằng file92
+3.3.23. Màn hình nhập hàng bằng file92
+3.3.24. Màn hình thông tin shop93
+3.3.25. Màn hình chatbot  AI94
+3.3.26. Màn hình chi tiết sản phẩm95
+3.3.27. Màn hình chi tiết đơn hàng96
+3.4. Kiểm thử hệ thống96
+3.4.1. Kiểm thử đăng  nhập96
+3.4.2. Kiểm thử đăng ký97
+3.4.3. Kiểm thử chức năng tìm kiếm97
+3.4.4. Kiểm thử chức năng gợi ý sản phẩm98
+3.4.5. Kiểm thử chức năng giỏ hàng98
+3.4.6. Kiểm thử chức năng thanh toán99
+3.4.7. Kiểm thử chức năng đơn hàng99
+3.4.8. Kiểm thử quản lý sản phẩm100
+3.4.9. Kiểm thử quản lý người dùng100
+3.4.10. Kiểm thử hiệu năng của hệ thống101
+KẾT LUẬN106
+TÀI LIỆU THAM KHẢO108
+DANH MỤC HÌNH ẢNH
+Hình 2.1 : Sơ đồ use case tổng quan của hệ thống15
+Hình 2.2 : Sơ đồ use case đăng nhập16
+Hình 2.3 : Sơ đồ use case đăng ký17
+Hình 2.4 : Sơ đồ usecase xem sản phẩm17
+Hình 2.5 : Sơ đồ usecase quản lý giỏ hàng18
+Hình 2.6 : Sơ đồ usecase đặt hàng19
+Hình 2.7 : Sơ đồ usecase đánh giá sản phẩm19
+Hình 2.8 : Sơ đồ usecase thanh toán20
+Hình 2.9 : Sơ đồ usecase cập nhật hồ sơ cá nhân21
+Hình 2.10 : Sơ đồ usecase quản lý người dùng21
+Hình 2.11 : Sơ đồ usecase quản lý đơn hàng22
+Hình 2.12 : Sơ đồ usecase quản lý sản phẩm23
+Hình 2.13 : Sơ đồ usecase quản lý voucher24
+Hình 2.14 : Sơ đồ usecase thanh toán25
+Hình 2.15 : Sơ đồ nghiệp vụ đăng ký tài khoản43
+Hình 2.16 : Sơ đồ nghiệp vụ đăng nhập tài khoản44
+Hình 2.17 : Sơ đồ nghiệp vụ tìm kiếm và lọc sản phẩm45
+Hình 2.18 : Sơ đồ nghiệp vụ mua hàng46
+Hình 2.19 : Sơ đồ nghiệp vụ quản lý đơn hàng47
+Hình 2.20 : Sơ đồ nghiệp vụ quản lý sản phẩm48
+Hình 2.21 : Sơ đồ nghiệp vụ quản lý người dùng49
+Hình 2.22 : Sơ đồ nghiệp vụ trợ lý AI50
+Hình 2.23 : Sơ đồ tuần tự đăng ký51
+Hình 2.24 : Sơ đồ tuần tự đăng nhập52
+Hình 2.25 : Sơ đồ tuần tự đặt hàng53
+Hình 2.26 : Sơ đồ tuần tự tìm kiếm và lọc sản phẩm54
+Hình 2.27 : Sơ đồ tuần tự quản lý đơn hàng55
+Hình 2.28 : Sơ đồ tuần tự quản lý sản phẩm56
+Hình 2.29 : Sơ đồ tuần tự quản lý người dùng57
+Hình 2.30 : Sơ đồ tuần tự thanh toán58
+Hình 2.31 : Sơ đồ tuần tự trợ lý AI59
+Hình 2.32 : Lược đồ cơ sở dữ liệu62
+Hình 3.1 : Sơ đồ kiến trúc tổng thể72
+Hình 3.2 : Màn hình đăng nhập78
+Hình 3.3 : Màn hình đăng ký79
+Hình 3.4 : Màn hình quên mật khẩu79
+Hình 3.5 : Màn hình trang chủ80
+Hình 3.6 : Màn hình sản phẩm81
+Hình 3.7 : Màn hình giỏ hàng81
+Hình 3.8 : Màn hình thông tin giao hàng82
+Hình 3.9 : Màn hình xác nhận đơn hàng83
+Hình 3.10 : Màn hình đặt hàng thành công83
+Hình 3.11 : Màn hình hồ sơ người dùng84
+Hình 3.12 : Màn hình đơn hàng84
+Hình 3.13 : Màn hình thông báo85
+Hình 3.14 : Màn hình voucher86
+Hình 3.15 : Màn hình cập nhật hồ sơ86
+Hình 3.16 : Màn hình dashboard87
+Hình 3.17 : Màn hình quản lý sản phẩm88
+Hình 3.18 : Màn hình quản lý người dùng88
+Hình 3.19 : Màn hình quản lý đơn hàng89
+Hình 3.20 : Màn hình quản lý voucher90
+Hình 3.21 : Màn hình thêm mới voucher90
+Hình 3.22 : Màn hình thêm và cập nhật sản phẩm91
+Hình 3.23 :  Màn hình thêm sản phẩm bằng file92
+Hình 3.24 : Màn hình nhập hàng bằng file 92
+Hình 3.25 : Màn hình thông tin shop93
+Hình 3.26 : Màn hình chatbot AI94
+Hình 3.27 : Màn hình chi tiết sản phẩm95
+Hình 3.28 : Màn hình chi tiết đơn hàng96
+Hình 3.29 : Kiểm thử tải hệ thống (Load Testing – 20 người dùng)102
+Hình 3.30 : Kiểm thử tải hệ thống (Load Testing – 200 người dùng)103
+Hình 3.31 : Kiểm thử tải hệ thống (Load Testing – 300 người dùng)104
+Hình 3.32 : Kết quả kiểm thử tương tác toàn diện hệ thống 50 người dùng105
+DANH MỤC BẢNG BIỂU
+Bảng 1.1 : Phương pháp và đối tượng khảo sát8
+Bảng 1.2 : Hành vi mua sắm thời trang trực tuyến9
+Bảng 2.1 : Mô tả usecase đăng nhập25
+Bảng 2.2 : Mô tả usecase đăng ký27
+Bảng 2.3  : Mô tả usecase xem sản phẩm28
+Bảng 2.4 :Mô tả usecase quản lý giỏ hàng29
+Bảng 2.5 : Mô tả usecase đặt hàng31
+Bảng 2.6 : Mô tả usecase thanh toán33
+Bảng 2.7 : Mô tả usecase đánh giá sản phẩm34
+Bảng 2.8 :Mô tả usecase cập nhật hồ sơ cá nhân36
+Bảng 2.9 :Mô tả usecase quản lý người dùng37
+Bảng 2.10 : Mô tả usecase quản lý sản phẩm39
+Bảng 2.11 : Mô tả usecase quản lý đơn hàng40
+Bảng 2.12 : Mô tả usecase quản lý voucher41
+Bảng 2.13 : Bảng Role63
+Bảng 2.14 : Bảng User63
+Bảng 2.15 : Bảng Address64
+Bảng 2.16 : Bảng Category65
+Bảng 2.17 : Bảng Product65
+Bảng 2.18 : Bảng Review66
+Bảng 2.19 : Bảng Voucher67
+Bảng 2.20 : Bảng Cart68
+Bảng 2.21 : Bảng CartItem69
+Bảng 2.22 : Bảng Order69
+Bảng 2.23 : Bảng OrderItem71
+Bảng 2.24 : Bảng ShippingInfo71
+Bảng 3.1 : Danh sách thư viện và công cụ sử dụng cho Frontend73
+Bảng 3.2 : Danh sách thư viện và công cụ sử dụng cho Backend74
+Bảng 3.3 : Kiểm thử đăng nhập97
+Bảng 3.4 : Kiểm thử đăng ký97
+Bảng 3.5 : Kiểm thử chức năng tìm kiếm98
+Bảng 3.6 : Kiểm thử chức năng gợi ý sản phẩm98
+Bảng 3.7 : Kiểm thử chức năng giỏ hàng99
+Bảng 3.8 : Kiểm thử chức năng thanh toán99
+Bảng 3.9 : Kiểm thử chức năng đơn hàng100
+Bảng 3.10 : Kiểm thử quản lý sản phẩm100
+Bảng 3.11 : Kiểm thử quản lý người dùng101
+DANH MỤC CÁC TỪ VIẾT TẮT
+Từ viết tắt
+Tiếng anh
+Diễn giải
+AI
+Artificial Intelligence
+Trí tuệ nhân tạo
+API
+Application Programming Interface
+Giao diện lập trình ứng dụng
+UI
+User Interface
+Giao diện người dùng
+UX
+User Experience
+Trải nghiệm người dùng
+JWT
+JSON Web Token
+Chuỗi xác thực người dùng
+REST
+Representational State Transfer
+Kiến trúc API RESTful
+HTTP
+HyperText Transfer Protocol
+Giao thức truyền tải siêu văn bản
+DB
+Database
+Cơ sở dữ liệu
+SQL
+Structured Query Language
+Ngôn ngữ truy vấn có cấu trúc
+NoSQL
+Not Only SQL
+Cơ sở dữ liệu phi quan hệ
+MVC
+Model View Controller
+Mô hình kiến trúc phần mềm
+ORM
+Object Relational Mapping
+Ánh xạ đối tượng - quan hệ
+ODM
+Object Document Mapper
+Ánh xạ tài liệu MongoDB
+MUI
+Material UI
+Thư viện giao diện React
+DANH MỤC THUẬT NGỮ
+Thuật ngữ
+Mô tả
+Authentication & Authorization
+Quy trình xác thực danh tính (đăng nhập) và phân quyền truy cập (Admin/User) trong hệ thống.
+Business Logic
+Các quy tắc và luồng xử lý nghiệp vụ cốt lõi (ví dụ: tính toán giá tiền, áp dụng giảm giá, quản lý đơn hàng).
+Client
+Trình duyệt hoặc ứng dụng phía người dùng gửi yêu cầu tới máy chủ.
+Server
+Hệ thống máy chủ tiếp nhận, xử lý yêu cầu và trả về kết quả cho Client.
+Controller
+Thành phần tiếp nhận yêu cầu từ bộ định tuyến (Route), điều phối logic và trả về phản hồi cho người dùng.
+Service
+Lớp trung gian chứa các đoạn mã xử lý nghiệp vụ phức tạp, giúp code sạch và dễ duy trì hơn.
+Database
+Kho lưu trữ dữ liệu tập trung (như thông tin sản phẩm, người dùng) để quản lý và truy xuất hiệu quả.
+Use case
+Mô tả cách thức một tác nhân (Người dùng/Admin) tương tác với hệ thống để đạt được mục tiêu cụ thể.
+Framework
+Các bộ khung công cụ (như Express.js) giúp chuẩn hóa và tăng tốc độ phát triển ứng dụng.
+Frontend
+Toàn bộ giao diện và phần người dùng tương tác trực tiếp trên trình duyệt hoặc thiết bị di động.
+Backend
+Phần xử lý logic, dữ liệu và bảo mật chạy dưới nền phía máy chủ.
+Redux
+Thư viện quản lý trạng thái tập trung cho ứng dụng, giúp đồng bộ dữ liệu giữa các thành phần giao diện.
+MỞ ĐẦU
+Trong những năm gần đây, thương mại điện tử đã trở thành một bộ phận quan trọng của nền kinh tế số, góp phần thay đổi cách thức doanh nghiệp kinh doanh và hành vi mua sắm của người tiêu dùng. Thay vì đến trực tiếp cửa hàng, người dùng có thể dễ dàng tìm kiếm, so sánh và đặt hàng thông qua các thiết bị di động. Tại Việt Nam, xu hướng này phát triển mạnh mẽ nhờ sự phổ biến của Internet, các nền tảng thanh toán trực tuyến và dịch vụ giao hàng ngày càng hoàn thiện. Đặc biệt, lĩnh vực thời trang luôn có nhu cầu cao do tính đa dạng và khả năng thay đổi nhanh theo xu hướng thị trường.
+Tuy nhiên, thực tế cho thấy nhiều cửa hàng thời trang, đặc biệt là các shop nhỏ hoặc kinh doanh cá nhân, vẫn gặp khó khăn trong việc quản lý hoạt động bán hàng. Thông tin sản phẩm như kích cỡ, màu sắc, số lượng tồn kho hay giá bán thường được quản lý rời rạc, thiếu tính đồng bộ. Khi số lượng sản phẩm và đơn hàng tăng lên, những hạn chế này dễ dẫn đến sai sót và ảnh hưởng đến hiệu quả vận hành.
+Đối với người mua, các bất cập này làm giảm trải nghiệm mua sắm, khi họ phải mất thời gian xác nhận thông tin hoặc gặp tình trạng dữ liệu không chính xác giữa các kênh bán hàng. Điều này đặc biệt ảnh hưởng đến các sản phẩm thời trang, nơi yếu tố trực quan và thông tin chi tiết đóng vai trò quan trọng trong quyết định mua hàng.
+Xuất phát từ những vấn đề trên, đề tài “Xây dựng ứng dụng thương mại điện tử bán quần áo và phụ kiện” được thực hiện nhằm xây dựng một hệ thống hỗ trợ quản lý và mua sắm hiệu quả hơn. Hệ thống hướng đến việc quản lý tập trung thông tin sản phẩm, danh mục, đơn hàng và người dùng, đồng thời cung cấp các chức năng tìm kiếm, lọc và đặt hàng thuận tiện. Qua đó, góp phần nâng cao hiệu quả kinh doanh cho người bán và cải thiện trải nghiệm mua sắm cho người dùng.
+CHƯƠNG 1: TỔNG QUAN ĐỀ TÀI
+Đặt vấn đề
+Trong quá trình kinh doanh trực tuyến lĩnh vực thời trang, việc quản lý sản phẩm và đơn hàng thường gặp nhiều khó khăn, đặc biệt đối với các cửa hàng nhỏ và vừa. Thông tin về sản phẩm như kích cỡ, màu sắc, giá bán và số lượng tồn kho thường được lưu trữ phân tán hoặc xử lý thủ công, dẫn đến tình trạng thiếu đồng bộ giữa các kênh bán hàng. Khi số lượng sản phẩm và đơn hàng tăng lên, những hạn chế này dễ gây ra sai sót trong quá trình cập nhật dữ liệu và làm giảm hiệu quả quản lý.
+Bên cạnh đó, trải nghiệm của người mua cũng bị ảnh hưởng đáng kể. Việc tìm kiếm sản phẩm đôi khi gặp khó khăn do thông tin mô tả chưa đầy đủ, hình ảnh không nhất quán và khả năng lọc, tra cứu còn hạn chế. Đối với mặt hàng thời trang, nơi người dùng quan tâm đến kích cỡ, kiểu dáng và tính thẩm mỹ, việc thiếu một hệ thống hiển thị rõ ràng và trực quan có thể làm giảm mức độ tin cậy và ảnh hưởng đến quyết định mua hàng.
+Trong bối cảnh cạnh tranh ngày càng cao, người tiêu dùng có xu hướng đưa ra quyết định nhanh và kỳ vọng quá trình mua sắm diễn ra thuận tiện, minh bạch. Nếu hệ thống không đảm bảo tính chính xác của dữ liệu hoặc quy trình đặt hàng phức tạp, khả năng rời bỏ đơn hàng sẽ gia tăng. Đồng thời, đối với người bán, việc quản lý rời rạc làm giảm khả năng theo dõi hoạt động kinh doanh, gây khó khăn trong việc mở rộng và tối ưu vận hành.
+Từ những vấn đề trên, việc xây dựng một hệ thống thương mại điện tử quản lý tập trung là cần thiết nhằm đồng bộ dữ liệu, giảm sai sót và nâng cao hiệu quả hoạt động. Hệ thống không chỉ hỗ trợ người bán trong quản lý mà còn cải thiện trải nghiệm mua sắm cho người dùng, hướng tới một môi trường mua bán trực tuyến rõ ràng, thuận tiện và hiệu quả hơn.
+Mục tiêu và phạm vi đề tài
+Mục tiêu của đề tài
+Mục tiêu tổng quát của đề tài là xây dựng một hệ thống thương mại điện tử phục vụ hoạt động kinh doanh quần áo và phụ kiện trong môi trường trực tuyến. Hệ thống hướng đến việc hỗ trợ cửa hàng quản lý thông tin bán hàng theo hướng tập trung, đồng thời tạo điều kiện để người dùng tìm kiếm, lựa chọn và đặt mua sản phẩm thuận tiện hơn. Trên cơ sở đó, đề tài tập trung vào các mục tiêu cụ thể sau:
+Phân tích và thiết kế: Thu thập yêu cầu thực tế, phân tích nghiệp vụ bán hàng và xây dựng thiết kế tổng thể phù hợp với bài toán quản lý và mua sắm trực tuyến.
+Quản lý sản phẩm: Lưu trữ và quản lý các thông tin cơ bản như tên sản phẩm, giá bán, danh mục, hình ảnh, mô tả và số lượng tồn kho.
+Quản lý người dùng: Hỗ trợ đăng ký, đăng nhập, cập nhật thông tin cá nhân và quản lý tài khoản người dùng.
+Quản lý mua hàng: Hỗ trợ tìm kiếm sản phẩm, xem thông tin chi tiết, thêm vào giỏ hàng và thực hiện đặt hàng.
+Quản lý đơn hàng: Theo dõi thông tin đơn hàng, cập nhật trạng thái xử lý và hỗ trợ kiểm soát đơn hàng.
+Báo cáo cơ bản: Cung cấp một số thông tin thống kê liên quan đến sản phẩm, đơn hàng và tình hình bán hàng.
+Khả dụng: Xây dựng giao diện rõ ràng, dễ sử dụng, phù hợp với cả người bán và người mua.
+Phạm vi của đề tài
+Trong phạm vi đồ án, đề tài tập trung xây dựng một website thương mại điện tử nhằm phục vụ hoạt động kinh doanh quần áo và phụ kiện trực tuyến cho một cửa hàng thời trang. Hệ thống được triển khai dưới dạng ứng dụng web, bao gồm ba thành phần chính: giao diện phía khách hàng, giao diện phía quản trị viên và hệ thống API backend kết nối với cơ sở dữ liệu.
+Đối với phía khách hàng, hệ thống cung cấp các chức năng cơ bản phục vụ quá trình mua sắm trực tuyến, bao gồm xem danh sách sản phẩm, tìm kiếm và lọc sản phẩm theo nhiều tiêu chí, xem chi tiết sản phẩm, quản lý giỏ hàng, lưu trữ địa chỉ giao hàng, áp dụng mã giảm giá, đặt hàng và theo dõi trạng thái đơn hàng. Bên cạnh đó, hệ thống hỗ trợ hai phương thức thanh toán là thanh toán khi nhận hàng (COD) và thanh toán trực tuyến thông qua cổng VNPay, giúp người dùng linh hoạt trong quá trình thanh toán.
+Đối với phía quản trị viên, hệ thống hỗ trợ các chức năng phục vụ công tác quản lý và vận hành cửa hàng, bao gồm quản lý sản phẩm, quản lý người dùng, quản lý đơn hàng, quản lý voucher, theo dõi thống kê thông qua dashboard và cập nhật thông tin cửa hàng. Các chức năng này được phân quyền rõ ràng, chỉ cho phép truy cập bởi các tài khoản có vai trò phù hợp nhằm đảm bảo tính bảo mật và kiểm soát hệ thống.
+Ngoài ra, hệ thống còn tích hợp một số dịch vụ bên ngoài nhằm hỗ trợ các nghiệp vụ chính, bao gồm lưu trữ hình ảnh sản phẩm thông qua Cloudinary, xử lý thanh toán trực tuyến qua VNPay và tích hợp chatbot AI sử dụng Gemini API để hỗ trợ tư vấn sản phẩm cho người dùng. Các tích hợp này được triển khai ở mức đáp ứng yêu cầu chức năng cơ bản của hệ thống.
+Tuy nhiên, trong phạm vi của đồ án, đề tài chưa triển khai một số chức năng nâng cao như phát triển ứng dụng di động riêng, tích hợp với các đơn vị vận chuyển thực tế, triển khai hệ thống thanh toán ở môi trường thương mại chính thức, hỗ trợ mô hình đa người bán (multi-vendor) hoặc xây dựng hệ thống gợi ý sản phẩm chuyên sâu dựa trên dữ liệu người dùng. Những nội dung này được định hướng là các hướng phát triển mở rộng trong tương lai của hệ thống..
+Định hướng giải pháp
+Nhằm khắc phục tình trạng quản lý rời rạc trong hoạt động kinh doanh quần áo và phụ kiện, đề tài định hướng xây dựng một hệ thống thương mại điện tử dưới dạng ứng dụng web, phục vụ đồng thời cho cửa hàng và khách hàng. Hệ thống được tổ chức theo mô hình khách – chủ, cho phép người dùng thực hiện các thao tác mua sắm thông qua giao diện trực tuyến, trong khi phía quản trị xử lý các nghiệp vụ liên quan đến bán hàng. Hướng tiếp cận này giúp dữ liệu được quản lý tập trung, bảo đảm tính đồng bộ và phù hợp với đặc điểm của bài toán thương mại điện tử.
+Về định hướng công nghệ, đề tài sử dụng ngăn xếp công nghệ web hiện đại, bao gồm ReactJS cho giao diện người dùng và Node.js cho xử lý nghiệp vụ, kết hợp với cơ sở dữ liệu MongoDB để lưu trữ thông tin. Hướng lựa chọn này phù hợp với yêu cầu xây dựng hệ thống linh hoạt, dễ triển khai và có khả năng mở rộng. Trên cơ sở đó, giải pháp được định hướng theo các chức năng cốt lõi như quản lý sản phẩm, người dùng, giỏ hàng và đơn hàng, bảo đảm khả năng vận hành ở mức cơ bản đến trung bình.
+Đóng góp chính của đồ án là xây dựng một hệ thống thương mại điện tử có thể áp dụng trong thực tế đối với các cửa hàng thời trang quy mô nhỏ đến vừa. Hệ thống hỗ trợ chuẩn hóa quy trình quản lý và mua bán, đồng thời nâng cao khả năng kiểm soát thông tin trong quá trình vận hành. Bên cạnh đó, giải pháp cũng tạo nền tảng để tiếp tục phát triển và mở rộng trong các giai đoạn sau.
+Công nghệ sử dụng
+Hệ thống được xây dựng trên nền tảng các công nghệ web hiện đại, phù hợp với mô hình ứng dụng thương mại điện tử trong lĩnh vực quần áo và phụ kiện. Các công nghệ được lựa chọn theo hướng đảm bảo khả năng xây dựng giao diện tương tác, xử lý nghiệp vụ rõ ràng, lưu trữ dữ liệu ổn định và hỗ trợ mở rộng trong tương lai. Về tổng thể, hệ thống gồm ba thành phần chính: phía người dùng, phía máy chủ và cơ sở dữ liệu. Ngoài ra, hệ thống tích hợp thêm các dịch vụ hỗ trợ như thanh toán trực tuyến, lưu trữ hình ảnh và cơ chế xác thực nhằm đáp ứng yêu cầu của một website bán hàng trực tuyến.
+Công nghệ phía người dùng
+Mô tả: Phía người dùng của dự án được phát triển bằng ReactJS, kết hợp với Material UI để xây dựng giao diện. Ngoài ra, dự án còn sử dụng React Router DOM để điều hướng giữa các trang, Redux Toolkit để quản lý trạng thái toàn cục, Axios để giao tiếp với backend và Vite để hỗ trợ quá trình phát triển và build ứng dụng.
+Vai trò trong hệ thống: Thành phần này đảm nhiệm việc hiển thị giao diện cho khách hàng và quản trị viên, hỗ trợ các chức năng như xem sản phẩm, tìm kiếm, xem chi tiết, quản lý giỏ hàng, đặt hàng và theo dõi đơn hàng.
+Đáp ứng yêu cầu: ReactJS phù hợp với hệ thống có nhiều thành phần giao diện và cần cập nhật dữ liệu linh hoạt. Material UI giúp giao diện thống nhất, dễ sử dụng và phù hợp với ứng dụng thương mại điện tử.
+Lựa chọn thay thế:Có thể sử dụng Angular hoặc Vue.js cho frontend, và Bootstrap hoặc Ant Design cho thư viện giao diện.
+Lý do chọn:ReactJS có hệ sinh thái lớn, khả năng tái sử dụng cao và phù hợp với cách tổ chức giao diện của hệ thống. Material UI hỗ trợ xây dựng giao diện nhanh và thuận lợi trong bảo trì.
+Công nghệ phía máy chủ
+Mô tả: Phía máy chủ của dự án được xây dựng bằng Node.js và Express.js. Hệ thống backend được tổ chức theo các nhóm route riêng như product, user, order, cart, address, payment, settings, admin và voucher, kết hợp với middleware để xử lý cookie, tải tệp lên, xác thực và phân quyền.
+Vai trò trong hệ thống: Backend chịu trách nhiệm tiếp nhận yêu cầu từ frontend, xử lý nghiệp vụ và trả về dữ liệu tương ứng. Đây là nơi thực hiện các chức năng chính như quản lý sản phẩm, đăng ký và đăng nhập người dùng, quản lý giỏ hàng, tạo đơn hàng, xử lý thanh toán VNPay, quản lý địa chỉ giao hàng và các thao tác quản trị dành cho admin.
+Đáp ứng yêu cầu: Node.js hỗ trợ xử lý bất đồng bộ, phù hợp với hệ thống có nhiều yêu cầu truy cập đồng thời. Express.js giúp tổ chức route và middleware một cách linh hoạt, thuận tiện cho việc chia nhỏ hệ thống theo từng nhóm chức năng.
+Lựa chọn thay thế: Có thể thay thế bằng Spring Boot, Django hoặc ASP.NET Core.
+Lý do chọn: Node.js và Express.js phù hợp với phạm vi đồ án và đồng thời thống nhất ngôn ngữ JavaScript giữa frontend và backend. Điều này giúp giảm độ phức tạp trong quá trình phát triển và bảo trì dự án hiện tại.
+Cơ sở dữ liệu
+Mô tả: Dự án sử dụng MongoDB làm cơ sở dữ liệu chính và Mongoose làm công cụ mô hình hóa dữ liệu. Hệ thống định nghĩa các mô hình như Product, User, Order, Cart, Address, Voucher, Category, Review và Settings để phục vụ từng nhóm chức năng cụ thể.
+Vai trò trong hệ thống: MongoDB lưu trữ toàn bộ dữ liệu vận hành của hệ thống. Trong dự án hiện tại, dữ liệu sản phẩm không chỉ gồm tên và giá mà còn có danh mục ba cấp, kích cỡ, màu sắc, hình ảnh, đánh giá và trạng thái. Dữ liệu đơn hàng còn lưu thông tin snapshot của sản phẩm tại thời điểm mua, phương thức thanh toán, trạng thái thanh toán và thông tin giao hàng.
+Đáp ứng yêu cầu: MongoDB phù hợp với bài toán thương mại điện tử thời trang do dữ liệu có tính linh hoạt cao, đặc biệt ở phần sản phẩm và đơn hàng. Mongoose hỗ trợ định nghĩa schema, ràng buộc dữ liệu và thao tác truy vấn thuận tiện hơn trong môi trường Node.js.
+Lựa chọn thay thế: Có thể sử dụng MySQL, PostgreSQL hoặc SQL Server.
+Lý do chọn: MongoDB phù hợp với dự án hiện tại vì cấu trúc dữ liệu sản phẩm và đơn hàng có nhiều thuộc tính mở rộng. Việc sử dụng Mongoose cũng giúp tổ chức dữ liệu rõ ràng hơn và dễ tích hợp với backend đang xây dựng bằng Express.
+Khảo sát thực tế
+Khảo sát hiện trạng
+Các nền tảng thương mại điện tử như Shopee và Lazada hiện đang chiếm thị phần lớn tại Việt Nam nhờ cung cấp hệ sinh thái hoàn chỉnh bao gồm thanh toán, vận chuyển và hệ thống đánh giá người bán. Những nền tảng này giúp người dùng có trải nghiệm mua sắm thuận tiện và đáng tin cậy. Tuy nhiên, đối với các cửa hàng nhỏ, việc phụ thuộc vào sàn dẫn đến nhiều hạn chế như chi phí hoa hồng cao, khó xây dựng thương hiệu riêng và đặc biệt là không thể kiểm soát dữ liệu khách hàng.
+Bên cạnh đó, các kênh mạng xã hội như Facebook, Instagram và TikTok Shop mang lại khả năng tiếp cận khách hàng nhanh chóng thông qua nội dung và livestream. Đây là kênh bán hàng linh hoạt, chi phí thấp, phù hợp với các shop nhỏ. Tuy nhiên, hạn chế lớn là việc quản lý đơn hàng còn thủ công, dữ liệu phân tán và thiếu hệ thống lưu trữ có cấu trúc, gây khó khăn trong việc kiểm soát và phân tích hoạt động kinh doanh.
+Ngoài ra, một số cửa hàng đã xây dựng website riêng nhằm chủ động hơn trong việc quản lý và phát triển thương hiệu. Mô hình này cho phép kiểm soát toàn bộ dữ liệu khách hàng, tuy nhiên phần lớn các website hiện nay vẫn còn hạn chế về chức năng như quản lý tồn kho theo biến thể, theo dõi đơn hàng và tối ưu giao diện trên thiết bị di động.
+Từ các phân tích trên, có thể xác định ba vấn đề chính gồm: thiếu hệ thống quản lý tập trung, trải nghiệm người dùng chưa tối ưu cho ngành thời trang và dữ liệu kinh doanh bị phân tán. Do đó, hệ thống ToBi Shop được định hướng xây dựng nhằm giải quyết các hạn chế này thông qua việc cung cấp nền tảng bán hàng chuyên biệt, hỗ trợ tìm kiếm và lọc sản phẩm hiệu quả, quản lý đơn hàng theo vòng đời, đồng thời đảm bảo trải nghiệm người dùng tốt và khả năng quản trị hệ thống linh hoạt, hướng tới phát triển bền vững.
+Phương pháp và đối tượng khảo sát
+Để thu thập dữ liệu thực tiễn phục vụ phân tích hệ thống, tác giả tiến hành khảo sát thông qua Google Form kết hợp phỏng vấn bán cấu trúc với 50 người dùng trong độ tuổi từ 18 đến 35. Đối tượng khảo sát chủ yếu là sinh viên và nhân viên văn phòng – nhóm có tần suất mua sắm trực tuyến cao. Kết quả cho thấy 72% là nữ và 68% thuộc nhóm tuổi 18–24. Cơ cấu này phù hợp với xu hướng thị trường khi người dùng trẻ chiếm tỷ trọng lớn trong thương mại điện tử tại Việt Nam [1]. Do đó, dữ liệu thu được có tính đại diện và phản ánh tương đối chính xác hành vi tiêu dùng.
+Bảng 1.1: Phương pháp và đối tượng khảo sát
+Tiêu chí
+Phân loại
+Số lượng
+Tỉ lệ (%)
+Giới tính
+Nữ
+36
+72%
+Nam
+14
+28%
+Độ tuổi
+18–24 tuổi
+34
+68%
+25–34 tuổi
+12
+24%
+35 tuổi trở lên
+4
+8%
+Nghề nghiệp
+Sinh viên
+31
+62%
+Nhân viên văn phòng
+11
+22%
+Hành vi mua sắm thời trang trực tuyến
+Kết quả khảo sát cho thấy mua sắm thời trang trực tuyến đã trở thành thói quen phổ biến, với 62% người dùng mua ít nhất mỗi tháng và 18% mua hàng thường xuyên. Shopee là nền tảng được sử dụng nhiều nhất (88%), tiếp theo là TikTok Shop (74%) và mạng xã hội (62%), trong khi website riêng chỉ chiếm 28%. Điều này cho thấy người dùng vẫn phụ thuộc nhiều vào các nền tảng trung gian. Xu hướng này phù hợp với các báo cáo thị trường khi Shopee dẫn đầu về lượng truy cập tại Việt Nam [2], đồng thời các nền tảng nội dung như TikTok Shop đang tăng trưởng mạnh.
+Bảng 1.2: Hành vi mua sắm thời trang trực tuyến
+Kênh mua sắm
+Số người chọn
+Tỉ lệ (%)
+Shopee
+44
+88%
+TikTok Shop
+37
+74%
+Facebook / Instagram
+31
+62%
+Website riêng của shop
+14
+28%
+Lazada
+11
+22%
+Các vấn đề người dùng gặp phải
+Người dùng gặp nhiều khó khăn trong quá trình mua sắm thời trang trực tuyến, trong đó phổ biến nhất là mua sai size (76%) và sản phẩm không giống hình ảnh (70%). Ngoài ra, 58% gặp khó khăn khi tìm kiếm sản phẩm và 52% không thể theo dõi đơn hàng. Các vấn đề khác bao gồm thiếu thông tin sản phẩm và khó đổi trả. Những hạn chế này cho thấy trải nghiệm người dùng chưa được tối ưu, đặc biệt trong lĩnh vực thời trang. Điều này cũng được phản ánh trong các báo cáo thương mại điện tử tại Việt Nam [3].
+Sàn thương mại điện tử
+Các nền tảng như Shopee và Lazada cung cấp hệ sinh thái hoàn chỉnh giúp tối ưu trải nghiệm mua sắm. Tuy nhiên, các cửa hàng nhỏ phải chịu chi phí hoa hồng cao và không thể kiểm soát dữ liệu khách hàng. Điều này gây khó khăn trong việc xây dựng thương hiệu và phát triển lâu dài. Đây là một hạn chế lớn được đề cập trong các báo cáo thương mại điện tử tại Việt Nam.
+Mạng xã hội và TikTok Shop
+Mạng xã hội và TikTok Shop giúp tiếp cận khách hàng nhanh chóng với chi phí thấp. Tuy nhiên, việc quản lý đơn hàng thủ công và dữ liệu không có cấu trúc làm giảm hiệu quả vận hành. Khi số lượng đơn tăng, nguy cơ sai sót cũng tăng theo. Đây là điểm yếu lớn của mô hình bán hàng qua mạng xã hội [4].
+Bố cục đồ án tốt nghiệp
+Đồ án tốt nghiệp được trình bày gồm ba chương chính, bên cạnh các phần mở đầu như lời cảm ơn, mục lục, danh mục hình ảnh, danh mục bảng biểu, danh mục từ viết tắt, cùng với phần kết luận và tài liệu tham khảo. Nội dung báo cáo được sắp xếp theo trình tự từ tổng quan đề tài, phân tích và thiết kế hệ thống đến quá trình phát triển sản phẩm. Cách bố cục này nhằm đảm bảo tính logic trong trình bày, đồng thời giúp người đọc theo dõi rõ quá trình thực hiện từ giai đoạn xác định bài toán đến giai đoạn xây dựng và đánh giá kết quả.
+Chương 1 - Tổng quan đề tài: Trình bày bối cảnh thực hiện, vấn đề nghiên cứu, mục tiêu và phạm vi, định hướng giải pháp, các công nghệ sử dụng và cấu trúc tổng thể của báo cáo.
+Chương 2 - Phân tích và thiết kế hệ thống: Mô tả quá trình khảo sát yêu cầu, phân tích bài toán, các chức năng chính của hệ thống, tác nhân tham gia, quy trình nghiệp vụ, các sơ đồ UML và thiết kế tổng thể làm cơ sở cho việc triển khai.
+Chương 3 - Cài đặt và kiểm thử hệ thống: Chương này trình bày quá trình triển khai và kiểm thử hệ thống dựa trên các phân tích và thiết kế đã được xây dựng ở chương trước. Nội dung chương tập trung vào việc cài đặt môi trường, hiện thực các chức năng chính của hệ thống, xây dựng giao diện người dùng, cũng như đánh giá và kiểm thử nhằm đảm bảo hệ thống hoạt động ổn định và đáp ứng các yêu cầu đề ra.
+CHƯƠNG 2: PHÂN TÍCH VÀ THIẾT KẾ HỆ THỐNG
+Phân tích yêu cầu các tác nhân
+Trong quá trình phân tích hệ thống thương mại điện tử bán quần áo và phụ kiện, việc xác định các tác nhân tham gia là cơ sở để làm rõ nhu cầu sử dụng và xây dựng các luồng chức năng phù hợp với thực tế. Mỗi tác nhân có mục đích và mức độ tương tác riêng, từ đó đặt ra các yêu cầu khác nhau về chức năng và xử lý dữ liệu. Trong đề tài này, các tác nhân chính gồm khách hàng và quản trị viên.
+Khách hàng là tác nhân sử dụng hệ thống với mục tiêu tìm kiếm và mua sắm sản phẩm. Tùy theo trạng thái xác thực, mức độ truy cập của tác nhân này có sự khác biệt. Ở trạng thái chưa đăng nhập, người dùng chỉ thực hiện các thao tác xem thông tin như tìm kiếm sản phẩm, xem chi tiết và tham khảo giá. Khi đã đăng nhập, người dùng được mở rộng quyền truy cập để thực hiện các nghiệp vụ giao dịch như thêm sản phẩm vào giỏ hàng, đặt hàng, theo dõi trạng thái đơn hàng và quản lý thông tin cá nhân. Hai trạng thái này phản ánh sự phân cấp quyền truy cập trong thiết kế hệ thống.
+Quản trị viên là tác nhân chịu trách nhiệm quản lý và vận hành toàn bộ hệ thống thông qua giao diện quản trị riêng biệt, độc lập với giao diện dành cho khách hàng. Tác nhân này có quyền truy cập cao nhất, cho phép thực hiện các nghiệp vụ như quản lý danh mục và thông tin sản phẩm, xử lý và kiểm soát đơn hàng, quản lý tài khoản người dùng, cấu hình chương trình khuyến mại và cài đặt thông tin hiển thị của hệ thống. Nhu cầu của tác nhân này tập trung vào việc đảm bảo dữ liệu chính xác và hỗ trợ hiệu quả cho hoạt động kinh doanh.
+Từ việc phân tích các tác nhân có thể thấy hệ thống cần đáp ứng nhiều mức độ tương tác khác nhau, từ các thao tác duyệt sản phẩm cơ bản đến các nghiệp vụ giao dịch và quản trị. Sự khác biệt về vai trò, quyền hạn và trạng thái truy cập giữa các tác nhân là cơ sở quan trọng để xác định các luồng chức năng và phân chia trách nhiệm xử lý trong thiết kế hệ thống.
+Phân tích yêu cầu chức năng
+Việc phân tích yêu cầu chức năng nhằm xác định các nghiệp vụ mà hệ thống cần hỗ trợ để đáp ứng nhu cầu sử dụng thực tế. Đối với đề tài xây dựng ứng dụng thương mại điện tử bán quần áo và phụ kiện, các yêu cầu được phân nhóm theo từng đối tượng sử dụng nhằm làm rõ phạm vi thao tác và mức độ tương tác của từng nhóm với hệ thống. Trong phạm vi đề tài, các chức năng được chia thành ba nhóm chính gồm khách, người dùng và quản trị viên. Cách phân chia này giúp việc mô tả hệ thống rõ ràng hơn, đồng thời tạo thuận lợi cho quá trình xây dựng use case và thiết kế ở các bước tiếp theo.
+Chức năng dành cho khách
+Khách là đối tượng truy cập hệ thống nhưng chưa đăng nhập. Nhóm này chủ yếu sử dụng các chức năng công khai để tìm hiểu và đánh giá sản phẩm trước khi thực hiện giao dịch.
+Khám phá cửa hàng: Cho phép xem trang chủ, danh sách sản phẩm mới, sản phẩm nổi bật và các nội dung giới thiệu chung.
+Tra cứu sản phẩm: Hỗ trợ tìm kiếm theo từ khóa và lọc sản phẩm theo danh mục, khoảng giá hoặc một số thuộc tính liên quan.
+Xem chi tiết sản phẩm: Cung cấp thông tin như hình ảnh, giá, mô tả, kích cỡ, màu sắc và tình trạng còn hàng.
+Quản lý định danh: Hỗ trợ đăng ký tài khoản và đăng nhập để chuyển sang trạng thái người dùng có thể thực hiện giao dịch.
+Hỗ trợ thông tin: Cho phép tương tác với chatbot để tra cứu thông tin sản phẩm hoặc các nội dung liên quan đến mua sắm.
+Chức năng dành cho người dùng
+Người dùng là khách hàng đã đăng nhập. Nhóm này có quyền thực hiện các nghiệp vụ liên quan đến mua hàng và quản lý thông tin cá nhân.
+Quản lý hồ sơ cá nhân: Cập nhật thông tin cá nhân và quản lý địa chỉ nhận hàng.
+Quản lý giỏ hàng: Thêm, cập nhật số lượng hoặc loại bỏ sản phẩm trong giỏ hàng.
+Đặt hàng và thanh toán: Thực hiện đặt hàng, áp dụng mã giảm giá (nếu có) và lựa chọn phương thức thanh toán.
+Theo dõi đơn hàng: Theo dõi trạng thái xử lý đơn hàng và xem lịch sử giao dịch.
+Đánh giá sản phẩm: Gửi nhận xét và đánh giá sau khi mua hàng.
+Hỗ trợ cá nhân hóa: Tương tác với chatbot trong quá trình sử dụng để nhận các gợi ý phù hợp.
+Chức năng dành cho quản trị viên
+Quản trị viên là đối tượng vận hành hệ thống, có quyền truy cập vào khu vực quản trị để kiểm soát dữ liệu và hoạt động.
+Quản lý sản phẩm: Thực hiện các thao tác thêm, cập nhật, xóa và theo dõi thông tin sản phẩm.
+Quản lý đơn hàng: Theo dõi và cập nhật trạng thái đơn hàng trong quá trình xử lý.
+Quản lý người dùng: Kiểm soát thông tin tài khoản và trạng thái hoạt động của người dùng.
+Quản lý khuyến mại: Thiết lập và quản lý các chương trình ưu đãi hoặc mã giảm giá.
+Báo cáo và thống kê: Theo dõi các thông tin tổng quan liên quan đến hoạt động bán hàng.
+Phân tích yêu cầu phi chức năng
+Bên cạnh các yêu cầu về nghiệp vụ, hệ thống thương mại điện tử bán quần áo và phụ kiện cần đáp ứng các yêu cầu phi chức năng nhằm đảm bảo chất lượng vận hành trong thực tế. Nếu yêu cầu chức năng xác định hệ thống cần thực hiện những gì, thì yêu cầu phi chức năng tập trung vào cách hệ thống hoạt động, bao gồm hiệu năng, độ ổn định, tính bảo mật và mức độ thuận tiện khi sử dụng.
+Hiệu năng: Đảm bảo thời gian phản hồi hợp lý đối với các thao tác như tải trang, tìm kiếm sản phẩm, xem chi tiết, thêm vào giỏ hàng và đặt hàng. Đồng thời, hệ thống cần duy trì tốc độ ổn định khi có nhiều người dùng truy cập ở mức cơ bản.
+Khả dụng: Giao diện được tổ chức rõ ràng, dễ hiểu và thuận tiện cho cả người dùng mới lẫn người đã quen với mua sắm trực tuyến. Các thao tác chính cần được thiết kế đơn giản, hạn chế gây nhầm lẫn trong quá trình sử dụng.
+Bảo mật: Bảo vệ thông tin cá nhân như họ tên, số điện thoại, địa chỉ nhận hàng và dữ liệu tài khoản. Hệ thống cần có cơ chế xác thực và phân quyền phù hợp nhằm hạn chế truy cập trái phép và đảm bảo an toàn dữ liệu.
+Độ tin cậy: Đảm bảo hệ thống hoạt động ổn định, đặc biệt ở các nghiệp vụ quan trọng như đặt hàng, cập nhật trạng thái đơn và xử lý thanh toán. Các lỗi phát sinh cần được kiểm soát để tránh ảnh hưởng đến dữ liệu và trải nghiệm người dùng.
+Khả năng mở rộng: Cho phép hệ thống mở rộng khi số lượng sản phẩm, đơn hàng và người dùng tăng lên mà không làm thay đổi đáng kể cấu trúc tổng thể, từ đó hỗ trợ phát triển lâu dài.
+Khả năng bảo trì: Cấu trúc được tổ chức rõ ràng nhằm thuận lợi cho việc chỉnh sửa, nâng cấp và bổ sung chức năng. Điều này giúp giảm chi phí bảo trì và hỗ trợ xử lý lỗi hiệu quả hơn.
+Tổng thể, các yêu cầu phi chức năng đóng vai trò quan trọng trong việc đảm bảo hệ thống vận hành ổn định, an toàn và phù hợp với nhu cầu thực tế. Đây cũng là cơ sở để định hướng cho quá trình thiết kế, triển khai và đánh giá chất lượng hệ thống trong các phần tiếp theo.
+Thiết kế biểu đồ hệ thống
+Sơ đồ usecase tổng quát
+Dưới đây là sơ đồ usecase tổng quát mô tả toàn bộ các tác nhân chính trong hệ thống gồm người dùng và quản trị viên cùng các chức năng mà mỗi tác nhân có thể thực hiện trong ứng dụng.
+Hình 2.1: Sơ đồ use case tổng quan của hệ thống
+Trong hình 2.1 – Biểu đồ use case tổng quan của hệ thống, sự phân chia vai trò người dùng được thiết kế rõ ràng nhằm đảm bảo hiệu quả vận hành và tối ưu hóa trải nghiệm cho từng đối tượng. Hệ thống phục vụ ba nhóm vai trò chính, mỗi vai trò được gán nhiệm vụ và quyền hạn cụ thể để đáp ứng yêu cầu nghiệp vụ của hệ thống.
+Khách: Là người truy cập hệ thống nhưng chưa đăng nhập. Tác nhân này có vai trò tìm hiểu thông tin sản phẩm trước khi thực hiện giao dịch. Khách có thể thực hiện các chức năng như xem sản phẩm, đăng ký tài khoản và đăng nhập vào hệ thống.
+Người dùng: Là khách hàng đã đăng nhập. Đây là tác nhân chính thực hiện các nghiệp vụ mua sắm trong hệ thống. Người dùng có thể quản lý giỏ hàng, xem và theo dõi đơn hàng, cập nhật thông tin cá nhân, thực hiện thanh toán, xem thông báo, sử dụng voucher và quản lý mật khẩu.
+Quản trị viên: Là tác nhân chịu trách nhiệm quản lý và vận hành hệ thống. Quản trị viên sử dụng khu vực quản trị riêng để thực hiện các chức năng như quản lý sản phẩm, quản lý đơn hàng, quản lý người dùng, xem thông tin tổng quan (dashboard) và cấu hình hệ thống.
+Từ các tác nhân trên, hệ thống bao gồm các nhóm use case chính. Đối với khách, các use case tập trung vào việc truy cập và tìm hiểu thông tin ban đầu. Đối với người dùng, các use case xoay quanh quá trình mua sắm và quản lý giao dịch. Đối với quản trị viên, các use case tập trung vào quản lý dữ liệu và điều phối hoạt động hệ thống.
+Sơ đồ Use Case tổng quát cho thấy mối quan hệ giữa các tác nhân và các chức năng chính, qua đó phản ánh toàn bộ phạm vi hoạt động của hệ thống ở mức tổng thể. Đây là cơ sở quan trọng để triển khai đặc tả chi tiết từng use case và thiết kế hệ thống ở các bước tiếp theo.
+Sơ đồ usecase phân rã
+Sơ đồ  use case đăng nhập
+Hình 2.2: Sơ đồ use case đăng nhập
+Biểu đồ hình 2.2 thể hiện chức năng đăng nhập của người dùng bằng email và mật khẩu. Đây là bước khởi đầu quan trọng để xác thực người dùng trước khi truy cập các chức năng khác của hệ thống. Sau khi đăng nhập thành công, hệ thống sẽ kiểm tra thông tin tài khoản và quyền truy cập của người dùng, từ đó cho phép họ sử dụng các chức năng phù hợp với vai trò tương ứng. Đối với người dùng thông thường, hệ thống hỗ trợ các nghiệp vụ như quản lý giỏ hàng, đặt hàng, theo dõi đơn hàng và cập nhật thông tin cá nhân. Đối với quản trị viên, hệ thống cho phép truy cập khu vực quản trị để thực hiện các nghiệp vụ quản lý sản phẩm, đơn hàng, người dùng, voucher và cài đặt hệ thống.
+Sơ đồ use case đăng kí
+Hình 2.3: Sơ đồ use case đăng ký
+Biểu đồ hình 2.3thể hiện chức năng đăng ký tài khoản của người dùng trên hệ thống. Đây là chức năng cho phép người dùng tạo tài khoản mới để sử dụng các tiện ích và nghiệp vụ mua sắm trực tuyến. Trong quá trình đăng ký, người dùng cần cung cấp một số thông tin cơ bản gồm tên người dùng, email, mật khẩu và ảnh đại diện. Sau khi thông tin được nhập đầy đủ và hợp lệ, hệ thống sẽ tiến hành tạo tài khoản mới để người dùng có thể đăng nhập và sử dụng các chức năng cá nhân trong hệ thống.
+Sơ đồ usecase xem sản phẩm
+Hình 2.4: Sơ đồ usecase xem sản phẩm
+Biểu đồ hình 2.4 thể hiện chức năng xem sản phẩm của người dùng trong hệ thống. Đây là chức năng hỗ trợ người dùng tiếp cận và tra cứu các mặt hàng đang được cung cấp trên website. Trong quá trình sử dụng, người dùng có thể thực hiện các thao tác như tìm kiếm sản phẩm, lọc sản phẩm theo nhu cầu và sắp xếp sản phẩm theo các tiêu chí phù hợp để thuận tiện hơn trong việc lựa chọn. Từ danh sách hiển thị, người dùng có thể tiếp tục truy cập chức năng xem chi tiết sản phẩm để theo dõi đầy đủ hơn các thông tin liên quan trước khi đưa ra quyết định mua hàng.
+Sơ đồ usecase quản lý giỏ hàng
+Hình 2.5: Sơ đồ usecase quản lý giỏ hàng
+Biểu đồ hình 2.5 thể hiện chức năng quản lý giỏ hàng của người dùng trong hệ thống. Đây là chức năng hỗ trợ người dùng quản lý các sản phẩm đã lựa chọn trước khi thực hiện đặt hàng. Thông qua chức năng này, người dùng có thể thêm sản phẩm vào giỏ, thay đổi số lượng, xóa sản phẩm khỏi giỏ và xem thông tin tạm tính của đơn hàng. Ngoài ra, trong quá trình xem tổng tiền, hệ thống còn hỗ trợ áp dụng mã giảm giá khi người dùng có nhu cầu sử dụng ưu đãi. Sau khi hoàn tất việc kiểm tra và điều chỉnh giỏ hàng, người dùng có thể tiếp tục thực hiện chức năng thanh toán để hoàn tất quá trình mua hàng.
+Sơ đồ usecase đặt hàng
+Hình 2.6: Sơ đồ usecase đặt hàng
+Biểu đồ hình 2.6 thể hiện chức năng đặt hàng của người dùng trong hệ thống. Đây là chức năng quan trọng trong quá trình mua sắm trực tuyến, cho phép người dùng chuyển các sản phẩm đã chọn thành một đơn hàng cụ thể. Để thực hiện đặt hàng, người dùng cần nhập thông tin giao hàng, lựa chọn và thực hiện thanh toán, sau đó xác nhận đơn hàng. Trên cơ sở các thông tin đó, hệ thống tiến hành tạo đơn hàng để ghi nhận giao dịch và phục vụ cho các bước xử lý tiếp theo.
+Sơ đồ usecase đánh giá sản phẩm
+Hình 2.7: Sơ đồ usecase đánh giá sản phẩm
+Biểu đồ hình 2.7 thể hiện chức năng đánh giá sản phẩm của người dùng trong hệ thống. Chức năng này cho phép người dùng gửi nhận xét sau khi đã mua và trải nghiệm sản phẩm, qua đó cung cấp thêm thông tin tham khảo cho những người mua sau. Trước khi tiếp nhận đánh giá, hệ thống tiến hành kiểm tra điều kiện mua hàng để bảo đảm chỉ những người dùng đã phát sinh giao dịch hợp lệ mới có thể thực hiện chức năng này. Sau khi đáp ứng điều kiện, người dùng có thể chọn số sao đánh giá từ 1 đến 5, nhập nội dung nhận xét và bổ sung thông tin minh họa nếu hệ thống hỗ trợ. Kết quả đánh giá sau đó được lưu lại để phục vụ hiển thị trên trang sản phẩm và hỗ trợ phản ánh mức độ hài lòng của khách hàng đối với sản phẩm.
+Sơ đồ usecase thanh toán
+Hình 2.8: Sơ đồ usecase thanh toán
+Biểu đồ hình 2.8 thể hiện chức năng Thanh toán của người dùng trong hệ thống thương mại điện tử.Chức năng này cho phép khách hàng hoàn tất quá trình mua sắm sau khi đã lựa chọn sản phẩm và đưa vào giỏ hàng. Để đảm bảo tính chính xác và an toàn của giao dịch, hệ thống yêu cầu người dùng cung cấp đầy đủ thông tin giao hàng và lựa chọn phương thức thanh toán phù hợp. Người dùng còn có thể áp dụng các mã giảm giá (voucher) sẵn có để tối ưu hóa tổng giá trị đơn hàng trước khi xác nhận.
+Hệ thống hỗ trợ hai phương thức thanh toán chính gồm thanh toán trực tuyến an toàn thông qua cổng VNPay và thanh toán khi nhận hàng (COD). Sau khi thanh toán hoàn tất, hệ thống sẽ ghi nhận kết quả giao dịch, cập nhật trạng thái đơn hàng và chuyển thông tin cho bộ phận vận chuyển xử lý.
+Sơ đồ usecase cập nhật hồ sơ cá nhân
+Hình 2.9: Sơ đồ usecase cập nhật hồ sơ cá nhân
+Biểu đồ hình 2.9 thể hiện chức năng cập nhật hồ sơ cá nhân của người dùng trong hệ thống. Chức năng này cho phép người dùng xem thông tin cá nhân hiện có và thực hiện chỉnh sửa khi cần thiết. Trong quá trình cập nhật, người dùng có thể thay đổi tên, email, ảnh đại diện và thực hiện đặt lại mật khẩu để bảo đảm thông tin tài khoản luôn chính xác và phù hợp với nhu cầu sử dụng. Việc hỗ trợ cập nhật hồ sơ cá nhân giúp nâng cao tính chủ động của người dùng trong quá trình quản lý tài khoản trên hệ thống.
+Sơ đồ usecase quản lý người dùng
+Hình 2.10: Sơ đồ usecase quản lý người dùng
+Biểu đồ hình 2.10 thể hiện chức năng quản lý người dùng của quản trị viên trong hệ thống. Chức năng này hỗ trợ quản trị viên theo dõi danh sách tài khoản, tìm kiếm người dùng và xem hồ sơ chi tiết để nắm được thông tin cần thiết trong quá trình quản lý. Bên cạnh đó, quản trị viên có thể cập nhật quyền hạn của tài khoản nhằm bảo đảm phân quyền sử dụng phù hợp với vai trò thực tế. Hệ thống cũng hỗ trợ quản lý trạng thái tài khoản, bao gồm vô hiệu hóa và mở lại tài khoản khi cần thiết, qua đó góp phần duy trì tính an toàn và ổn định trong quá trình vận hành.
+Sơ đồ usecase quản lý đơn hàng
+Hình 2.11: Sơ đồ usecase quản lý đơn hàng
+Biểu đồ hình 2.11 thể hiện chức năng quản lý đơn hàng của quản trị viên. Chức năng này cho phép quản trị viên xem danh sách đơn hàng, tìm kiếm đơn hàng và theo dõi chi tiết từng đơn để phục vụ quá trình xử lý nghiệp vụ. Ngoài ra, quản trị viên có thể cập nhật trạng thái đơn hàng dựa trên tiến trình xử lý thực tế. Trong quá trình này, hệ thống hỗ trợ kiểm tra tính hợp lệ của trạng thái trước khi ghi nhận thay đổi, đồng thời cho phép lựa chọn trạng thái mới phù hợp với từng giai đoạn của đơn hàng.
+Sơ đồ usecase quản lý sản phẩm
+Hình 2.12: Sơ đồ usecase quản lý sản phẩm
+Biểu đồ hình 2.12thể hiện chức năng quản lý sản phẩm của quản trị viên trong hệ thống. Chức năng này cho phép quản trị viên thực hiện các nghiệp vụ chính như xem danh sách sản phẩm, thêm mới, cập nhật và xóa sản phẩm. Bên cạnh đó, hệ thống còn hỗ trợ import sản phẩm từ tệp Excel để phục vụ việc cập nhật dữ liệu số lượng lớn, đồng thời cho phép lựa chọn hình thức ghi đè thông tin hoặc cộng dồn tồn kho tùy theo nhu cầu quản lý. Ngoài các thông tin cơ bản, quản trị viên còn có thể thiết lập phân loại sản phẩm theo cấu trúc ba cấp, cập nhật các thuộc tính như vibe, style và quản lý trạng thái trending nhằm hỗ trợ việc tổ chức dữ liệu và hiển thị sản phẩm phù hợp hơn trên hệ thống.
+Sơ đồ use case phân rã quản lý voucher
+Hình 2.13: Sơ đồ usecase quản lý voucher
+Biểu đồ hình 2.13 thể hiện chức năng Quản lý Voucher của Quản trị viên trong hệ thống thương mại điện tử.Chức năng này cho phép Quản trị viên khởi tạo, quản lý và giám sát toàn bộ các chương trình khuyến mãi dưới dạng mã giảm giá, nhằm thúc đẩy doanh số bán hàng và thu hút khách hàng.
+Trước khi triển khai, Quản trị viên có thể thiết lập chi tiết thông tin voucher bao gồm mã code, loại giảm giá, giá trị giảm, điều kiện áp dụng, thời gian hiệu lực và giới hạn sử dụng. Hệ thống cung cấp giao diện quản lý toàn diện, cho phép Quản trị viên dễ dàng xem danh sách voucher, tìm kiếm, lọc theo trạng thái (đang hoạt động, hết hạn, đã hủy…) để đánh giá hiệu quả chiến dịch.
+Ngoài ra, Quản trị viên có thể thực hiện các thao tác trực tiếp như kích hoạt, vô hiệu hóa, chỉnh sửa hoặc xóa voucher. Hệ thống còn hỗ trợ xuất dữ liệu ra file Excel để phục vụ công tác báo cáo và phân tích chuyên sâu.
+Sơ đồ usecase thanh toán
+Hình 2.14: Sơ đồ usecase thanh toán
+Biểu đồ hình 2.14 thể hiện chức năng Thanh toán của người dùng trong hệ thống thương mại điện tử ToBi Shop. Khi thực hiện thanh toán, người dùng cần nhập thông tin giao hàng để cung cấp địa chỉ nhận hàng và thông tin liên hệ chính xác. Đồng thời, hệ thống cho phép người dùng áp dụng Voucher/Mã giảm giá nhằm giảm chi phí đơn hàng nếu có mã hợp lệ. Sau khi hoàn tất các thông tin cần thiết, người dùng tiến hành lựa chọn phương thức thanh toán phù hợp.
+Tại bước này, hệ thống cung cấp hai hình thức thanh toán chính gồm thanh toán online qua VNPay và thanh toán khi nhận hàng (COD). Tùy vào nhu cầu và điều kiện thực tế, người dùng có thể linh hoạt lựa chọn phương thức phù hợp. Quy trình thanh toán được thiết kế rõ ràng, logic và dễ sử dụng, giúp đảm bảo tính chính xác của thông tin đơn hàng, đồng thời nâng cao trải nghiệm mua sắm và tăng khả năng hoàn tất giao dịch thành công trên hệ thống.
+Đặc tả usecase
+Mô tả usecase đăng nhập
+Bảng 2.1: Mô tả usecase đăng nhập
+Thuộc tính
+Mô tả
+Tác nhân
+Người dùng
+Mô tả
+Người dùng có thể đăng nhập vào hệ thống bằng hai cách:
+- Đăng nhập bằng cách nhập thông tin tài khoản (email/mật khẩu).
+- Đăng nhập qua nhà cung cấp danh tính (Google/Facebook).
+Tiền điều kiện
+- Hệ thống hoạt động bình thường.
+- Người dùng đã có tài khoản hợp lệ.
+- Dịch vụ bên thứ ba (Google/Facebook) đã sẵn sàng
+Hậu điều kiện
+- Tạo phiên đăng nhập hợp lệ.
+- Điều hướng tới trang chủ.
+Luồng sự kiện chính
+- Trường hợp 1: Đăng nhập bằng cách nhập thông tin tài khoản
+1. Người dùng mở màn hình Đăng nhập.
+2. Hệ thống hiển thị form đăng nhập
+3. Người dùng nhập thông tin, sau đó bấm nút “Đăng nhập”
+4. Hệ thống kiểm tra thông tin.
+5. Đăng nhập thành công và chuyển hướng đến trang chủ.
+6. Kết thúc usecase.
+- Trường hợp 2: Đăng nhập bằng tài khoản Google/Facebook
+1. Người dùng lựa chọn “Đăng nhập với tài khoản …”.
+2. Hệ thống chuyển đến màn hình xác thực của nhà cung cấp.
+3. Đăng nhập thành công và chuyển hướng đến trang chủ.
+4. Kết thúc usecase.
+Luồng sự kiện thay thế
+Trường hợp 1: Đăng nhập bằng cách nhập thông tin tài khoản
+- Nếu nhập sai thông tin:
+Hệ thống hiển thị thông báo “Đăng nhập thất bại, vui lòng kiểm tra tài khoản và mật khẩu”.
+Người dùng quay lại bước nhập thông tin.
+-Nếu thiếu trường thông tin
+Hệ thống hiển thị thông báo lỗi “Email hoặc mật khẩu không hợp lệ”.
+Người dùng quay lại bước nhập thông tin.
+Trường hợp 2: Đăng nhập bằng tài khoản Google/Facebook
+- Nếu liên kết tài khoản thất bại:
+Hệ thống báo lỗi.
+Quay lại bước chọn phương thức đăng nhập.
+Mô tả usecase đăng ký
+Bảng 2.2: Mô tả usecase đăng ký
+Thuộc tính
+Mô tả
+Tác nhân
+Người dùng
+Mô tả
+Người dùng thực hiện tạo tài khoản mới trên website để sử dụng dịch vụ mua sắm
+Tiền điều kiện
+- Hệ thống hoạt động bình thường.
+- Người dùng chưa có tài khoản hoặc chưa đăng nhập.
+- Email sử dụng để đăng ký chưa tồn tại trong hệ thống.
+Hậu điều kiện
+- Tài khoản người dùng được tạo mới thành công trong cơ sở dữ liệu.
+- Mật khẩu được mã hóa an toàn.
+- Người dùng được tự động đăng nhập (JWT Token).
+Luồng sự kiện chính
+- Trường hợp 1: Đăng ký tài khoản bằng cách nhập thông tin
+1. Người dùng chọn mục "Đăng ký" để điều hướng sang màn đăng ký.
+2. Hệ thống hiển thị form đăng ký gồm các trường: Họ tên, Email, Mật khẩu, Ảnh đại diện.
+3. Người dùng nhập thông tin (Họ tên tối thiểu 5 ký tự, Mật khẩu tối thiểu 8 ký tự).
+4. Người dùng bấm nút "Đăng ký"
+5. Hệ thống kiểm tra dữ liệu, upload avatar lên Cloudinary (nếu có) và tạo tài khoản trong MongoDB.
+6. Đăng ký tài khoản thành công và tự động chuyển tới màn Trang chủ.
+7. Kết thúc usecase.
+Luồng sự kiện thay thế
+- Email đã tồn tại:
+1. Hệ thống hiển thị thông báo lỗi "Người dùng đã tồn tại".
+2. Quay lại bước nhập dữ liệu.
+- Mật khẩu không hợp lệ :
+1. Hệ thống hiển thị thông báo lỗi yêu cầu đạt chuẩn độ dài.
+2. Quay lại bước nhập mật khẩu.
+- Thông tin nhập liệu thiếu hoặc sai định dạng:
+Hệ thống hiển thị thông báo lỗi tương ứng
+2. Quay lại bước nhập thông tin để bổ sung.
+Mô tả usecase xem sản phẩm
+Bảng 2.3 : Mô tả usecase xem sản phẩm
+Thuộc tính
+Mô tả
+Tác nhân
+Khách vãng lai, người dùng
+Mô tả
+Use case này cho phép người dùng truy cập và xem thông tin chi tiết của một sản phẩm trước khi đưa ra quyết định mua hàng, áp dụng voucher hoặc tiến hành thanh toán.
+Tiền điều kiện
+1. Sản phẩm đã tồn tại trong cơ sở dữ liệu.
+2. Hệ thống đang hoạt động bình thường.
+Hậu điều kiện
+1. Thông tin chi tiết của sản phẩm được hiển thị thành công trên giao diện.
+2. Người dùng có thể tiếp tục thực hiện các hành động tiếp theo như thêm vào giỏ hàng hoặc chuyển sang bước đặt hàng.
+Luồng sự kiện chính
+1. Người dùng truy cập trang chủ, trang danh mục hoặc trang tìm kiếm sản phẩm.
+2. Người dùng chọn một sản phẩm cần xem.
+3. Hệ thống điều hướng tới trang chi tiết sản phẩm.
+4. Hệ thống gửi yêu cầu lấy dữ liệu sản phẩm theo mã định danh sản phẩm.
+5. Cơ sở dữ liệu trả về thông tin chi tiết của sản phẩm.
+6. Hệ thống hiển thị các thông tin gồm tên sản phẩm, hình ảnh, giá bán, giá gốc, mô tả, biến thể, số lượng tồn kho và đánh giá liên quan.
+7. Người dùng xem thông tin sản phẩm và có thể quyết định thêm sản phẩm vào giỏ hàng hoặc quay lại danh sách sản phẩm.
+8. Use case kết thúc.
+Luồng sự kiện thay thế
+1. Nếu sản phẩm không tồn tại hoặc đã bị xóa, hệ thống thông báo không tìm thấy sản phẩm và điều hướng người dùng về trang danh sách sản phẩm hoặc trang lỗi phù hợp.
+2. Nếu sản phẩm đã hết hàng, hệ thống vẫn hiển thị thông tin chi tiết sản phẩm nhưng cảnh báo tình trạng hết hàng và vô hiệu hóa thao tác mua ngay hoặc thêm vào giỏ hàng nếu cần.
+Mô tả usecase quản lý giỏ hàng
+Bảng 2.4:Mô tả usecase quản lý giỏ hàng
+Thuộc tính
+Mô tả
+Tác nhân
+Người dùng
+Mô tả
+Cho phép người dùng lưu trữ, quản lý các sản phẩm dự định mua, tính toán giá trị đơn hàng sơ bộ và áp dụng các chương trình khuyến mãi trước khi tiến hành thanh toán.
+Tiền điều kiện
+- Người dùng đã truy cập vào hệ thống website.
+- Sản phẩm mục tiêu phải đang ở trạng thái "Đang kinh doanh".
+Hậu điều kiện
+- Trạng thái giỏ hàng được cập nhật vào LocalStorage  hoặc Database.
+- Tổng giá trị đơn hàng, phí vận chuyển và mức giảm giá được tính toán chính xác.
+Luồng sự kiện chính
+1. Người dùng xem chi tiết sản phẩm hoặc danh sách sản phẩm.
+2. Người dùng chọn các thuộc tính (Size, Màu sắc) và số lượng, sau đó nhấn **"Thêm vào giỏ hàng"**.
+3. Hệ thống kiểm tra tính khả dụng (Tồn kho, Biến thể).
+4. Hệ thống thông báo thêm thành công và cập nhật biểu tượng giỏ hàng.
+5. Người dùng truy cập trang **Trang Giỏ hàng**.
+6. Hệ thống hiển thị danh sách sản phẩm, đơn giá, số lượng, thành tiền và tổng tạm tính.
+7. Người dùng kiểm tra thông tin và sẵn sàng cho bước Thanh toán.
+Luồng sự kiện thay thế
+Chỉnh sửa giỏ hàng
+Người dùng thay đổi số lượng sản phẩm hoặc xóa sản phẩm tại trang Giỏ hàng.
+Hệ thống kiểm tra tồn kho, tự động cập nhật thành tiền và tổng tiền giỏ hàng.
+Nếu số lượng về 0, hệ thống tự động xóa sản phẩm.
+Luồng ngoại lệ
+- Sản phẩm không đủ tồn kho hoặc hết hàng
+Hệ thống thông báo lỗi và không cho thêm/chỉnh sửa số lượng sản phẩm.
+- Giỏ hàng trống
+Hệ thống hiển thị giao diện giỏ hàng trống kèm nút “Tiếp tục mua sắm”.
+Mô tả usecase đặt hàng
+Bảng 2.5: Mô tả usecase đặt hàng
+Thuộc tính
+Mô tả
+Tác nhân
+Người dùng
+Mô tả
+Cho phép khách hàng kiểm tra thông tin đơn hàng, cung cấp thông tin giao hàng, chọn phương thức thanh toán và xác nhận đặt hàng để chuyển giỏ hàng thành đơn hàng chính thức.
+Tiền điều kiện
+- Giỏ hàng phải chứa ít nhất một sản phẩm.
+- Tất cả sản phẩm trong giỏ hàng đều đang ở trạng thái “Đang kinh doanh” và có tồn kho.
+Hậu điều kiện
+- Một đơn hàng mới được tạo trong hệ thống với trạng thái ban đầu là chờ xác nhận
+- Các sản phẩm đã đặt hàng được xóa khỏi giỏ hàng.
+- Nếu thanh toán online thành công, trạng thái thanh toán được cập nhật thành Paid
+Luồng sự kiện chính
+Người dùng nhấn nút "Tiến hành thanh toán" từ trang Giỏ hàng.
+Hệ thống hiển thị trang Thanh toán với đầy đủ thông tin: danh sách sản phẩm, tổng tiền tạm tính, phí vận chuyển, voucher áp dụng và tổng thanh toán cuối cùng.
+Người dùng kiểm tra và xác nhận thông tin giao hàng
+Người dùng chọn phương thức thanh toán (Thanh toán khi nhận hàng - COD hoặc Thanh toán trực tuyến qua VNPay).
+Người dùng nhấn nút "Xác nhận đặt hàng".
+Hệ thống thực hiện kiểm tra cuối cùng:
+- Tồn kho thực tế của sản phẩm.
+- Tính hợp lệ của voucher.
+Hệ thống tạo đơn hàng mới và các chi tiết đơn hàng.
+Hệ thống thực hiện các công việc sau khi đặt hàng:
+- Trừ tồn kho sản phẩm.
+- Xóa sản phẩm đã mua khỏi giỏ hàng.
+Hệ thống hiển thị trang "Đặt hàng thành công" kèm mã đơn hàng.
+Luồng sự kiện thay thế
+Áp dụng hoặc thay đổi Voucher tại trang thanh toán
+- Người dùng nhập mã Voucher tại trang Checkout.
+- Hệ thống kiểm tra và cập nhật lại tổng thanh toán.
+Luồng ngoại lệ
+- Sản phẩm hết hàng tại thời điểm xác nhận
+Tại bước 6, nếu phát hiện sản phẩm hết hàng hoặc không đủ tồn kho, hệ thống hủy quy trình đặt hàng, thông báo lỗi và yêu cầu người dùng quay lại giỏ hàng để cập nhật.
+- Voucher không còn hợp lệ
+Tại bước 6, nếu voucher bị hết hạn hoặc không thỏa mãn điều kiện, hệ thống thông báo lỗi và cho phép người dùng tiếp tục đặt hàng mà không áp dụng voucher hoặc nhập mã khác.
+- Thanh toán VNPay thất bại hoặc bị hủy
+Khi chọn thanh toán VNPay, nếu người dùng hủy giao dịch hoặc thanh toán không thành công, hệ thống tạo đơn hàng ở trạng thái "Chờ thanh toán".
+Hệ thống thông báo cho người dùng và cho phép thử thanh toán lại hoặc đổi sang phương thức COD.
+Mô tả usecase thanh toán
+Bảng 2.6: Mô tả usecase thanh toán
+Thuộc tính
+Mô tả
+Tác nhân
+Người dùng
+Mô tả
+Cho phép khách hàng thực hiện thanh toán cho đơn hàng đã tạo, hỗ trợ hai phương thức thanh toán là Thanh toán khi nhận hàng (COD) và Thanh toán trực tuyến qua VNPay, đồng thời ghi nhận kết quả giao dịch vào hệ thống.
+Tiền điều kiện
+Đơn hàng đã được tạo thành công và đang ở trạng thái "Chờ thanh toán"
+Khách hàng đã truy cập trang Thanh toán của đơn hàng.
+Đối với thanh toán VNPay: Cổng thanh toán VNPay đang hoạt động bình thường.
+Hậu điều kiện
+- Thành công: Trạng thái thanh toán được cập nhật thành Paid. Đơn hàng chuyển sang trạng thái Processing hoặc Đang chuẩn bị hàng. Email xác nhận thanh toán được gửi cho khách hàng.
+- Thất bại: Đơn hàng giữ nguyên trạng thái Chờ thanh toán hoặc chuyển sang Failed. Giao dịch được ghi log với mã lỗi tương ứng.
+Luồng sự kiện chính
+Khách hàng truy cập trang Thanh toán của đơn hàng.
+Hệ thống hiển thị thông tin chi tiết đơn hàng (Mã đơn hàng, danh sách sản phẩm, tổng tiền cần thanh toán) và các phương thức thanh toán khả dụng (COD và VNPay).
+Khách hàng chọn một trong hai phương thức thanh toán:
+- Thanh toán khi nhận hàng (COD)
+- Thanh toán trực tuyến qua VNPay.
+Khách hàng nhấn nút "Thanh toán ngay".
+Hệ thống xử lý thanh toán theo phương thức khách hàng đã chọn.
+Hệ thống cập nhật trạng thái thanh toán và trạng thái đơn hàng tương ứng.
+Hệ thống hiển thị trang thông báo kết quả thanh toán cho người dùng.
+Luồng sự kiện thay thế
+Thanh toán COD
+- Khách hàng chọn COD tại bước 3.
+- Hệ thống cập nhật trạng thái “Chưa thanh toán” và chuyển đơn hàng sang “Chờ xác nhận”.
+- Hệ thống gửi email xác nhận và nhắc chuẩn bị tiền mặt.
+Thanh toán VNPay
+- Khách hàng chọn VNPay tại bước 3.
+- Hệ thống chuyển hướng sang cổng VNPay.
+- Sau khi thanh toán, VNPay gửi kết quả qua IPN.
+- Hệ thống xác thực và cập nhật trạng thái Paid.
+Luồng ngoại lệ
+Thanh toán VNPay thất bại hoặc bị hủy
+Người dùng hủy giao dịch hoặc thanh toán không thành công trên VNPay.
+Mô tả usecase đánh giá sản phẩm
+Bảng 2.7: Mô tả usecase đánh giá sản phẩm
+Thuộc tính
+Mô tả
+Tác nhân
+Người dùng
+Mô tả
+Cho phép khách hàng đã mua và nhận hàng thành công gửi đánh giá, chấm điểm số sao và chia sẻ hình ảnh thực tế về sản phẩm.
+Tiền điều kiện
+Khách hàng đã đăng nhập vào tài khoản.
+Khách hàng đã mua sản phẩm và đơn hàng phải ở trạng thái "Đã nhận hàng" hoặc "Hoàn thành".
+Khách hàng chưa đánh giá sản phẩm này trong đơn hàng tương ứng
+Hậu điều kiện
+Đánh giá  được lưu vào cơ sở dữ liệu.
+Điểm đánh giá trung bình của sản phẩm được tính toán và cập nhật lại.
+Đánh giá được hiển thị trên trang chi tiết sản phẩm
+Khách hàng nhận được thông báo gửi đánh giá thành công.
+Luồng sự kiện chính
+Khách hàng truy cập trang Chi tiết sản phẩm hoặc Lịch sử đơn hàng.
+Khách hàng nhấn nút "Viết đánh giá" cho sản phẩm đã mua.
+Hệ thống hiển thị form đánh giá gồm: chọn số sao (1-5), nhập nội dung nhận xét và tùy chọn tải lên hình ảnh.
+Khách hàng chọn số sao, nhập nội dung và tải ảnh .
+Khách hàng nhấn nút "Gửi đánh giá".
+Hệ thống lưu đánh giá và tính toán lại điểm trung bình của sản phẩm.
+Hệ thống hiển thị thông báo "Cảm ơn bạn đã gửi đánh giá!".
+Luồng sự kiện thay thế
+Chỉnh sửa đánh giá
+- Khách hàng vào danh sách đánh giá của mình.
+- Chọn đánh giá cần chỉnh sửa và nhấn "Chỉnh sửa".
+- Khách hàng cập nhật số sao, nội dung hoặc hình ảnh.
+- Hệ thống lưu thay đổi và cập nhật lại điểm trung bình sản phẩm.
+Xóa đánh giá
+- Khách hàng chọn đánh giá cần xóa và nhấn "Xóa".
+- Hệ thống yêu cầu xác nhận.
+- Sau khi xác nhận, hệ thống xóa đánh giá và cập nhật lại điểm trung bình.
+Luồng ngoại lệ
+Không đủ điều kiện đánh giá
+- Hệ thống ẩn nút "Viết đánh giá" hoặc hiển thị thông báo: "Bạn chỉ có thể đánh giá sau khi đã nhận được sản phẩm".
+Nội dung đánh giá vi phạm quy định
+- Hệ thống từ chối đăng và thông báo: "Nội dung đánh giá không hợp lệ. Vui lòng chỉnh sửa trước khi gửi lại".
+Mô tả usecase cập nhật hồ sơ cá nhân
+Bảng 2.8:Mô tả usecase cập nhật hồ sơ cá nhân
+Thuộc tính
+Mô tả
+Tác nhân
+Người dùng
+Mô tả
+Cho phép khách hàng đã đăng nhập cập nhật thông tin cá nhân, thay đổi mật khẩu, cập nhật ảnh đại diện và quản lý sổ địa chỉ giao hàng.
+Tiền điều kiện
+Khách hàng đã đăng nhập thành công vào tài khoản.
+Tài khoản đang ở trạng thái hoạt động .
+Hậu điều kiện
+Thông tin hồ sơ cá nhân được cập nhật chính xác vào cơ sở dữ liệu.
+Hệ thống hiển thị thông tin mới nhất trên giao diện.
+Nếu thay đổi mật khẩu, phiên đăng nhập hiện tại có thể bị yêu cầu đăng nhập lại (tùy cấu hình bảo mật).
+Luồng sự kiện chính
+Khách hàng truy cập mục "Tài khoản của tôi" hoặc "Hồ sơ cá nhân".
+Hệ thống hiển thị thông tin hồ sơ hiện tại.
+Khách hàng nhấn nút "Chỉnh sửa hồ sơ".
+Khách hàng chỉnh sửa các thông tin cần thiết.
+Khách hàng nhấn nút "Lưu thay đổi".
+Hệ thống kiểm tra tính hợp lệ của dữ liệu
+Hệ thống cập nhật thông tin vào cơ sở dữ liệu.
+Hệ thống hiển thị thông báo "Cập nhật hồ sơ thành công!".
+Luồng sự kiện thay thế
+Thay đổi mật khẩu
+Khách hàng chọn mục "Thay đổi mật khẩu".
+Nhập mật khẩu cũ, mật khẩu mới và xác nhận mật khẩu mới.
+Hệ thống kiểm tra mật khẩu cũ và tính hợp lệ của mật khẩu mới.
+Hệ thống mã hóa và cập nhật mật khẩu mới.
+Chọn và tải ảnh mới từ thiết bị.
+Hệ thống tải ảnh lên và cập nhật đường dẫn mới vào hồ sơ.
+Luồng ngoại lệ
+Email đã tồn tại
+Hệ thống báo lỗi: "Email này đã được sử dụng bởi tài khoản khác. Vui lòng chọn email khác."
+Mật khẩu cũ không đúng
+Hệ thống thông báo: "Mật khẩu cũ không chính xác. Vui lòng nhập lại."
+Mô tả usecase quản lý người dùng
+Bảng 2.9:Mô tả usecase quản lý người dùng
+Thuộc tính
+Mô tả
+Tác nhân
+Quản trị viên
+Mô tả
+Cho phép Quản trị viên xem danh sách người dùng, tìm kiếm, xem chi tiết, thay đổi quyền hạn, khóa/mở khóa tài khoản và thực hiện các thao tác quản lý khác.
+Tiền điều kiện
+Quản trị viên đã đăng nhập thành công vào trang Admin Dashboard.
+Tài khoản quản trị viên có quyền hạn quản lý người dùng
+Hậu điều kiện
+Thông tin, quyền hạn hoặc trạng thái tài khoản người dùng được cập nhật vào cơ sở dữ liệu.
+Hệ thống ghi log hoạt động  cho các thao tác quan trọng.
+Thay đổi có hiệu lực ngay với người dùng
+Luồng sự kiện chính
+Quản trị viên truy cập mục "Quản lý người dùng" từ menu Admin.
+Hệ thống hiển thị danh sách người dùng
+Quản trị viên có thể tìm kiếm theo từ khóa  hoặc sử dụng bộ lọc.
+Quản trị viên chọn một người dùng trong danh sách để xem chi tiết.
+Quản trị viên thực hiện các thao tác quản lý.
+Hệ thống lưu thay đổi và hiển thị thông báo thành công.
+Luồng sự kiện thay thế
+Thay đổi vai trò
+Tại trang chi tiết người dùng, Admin chọn "Thay đổi vai trò".
+Chọn vai trò mới từ danh sách.
+Xác nhận thay đổi.
+Hệ thống cập nhật quyền hạn mới cho tài khoản.
+Khóa / Mở khóa tài khoản
+Xác nhận thao tác.
+Luồng ngoại lệ
+Không tìm thấy người dùng
+Hệ thống hiển thị thông báo: "Không tìm thấy người dùng phù hợp với từ khóa tìm kiếm".
+Không được khóa tài khoản của chính mình
+Mô tả usecase quản lý sản phẩm
+Bảng 2.10: Mô tả usecase quản lý sản phẩm
+Thuộc tính
+Mô tả
+Tác nhân
+Quản trị viên
+Mô tả
+Cho phép Quản trị viên thêm mới, chỉnh sửa, xóa và quản lý thông tin sản phẩm, biến thể, giá cả, hình ảnh và trạng thái kinh doanh trong hệ thống.
+Tiền điều kiện
+Quản trị viên đã đăng nhập thành công vào trang quản trị.
+Tài khoản quản trị viên có quyền hạn quản lý sản phẩm .
+Hậu điều kiện
+Trạng thái đơn hàng được cập nhật chính xác trong cơ sở dữ liệu.
+Tồn kho sản phẩm được điều chỉnh tương ứng .
+Hệ thống ghi log lịch sử thay đổi trạng thái đơn hàng.
+Luồng sự kiện chính
+Quản trị viên truy cập mục "Quản lý đơn hàng" từ menu Admin.
+Hệ thống hiển thị danh sách đơn hàng với thông tin cơ bản.
+Quản trị viên có thể tìm kiếm hoặc lọc đơn hàng theo trạng thái, khoảng thời gian hoặc khách hàng.
+Quản trị viên chọn một đơn hàng để xem chi tiết.
+Hệ thống hiển thị đầy đủ thông tin đơn hàng.
+Quản trị viên cập nhật trạng thái đơn hàng.
+Hệ thống hiển thị thông báo cập nhật thành công.
+Luồng sự kiện thay thế
+Xác nhận đơn hàng
+Tại trang chi tiết đơn hàng, Admin nhấn "Xác nhận đơn hàng".
+Hệ thống kiểm tra tồn kho và thông tin thanh toán.
+Nếu hợp lệ, đơn hàng chuyển sang trạng thái “Đang xử lý”.
+A2: Cập nhật trạng thái vận chuyển
+Admin cập nhật trạng thái giao hàng (Đang giao → Đã giao → Hoàn thành).
+Hệ thống ghi nhận thời gian và thông tin vận chuyển.
+Luồng ngoại lệ
+Sản phẩm có cùng tên hoặc SKU đã tồn tại
+Hệ thống báo lỗi: "Tên sản phẩm hoặc SKU đã tồn tại. Vui lòng kiểm tra lại."
+Dữ liệu không hợp lệ
+Hệ thống đánh dấu lỗi các trường bắt buộc.
+Mô tả usecase quản lý đơn hàng
+Bảng 2.11: Mô tả usecase quản lý đơn hàng
+Thuộc tính
+Mô tả
+Tác nhân
+Quản trị viên
+Mô tả
+Cho phép Quản trị viên và Nhân viên kho theo dõi, xử lý, cập nhật trạng thái và quản lý toàn bộ vòng đời của đơn hàng từ lúc đặt hàng đến khi hoàn tất hoặc hủy.
+Tiền điều kiện
+Quản trị viên  đã đăng nhập thành công vào Admin Dashboard.
+Hệ thống đã có các đơn hàng được tạo từ phía khách hàng.
+Hậu điều kiện
+Trạng thái đơn hàng được cập nhật chính xác theo quy trình.
+Tồn kho sản phẩm được điều chỉnh tự động.
+Khách hàng nhận được email thông báo khi trạng thái đơn hàng thay đổi.
+Luồng sự kiện chính
+Quản trị viên truy cập mục "Quản lý đơn hàng".
+Hệ thống hiển thị danh sách đơn hàng với thông tin cơ bản.
+Quản trị viên sử dụng tìm kiếm hoặc bộ lọc để tìm đơn hàng cần xử lý.
+Quản trị viên chọn một đơn hàng để xem chi tiết.
+Hệ thống hiển thị đầy đủ thông tin đơn hàng
+Quản trị viên cập nhật trạng thái đơn hàng
+Hệ thống lưu thay đổi, điều chỉnh tồn khovà gửi email thông báo cho khách hàng.
+Hệ thống hiển thị thông báo cập nhật thành công.
+Luồng sự kiện thay thế
+Xác nhận đơn hàng
+Tại trang chi tiết, Admin nhấn "Xác nhận đơn hàng".
+Hệ thống kiểm tra tồn kho và thông tin thanh toán.
+Đơn hàng chuyển sang trạng thái “Đang xử lý”.
+Cập nhật trạng thái vận chuyển
+Admin cập nhật trạng thái giao hàng.
+Luồng ngoại lệ
+Đơn hàng đã ở trạng thái cuối
+Hệ thống thông báo: "Đơn hàng đã hoàn thành hoặc hủy, không thể thay đổi trạng thái thêm".
+Mô tả usecase quản lý voucher
+Bảng 2.12: Mô tả usecase quản lý voucher
+Thuộc tính
+Mô tả
+Tác nhân
+Quản trị viên
+Mô tả
+Cho phép Quản trị viên tạo mới, chỉnh sửa, vô hiệu hóa, theo dõi và quản lý các mã voucher khuyến mãi nhằm hỗ trợ các chương trình marketing và thúc đẩy doanh số.
+Tiền điều kiện
+Quản trị viên đã đăng nhập thành công vào trang quản trị với quyền Admin.
+Hệ thống đang hoạt động bình thường.
+Hậu điều kiện
+Thông tin voucher được tạo/cập nhật/vô hiệu hóa thành công trong cơ sở dữ liệu.
+Khách hàng chỉ có thể áp dụng các voucher đang ở trạng thái hoạt động.
+Lịch sử tạo, chỉnh sửa và lượt sử dụng voucher được ghi nhận đầy đủ.
+Điểm thống kê hiệu quả voucher  được cập nhật.
+Luồng sự kiện chính
+Quản trị viên truy cập mục "Quản lý Voucher" từ menu Admin.
+Hệ thống hiển thị danh sách tất cả voucher
+Quản trị viên có thể tìm kiếm hoặc lọc voucher theo trạng thái.
+Quản trị viên chọn một voucher để xem chi tiết hoặc nhấn "Tạo Voucher mới".
+Quản trị viên nhập/chỉnh sửa thông tin và nhấn "Lưu".
+Hệ thống kiểm tra tính hợp lệ dữ liệu và lưu voucher vào cơ sở dữ liệu.
+Hệ thống hiển thị thông báo thành công và cập nhật danh sách.
+Luồng sự kiện thay thế
+Chỉnh sửa Voucher
+Tại danh sách, Admin chọn voucher và nhấn "Chỉnh sửa".
+Hệ thống hiển thị thông tin hiện tại để chỉnh sửa.
+Admin lưu thay đổi. Hệ thống cập nhật voucher và thông báo thành công.
+Vô hiệu hóa Voucher
+Admin chọn voucher đang hoạt động và nhấn "Vô hiệu hóa".
+Luồng ngoại lệ
+Mã Voucher bị trùng
+Thời gian không hợp lệ
+Thiết kế sơ đồ quy trình nghiệp vụ
+Nghiệp vụ đăng ký tài khoản
+Hình 2.15: Sơ đồ nghiệp vụ đăng ký tài khoản
+Hình 2.15 trình bày quy trình đăng ký tài khoản người dùng trong hệ thống. Đây là nghiệp vụ nhằm thiết lập định danh cho người dùng mới, từ đó cho phép truy cập và sử dụng đầy đủ các chức năng cá nhân hóa cũng như quản lý giao dịch.
+Quy trình bắt đầu khi người dùng lựa chọn chức năng đăng ký trên giao diện hệ thống. Hệ thống tiếp nhận yêu cầu và hiển thị biểu mẫu nhập liệu để người dùng cung cấp các thông tin cần thiết như tên, email, mật khẩu và các dữ liệu liên quan. Sau khi hoàn tất, người dùng gửi yêu cầu đăng ký về phía hệ thống. Tại đây, hệ thống tiến hành kiểm tra và đối soát dữ liệu nhằm đảm bảo tính hợp lệ và duy nhất của thông tin. Trong trường hợp dữ liệu không hợp lệ hoặc đã tồn tại (ví dụ email đã được đăng ký), hệ thống sẽ hiển thị thông báo lỗi để người dùng chỉnh sửa hoặc hủy bỏ thao tác.
+Ngược lại, nếu toàn bộ thông tin hợp lệ, hệ thống sẽ tiến hành tạo mới tài khoản, lưu trữ dữ liệu vào cơ sở dữ liệu và trả về thông báo đăng ký thành công. Nghiệp vụ này đóng vai trò quan trọng trong việc đảm bảo tính toàn vẹn dữ liệu người dùng, đồng thời tạo tiền đề cho các chức năng xác thực, phân quyền và cá nhân hóa trải nghiệm trong hệ thống.
+Nghiệp vụ đăng nhập tài khoản
+Hình 2.16: Sơ đồ nghiệp vụ đăng nhập tài khoản
+Hình 2.16 trình bày quy trình đăng nhập người dùng trong hệ thống ToBi Shop. Đây là nghiệp vụ nhằm xác thực danh tính người dùng, từ đó cho phép truy cập vào các chức năng và dữ liệu cá nhân trên hệ thống.
+Quy trình bắt đầu khi người dùng nhập thông tin đăng nhập bao gồm email và mật khẩu trên giao diện hệ thống. Sau khi tiếp nhận yêu cầu, hệ thống tiến hành kiểm tra sự tồn tại của tài khoản trong cơ sở dữ liệu, đồng thời xác minh tính chính xác của mật khẩu và trạng thái hoạt động của tài khoản. Trong trường hợp thông tin không hợp lệ, hệ thống sẽ hiển thị thông báo lỗi và yêu cầu người dùng nhập lại thông tin
+Ngược lại, nếu thông tin đăng nhập hợp lệ, hệ thống sẽ thiết lập phiên làm việc cho người dùng, cấp quyền truy cập tương ứng và chuyển hướng đến giao diện chính. Nghiệp vụ này đóng vai trò quan trọng trong việc bảo vệ dữ liệu, đảm bảo an toàn thông tin và kiểm soát truy cập trong hệ thống ToBi Shop..
+Nghiệp vụ tìm kiếm và lọc sản phẩm
+Hình 2.17: Sơ đồ nghiệp vụ tìm kiếm và lọc sản phẩm
+Hình 2.17 trình bày quy trình tìm kiếm và lọc sản phẩm trong hệ thống ToBi Shop. Nghiệp vụ này giúp người dùng nhanh chóng thu hẹp phạm vi sản phẩm phù hợp với nhu cầu mua sắm.
+Quy trình bắt đầu khi người dùng nhập từ khóa vào thanh tìm kiếm và có thể kết hợp các bộ lọc như danh mục, khoảng giá hoặc sắp xếp. Hệ thống tiếp nhận đồng thời các tiêu chí này và thực hiện truy vấn cơ sở dữ liệu để tìm các sản phẩm phù hợp. Tại bước xử lý kết quả, hệ thống phân thành hai trường hợp. Nếu tìm thấy sản phẩm, danh sách kết quả sẽ được hiển thị cho người dùng. Ngược lại, nếu không có sản phẩm phù hợp, hệ thống thông báo không tìm thấy kết quả và đồng thời gợi ý các sản phẩm liên quan nhằm duy trì trải nghiệm mua sắm.
+Sau khi xem kết quả, người dùng có thể tiếp tục điều chỉnh bộ lọc hoặc từ khóa để tinh chỉnh danh sách sản phẩm. Quy trình này lặp lại cho đến khi người dùng tìm được sản phẩm mong muốn. Nghiệp vụ góp phần nâng cao trải nghiệm người dùng, giảm thời gian tìm kiếm và tăng hiệu quả mua sắm trên hệ thống.
+Nghiệp vụ mua hàng
+Hình 2.18: Sơ đồ nghiệp vụ mua hàng
+Hình 2.18 trình bày quy trình mua hàng và thanh toán trong hệ thống ToBi Shop. Đây là nghiệp vụ cốt lõi, cho phép người dùng chuyển đổi nhu cầu mua sắm thành giao dịch hoàn tất.
+Quy trình bắt đầu khi người dùng lựa chọn sản phẩm và thêm vào giỏ hàng, hệ thống tiếp nhận và cập nhật trạng thái giỏ hàng tương ứng. Khi tiến hành thanh toán, hệ thống kiểm tra trạng thái đăng nhập để đảm bảo quyền truy cập hợp lệ. Sau đó, người dùng cung cấp thông tin giao hàng và lựa chọn phương thức thanh toán, bao gồm thanh toán khi nhận hàng (COD) hoặc thanh toán trực tuyến.
+Đối với thanh toán trực tuyến, hệ thống gửi yêu cầu đến cổng thanh toán để xử lý giao dịch. Nếu giao dịch thất bại, hệ thống thông báo lỗi và dừng quy trình. Ngược lại, nếu giao dịch thành công hoặc người dùng chọn COD, hệ thống tiến hành tạo đơn hàng và lưu trữ vào cơ sở dữ liệu.
+Cuối cùng, hệ thống gửi thông báo đặt hàng thành công đến người dùng. Nghiệp vụ này đảm bảo tính chính xác trong quản lý đơn hàng và nâng cao trải nghiệm mua sắm trên hệ thống.
+Nghiệp vụ quản lý đơn hàng
+Hình 2.19: Sơ đồ nghiệp vụ quản lý đơn hàng
+Hình 2.19 trình bày quy trình quản lý đơn hàng trong hệ thống ToBi Shop. Nghiệp vụ này là sự phối hợp giữa khách hàng, hệ thống và quản trị viên nhằm đảm bảo vòng đời đơn hàng được xử lý đầy đủ và chính xác.
+Quy trình bắt đầu khi khách hàng đặt hàng thành công, hệ thống khởi tạo đơn hàng và lưu trữ vào cơ sở dữ liệu với trạng thái ban đầu là chờ xử lý. Trong giai đoạn này, khách hàng có thể yêu cầu hủy đơn. Hệ thống sẽ kiểm tra trạng thái hiện tại của đơn hàng để quyết định cho phép hủy và hoàn trả số lượng tồn kho, hoặc từ chối nếu đơn đã chuyển sang trạng thái xử lý hoặc vận chuyển.
+Về phía quản trị, quản trị viên tiếp nhận và xử lý đơn hàng. Sau khi xác nhận, đơn hàng được cập nhật lần lượt qua các trạng thái như đang giao và đã giao khi hoàn tất vận chuyển. Ngoài ra, trong một số trường hợp đặc biệt, quản trị viên có thể chủ động hủy đơn hàng theo yêu cầu nghiệp vụ. Nghiệp vụ này góp phần đảm bảo tính nhất quán dữ liệu, kiểm soát tồn kho và nâng cao hiệu quả vận hành hệ thống.
+Nghiệp vụ quản lý sản phẩm
+Hình 2.20: Sơ đồ nghiệp vụ quản lý sản phẩm
+Hình 2.20 trình bày quy trình quản lý sản phẩm trong hệ thống ToBi Shop. Nghiệp vụ này cho phép quản trị viên duy trì, cập nhật và kiểm soát danh mục sản phẩm nhằm đảm bảo dữ liệu luôn chính xác và đầy đủ.
+Quy trình bắt đầu khi quản trị viên truy cập vào chức năng quản lý sản phẩm, hệ thống hiển thị danh sách các sản phẩm hiện có để phục vụ việc theo dõi và thao tác. Tại đây, quản trị viên có thể thực hiện các chức năng như thêm mới, chỉnh sửa hoặc xóa sản phẩm. Đối với thao tác thêm hoặc cập nhật, hệ thống yêu cầu nhập đầy đủ thông tin như tên sản phẩm, giá, danh mục và hình ảnh. Trước khi lưu, hệ thống tiến hành kiểm tra tính hợp lệ của dữ liệu và hiển thị thông báo lỗi nếu có sai sót.
+Đối với thao tác xóa, hệ thống không xóa dữ liệu hoàn toàn mà thực hiện cập nhật trạng thái sản phẩm nhằm đảm bảo tính toàn vẹn dữ liệu và phục vụ việc truy vết sau này. Sau khi hoàn tất các thao tác, hệ thống cập nhật lại danh sách sản phẩm và thông báo kết quả cho quản trị viên. Nghiệp vụ này góp phần đảm bảo tính nhất quán dữ liệu và nâng cao hiệu quả quản lý hàng hóa trong hệ thống.
+Nghiệp vụ quản lý người dùng
+Hình 2.21: Sơ đồ nghiệp vụ quản lý người dùng
+Hình 2.21 trình bày quy trình quản lý người dùng trong hệ thống ToBi Shop. Nghiệp vụ này cho phép quản trị viên kiểm soát và điều phối danh tính người dùng, đảm bảo phân quyền và an toàn hệ thống.
+Quy trình bắt đầu khi quản trị viên truy cập vào chức năng quản lý người dùng và thực hiện tra cứu thông qua công cụ tìm kiếm hoặc bộ lọc. Hệ thống xử lý yêu cầu và trả về danh sách người dùng phù hợp. Tại đây, quản trị viên có thể lựa chọn một người dùng cụ thể để thực hiện các thao tác như thay đổi vai trò hoặc cập nhật trạng thái tài khoản.
+Trong quá trình xử lý, hệ thống kiểm soát các ràng buộc an toàn, đặc biệt là ngăn chặn việc quản trị viên tự khóa tài khoản của chính mình nhằm tránh rủi ro vận hành. Nếu thao tác hợp lệ, hệ thống cập nhật thông tin vào cơ sở dữ liệu và phản hồi kết quả. Cuối cùng, danh sách người dùng được làm mới để phản ánh dữ liệu mới nhất. Nghiệp vụ này đóng vai trò quan trọng trong việc đảm bảo an ninh và phân quyền chính xác trong hệ thống.
+Nghiệp vụ trợ lý AI
+Hình 2.22: Sơ đồ nghiệp vụ trợ lý AI
+Hình 2.22 trình bày quy trình hoạt động của trợ lý ảo AI trong hệ thống ToBi Shop. Nghiệp vụ này nhằm tối ưu hóa trải nghiệm người dùng thông qua việc hỗ trợ tự động và cá nhân hóa quá trình tương tác.
+Quy trình bắt đầu khi người dùng kích hoạt biểu tượng trợ lý trên giao diện hệ thống. Ngay sau đó, hệ thống khởi tạo phiên làm việc, thiết lập định danh phiên và nạp dữ liệu bối cảnh ban đầu, đồng thời hiển thị lời chào phù hợp. Trong quá trình tương tác, người dùng gửi các yêu cầu dưới dạng ngôn ngữ tự nhiên. Hệ thống tiếp nhận, kiểm tra tính hợp lệ của dữ liệu đầu vào và chuyển tiếp yêu cầu đến dịch vụ AI kèm theo lịch sử hội thoại để phân tích ngữ cảnh và sinh phản hồi.
+Trong suốt phiên làm việc, hệ thống kiểm soát giới hạn số lượng tin nhắn được lưu trữ nhằm đảm bảo hiệu năng, đồng thời thực hiện dọn dẹp tài nguyên khi phiên kết thúc. Quy trình khép lại khi người dùng đóng cửa sổ hoặc làm mới cuộc hội thoại. Nghiệp vụ này góp phần nâng cao khả năng hỗ trợ tự động, tăng mức độ cá nhân hóa và cải thiện trải nghiệm mua sắm trên hệ thống.
+Thiết kế sơ đồ tuần tự
+Sơ đồ tuần tự đăng ký
+Hình 2.23: Sơ đồ tuần tự đăng ký
+Hình 2.23 mô tả luồng tương tác giữa người dùng và các thành phần trong hệ thống khi thực hiện chức năng tạo tài khoản mới.
+Đầu tiên, người dùng nhập các thông tin đăng ký trên giao diện và gửi yêu cầu đăng ký. Giao diện sau đó chuyển thông tin này đến bộ điều khiển của hệ thống thông qua yêu cầu đăng ký tài khoản.
+Tiếp theo, bộ điều khiển tiếp nhận dữ liệu và gửi yêu cầu đến hệ thống phía sau để thực hiện việc tạo tài khoản mới. Hệ thống tiến hành lưu thông tin người dùng và xác nhận việc tạo tài khoản thành công.
+Sau khi xử lý xong, kết quả đăng ký được trả về cho bộ điều khiển, sau đó chuyển về giao diện người dùng. Cuối cùng, giao diện hiển thị thông báo đăng ký thành công cho người dùng.
+Sơ đồ tuần tự đăng nhập
+Hình 2.24: Sơ đồ tuần tự đăng nhập
+Hình 2.24 mô tả luồng tương tác giữa người dùng và các thành phần trong hệ thống khi thực hiện chức năng đăng nhập vào hệ thống.
+Đầu tiên, người dùng nhập thông tin đăng nhập bao gồm tên tài khoản và mật khẩu trên giao diện đăng nhập. Sau đó, giao diện gửi yêu cầu đăng nhập đến bộ điều khiển của hệ thống để xử lý.
+Tiếp theo, bộ điều khiển tiếp nhận thông tin và gửi yêu cầu đến hệ thống phía sau để tìm kiếm thông tin người dùng tương ứng. Hệ thống truy vấn dữ liệu và trả về thông tin người dùng cho bộ điều khiển.
+Sau khi nhận được dữ liệu, bộ điều khiển tiến hành xác thực thông tin đăng nhập bằng cách so sánh mật khẩu người dùng nhập với dữ liệu lưu trữ trong hệ thống.
+Nếu thông tin đăng nhập hợp lệ, hệ thống trả về kết quả đăng nhập thành công và giao diện hiển thị thông báo thành công cho người dùng. Ngược lại, nếu thông tin không chính xác, hệ thống trả về thông báo lỗi và giao diện hiển thị thông báo đăng nhập thất bại.
+Sơ đồ tuần tự đặt hàng
+Hình 2.25: Sơ đồ tuần tự đặt hàng
+Trong hình 2.25 là biểu đồ tuần tự mô tả quá trình người dùng thực hiện chức năng đặt hàng trong hệ thống.
+Đầu tiên, người dùng xác nhận đặt hàng trên giao diện Checkout. Sau đó, giao diện gửi yêu cầu đặt hàng đến bộ điều khiển orderController để xử lý. Khi tiếp nhận yêu cầu, bộ điều khiển gửi thông tin đến hệ thống phía sau để kiểm tra tình trạng tồn kho của các sản phẩm trong đơn hàng.
+Sau khi kiểm tra, hệ thống trả về kết quả hợp lệ nếu số lượng sản phẩm còn đủ để đáp ứng yêu cầu đặt hàng. Tiếp theo, bộ điều khiển gửi yêu cầu tạo đơn hàng mới đến hệ thống. Hệ thống tiến hành lưu thông tin đơn hàng và hoàn tất quá trình xử lý.
+Sơ đồ tuần tự tìm kiếm và lọc sản phẩm
+Hình 2.26: Sơ đồ tuần tự tìm kiếm và lọc sản phẩm
+Trong hình 2.26là biểu đồ tuần tự mô tả quá trình người dùng thực hiện tìm kiếm hoặc lọc sản phẩm trong hệ thống.
+Đầu tiên, người dùng nhập từ khóa tìm kiếm hoặc lựa chọn các tiêu chí lọc trên giao diện sản phẩm. Sau đó, giao diện tiếp nhận thông tin và gửi yêu cầu tìm kiếm đến bộ điều khiển sản phẩm để xử lý.
+Tiếp theo, bộ điều khiển sản phẩm gửi yêu cầu truy vấn đến hệ thống phía sau nhằm tìm kiếm các sản phẩm phù hợp với từ khóa hoặc bộ lọc mà người dùng đã cung cấp. Hệ thống tiến hành xử lý, truy vấn dữ liệu từ cơ sở dữ liệu và trả về danh sách sản phẩm tương ứng.
+Sau khi nhận được kết quả, bộ điều khiển sản phẩm chuyển dữ liệu về giao diện sản phẩm. Cuối cùng, giao diện hiển thị danh sách sản phẩm phù hợp cho người dùng.
+Sơ đồ tuần tự quản lý đơn hàng
+Hình 2.27: Sơ đồ tuần tự quản lý đơn hàng
+Trong hình 2.27 là biểu đồ tuần tự mô tả quá trình người dùng hoặc quản trị viên thực hiện quản lý đơn hàng trong hệ thống, bao gồm thao tác hủy đơn và cập nhật trạng thái đơn hàng.
+Đầu tiên, người dùng hoặc quản trị viên chọn chức năng hủy đơn hàng trên giao diện quản lý đơn hàng. Hệ thống tiếp nhận yêu cầu và gửi đến bộ điều khiển orderController để xử lý. Tiếp theo, bộ điều khiển gửi yêu cầu đến hệ thống phía sau để kiểm tra trạng thái hiện tại của đơn hàng.
+Sau khi nhận được kết quả kiểm tra, nếu đơn hàng đủ điều kiện để hủy, hệ thống tiến hành cập nhật trạng thái đơn hàng sang trạng thái đã hủy và trả về kết quả thành công. Ngược lại, nếu đơn hàng không thể hủy (do đã xử lý hoặc đang giao), hệ thống trả về thông báo lỗi.
+Kết quả xử lý sau đó được gửi về giao diện, tại đây hệ thống hiển thị thông báo hủy đơn hàng thành công hoặc thông báo không thể hủy cho người dùng.
+Ngoài ra, hệ thống còn hỗ trợ chức năng cập nhật trạng thái đơn hàng. Quản trị viên thực hiện thay đổi trạng thái đơn hàng trên giao diện, sau đó yêu cầu được gửi đến bộ điều khiển. Bộ điều khiển tiếp tục gửi yêu cầu cập nhật trạng thái đến hệ thống phía sau, hệ thống tiến hành cập nhật trạng thái trong cơ sở dữ liệu và trả kết quả về cho bộ điều khiển.
+Cuối cùng, kết quả cập nhật được hiển thị trên giao diện để thông báo cho người dùng hoặc quản trị viên. Sơ đồ thể hiện rõ quá trình kiểm tra điều kiện trước khi thực hiện hủy đơn và đảm bảo việc cập nhật trạng thái đơn hàng được thực hiện chính xác và nhất quán.
+Sơ đồ tuần tự quản lý sản phẩm
+Hình 2.28: Sơ đồ tuần tự quản lý sản phẩm
+Trong hình 2.28 là biểu đồ tuần tự mô tả quá trình quản trị viên thực hiện quản lý sản phẩm trong hệ thống, bao gồm thao tác thêm mới và xóa sản phẩm.
+Đầu tiên, quản trị viên nhập các thông tin của sản phẩm trên giao diện quản lý sản phẩm. Sau đó, hệ thống tiếp nhận dữ liệu và gửi yêu cầu xử lý đến bộ điều khiển sản phẩm .
+Tại đây, trong trường hợp sản phẩm có kèm theo hình ảnh, bộ điều khiển sản phẩm sẽ gửi yêu cầu đến dịch vụ lưu trữ ảnh Cloudinary để thực hiện tải ảnh lên. Sau khi quá trình tải ảnh hoàn tất, hệ thống nhận về đường dẫn URL của ảnh để phục vụ cho việc lưu trữ thông tin sản phẩm. Trong trường hợp không có hình ảnh, hệ thống sẽ bỏ qua bước này và tiếp tục xử lý dữ liệu.
+Tiếp theo, bộ điều khiển sản phẩm gửi toàn bộ thông tin sản phẩm đến hệ thống phía sau để lưu vào cơ sở dữ liệu. Sau khi lưu trữ thành công, hệ thống trả về kết quả xác nhận, bộ điều khiển tiếp nhận và chuyển kết quả này về giao diện người dùng.
+Sơ đồ tuần tự quản lý người dùng
+Hình 2.29: Sơ đồ tuần tự quản lý người dùng
+Trong hình 2.29 là biểu đồ tuần tự mô tả quá trình quản trị viên thực hiện quản lý người dùng trong hệ thống, bao gồm việc xem danh sách và cập nhật thông tin người dùng.
+Đầu tiên, quản trị viên truy cập vào chức năng quản lý người dùng trên giao diện hệ thống. Giao diện gửi yêu cầu lấy danh sách người dùng đến bộ điều khiển người dùng . Sau đó, bộ điều khiển gửi yêu cầu đến hệ thống phía sau để truy vấn dữ liệu người dùng từ cơ sở dữ liệu.
+Khi quá trình truy vấn hoàn tất, hệ thống trả về danh sách người dùng cho bộ điều khiển. Bộ điều khiển tiếp nhận dữ liệu và chuyển kết quả về giao diện. Giao diện sau đó hiển thị danh sách người dùng để quản trị viên theo dõi và thao tác.
+Tiếp theo, quản trị viên thực hiện các thao tác quản lý như khóa tài khoản, mở khóa hoặc thay đổi vai trò người dùng. Giao diện gửi yêu cầu cập nhật đến bộ điều khiển người dùng để xử lý. Bộ điều khiển tiếp tục gửi yêu cầu đến hệ thống phía sau nhằm cập nhật thông tin người dùng trong cơ sở dữ liệu.
+Sơ đồ tuần tự thanh toán
+Hình 2.30: Sơ đồ tuần tự thanh toán
+Trong hình 2.30 là biểu đồ tuần tự mô tả quá trình người dùng thực hiện thanh toán và hoàn tất đơn hàng trong hệ thống
+Đầu tiên, người dùng nhập thông tin giao hàng và xác nhận đặt hàng trên giao diện thanh toán. Giao diện tiếp nhận dữ liệu và gửi yêu cầu đặt hàng đến bộ điều khiển đơn hàng (Order Controller) để xử lý.
+Tiếp theo, bộ điều khiển gửi yêu cầu đến hệ thống phía sau để kiểm tra tình trạng tồn kho của các sản phẩm trong đơn hàng. Sau khi kiểm tra, hệ thống trả về kết quả tương ứng.
+Sau đó, hệ thống thực hiện xóa các sản phẩm đã đặt khỏi giỏ hàng của người dùng nhằm đảm bảo dữ liệu được đồng bộ. Khi toàn bộ quá trình xử lý hoàn tất, hệ thống trả về kết quả thành công cho bộ điều khiển và giao diện hiển thị thông tin xác nhận đơn hàng cho người dùng.
+Sơ đồ tuần tự trợ lý AI
+Hình 2.31: Sơ đồ tuần tự trợ lý AI
+Trong hình 2.31 là biểu đồ tuần tự mô tả quá trình người dùng tương tác với trợ lý ảo AI trong hệ thống.
+Đầu tiên, người dùng nhập câu hỏi hoặc yêu cầu tư vấn trên giao diện trò chuyện. Giao diện tiếp nhận nội dung và gửi yêu cầu đến bộ điều khiển AI  thông qua API của hệ thống.
+Tiếp theo, bộ điều khiển AI tiến hành truy vấn lịch sử hội thoại của người dùng từ bộ lưu trữ phiên làm việc nhằm duy trì ngữ cảnh cho cuộc hội thoại. Sau khi nhận được dữ liệu lịch sử, bộ điều khiển kết hợp nội dung câu hỏi mới với lịch sử hội thoại và thông tin bối cảnh của hệ thống để gửi đến dịch vụ AI bên ngoài.
+AI thực hiện xử lý và trả về nội dung phản hồi tương ứng. Bộ điều khiển tiếp nhận kết quả, sau đó cập nhật lại lịch sử hội thoại bao gồm câu hỏi của người dùng và phản hồi của hệ thống vào bộ lưu trữ.
+Cuối cùng, kết quả phản hồi được gửi về giao diện người dùng và hiển thị dưới dạng tin nhắn từ trợ lý ảo. Sơ đồ thể hiện rõ quá trình xử lý hội thoại có ngữ cảnh, đảm bảo phản hồi của hệ thống mang tính liên tục và phù hợp với nhu cầu của người dùng.
+Thiết kế cơ sở dữ liệu
+Giới thiệu về MongoDB
+MongoDB là một hệ quản trị cơ sở dữ liệu NoSQL mã nguồn mở, được thiết kế theo mô hình lưu trữ dữ liệu dạng tài liệu (document-oriented). Không giống như các hệ quản trị cơ sở dữ liệu quan hệ truyền thống sử dụng bảng, hàng và cột, MongoDB lưu trữ dữ liệu dưới dạng các tài liệu JSON , giúp việc biểu diễn dữ liệu linh hoạt và phù hợp với các ứng dụng hiện đại[10].
+Một trong những đặc điểm nổi bật của MongoDB là khả năng lưu trữ dữ liệu không cần định nghĩa cấu trúc cố định. Điều này cho phép các tài liệu trong cùng một collection có thể có cấu trúc khác nhau, từ đó giúp hệ thống dễ dàng mở rộng và thay đổi theo yêu cầu thực tế mà không cần thực hiện các thao tác thay đổi cấu trúc phức tạp như trong cơ sở dữ liệu quan hệ.
+Lý do lựa chọn MongoDB
+Trong quá trình xây dựng hệ thống website bán quần áo và phụ kiện, việc lựa chọn cơ sở dữ liệu cần đáp ứng các yêu cầu về tính linh hoạt, hiệu năng và khả năng mở rộng. Dựa trên đặc điểm của bài toán, MongoDB được lựa chọn làm hệ quản trị cơ sở dữ liệu cho hệ thống.
+Trước hết, MongoDB là cơ sở dữ liệu NoSQL lưu trữ dữ liệu dưới dạng tài liệu, phù hợp với các hệ thống có cấu trúc dữ liệu đa dạng như sản phẩm quần áo, phụ kiện, biến thể kích thước, màu sắc, hình ảnh và các thuộc tính mở rộng. Nhờ không yêu cầu lược đồ cố định, MongoDB cho phép hệ thống dễ dàng bổ sung hoặc thay đổi cấu trúc dữ liệu khi phát sinh yêu cầu mới.
+Bên cạnh đó, MongoDB hỗ trợ tốt việc lưu trữ dữ liệu lồng nhau và mảng, giúp biểu diễn tự nhiên các thông tin như danh sách ảnh sản phẩm, biến thể sản phẩm hoặc các mục trong đơn hàng. Điều này góp phần giảm độ phức tạp trong quá trình truy vấn và nâng cao hiệu quả xử lý dữ liệu.
+Ngoài ra, MongoDB dễ dàng tích hợp với các công nghệ phát triển web hiện đại như Node.js và Express thông qua Mongoose, từ đó hỗ trợ việc xây dựng backend nhanh chóng và thuận tiện hơn. Đồng thời, MongoDB cũng có khả năng mở rộng tốt, phù hợp với định hướng phát triển lâu dài của hệ thống khi số lượng sản phẩm, người dùng và đơn hàng tăng lên.
+Vì những lý do trên, MongoDB là lựa chọn phù hợp cho hệ thống website bán quần áo và phụ kiện, đáp ứng tốt yêu cầu về lưu trữ dữ liệu, hiệu năng xử lý và khả năng mở rộng trong tương lai.
+Lược đồ cơ sở dữ liệu
+Hình 2.31 trình bày lược đồ cơ sở dữ liệu của hệ thống ToBi Shop được thiết kế theo mô hình MongoDB (NoSQL). Lược đồ thể hiện các collection chính như User, Role, Product, Category, Cart, Order, OrderItem, Address, Review và Voucher. Các collection này được liên kết với nhau thông qua các trường tham chiếu (ObjectId), đảm bảo tính nhất quán và khả năng truy xuất dữ liệu hiệu quả. Ví dụ, User liên kết với Role để phân quyền, Product liên kết với Category để phân loại sản phẩm, trong khi Order liên kết với User, Address và các OrderItem để quản lý thông tin đơn hàng.
+Thiết kế cơ sở dữ liệu theo hướng NoSQL giúp hệ thống linh hoạt trong việc lưu trữ dữ liệu dạng lồng nhau như CartItem hoặc OrderItem, giảm thiểu số lượng truy vấn phức tạp. Ngoài ra, việc tách riêng các collection như Voucher, Review giúp hệ thống dễ dàng mở rộng và quản lý các chức năng nâng cao. Cấu trúc này phù hợp với đặc thù của hệ thống thương mại điện tử, đảm bảo hiệu năng, khả năng mở rộng và hỗ trợ tốt cho các nghiệp vụ như mua hàng, đánh giá sản phẩm và áp dụng khuyến mãi.
+Hình 2.32: Lược đồ cơ sở dữ liệu
+Các bảng cơ sở dữ liệu
+Bảng 2.13 trình bày cấu trúc bảng Role trong hệ thống, lưu trữ thông tin về các vai trò như ADMIN, USER, phục vụ cho việc phân quyền. Mỗi vai trò có mã định danh , tên vai trò và mô tả. Bảng này giúp kiểm soát quyền truy cập và đảm bảo mỗi người dùng chỉ thực hiện được các chức năng phù hợp với vai trò của mình.
+Bảng 2.13: Bảng Role
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+_id
+ObjectId
+PK, Required
+Mã định danh duy nhất của vai trò
+name
+String
+Required, Unique
+Tên vai trò, ví dụ: ADMIN, USER
+description
+String
+Optional
+Mô tả chức năng, quyền hạn của vai trò
+Bảng 2.14 trình bày cấu trúc bảng User trong hệ thống, lưu trữ thông tin về tài khoản người dùng nhằm phục vụ cho việc xác thực và quản lý người dùng. Bảng bao gồm các thông tin như họ tên, email, mật khẩu, số điện thoại và ảnh đại diện. Mỗi người dùng được liên kết với bảng Role thông qua role_id để xác định quyền hạn. Ngoài ra, bảng còn quản lý trạng thái hoạt động và thời gian tạo, cập nhật tài khoản, giúp hệ thống theo dõi và kiểm soát người dùng hiệu quả.
+Bảng 2.14: Bảng User
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+_id
+ObjectId
+PK, Required
+Mã định danh người dùng
+name
+String
+Required
+Họ tên người dùng
+email
+String
+Required, Unique
+Địa chỉ email đăng nhập
+password
+String
+Required
+Mật khẩu đã mã hóa
+phone
+String
+Optional
+Số điện thoại người dùng
+avatar
+String
+Optional
+Ảnh đại diện
+role_id
+ObjectId
+FK, Required, Ref Role
+Mã vai trò của người dùng
+isActive
+Boolean
+Required, Default true
+Trạng thái hoạt động của tài khoản
+createdAt
+Date
+Required
+Thời gian tạo tài khoản
+updatedAt
+Date
+Required
+Thời gian cập nhật gần nhất
+Bảng 2.15 trình bày cấu trúc bảng Address trong hệ thống, lưu trữ thông tin về địa chỉ giao hàng của người dùng nhằm phục vụ cho quá trình đặt hàng và vận chuyển. Mỗi địa chỉ bao gồm thông tin người nhận, số điện thoại và địa chỉ chi tiết như tỉnh/thành phố, quận/huyện, phường/xã. Bảng này liên kết với người dùng thông qua user_id, cho phép mỗi người dùng có thể lưu nhiều địa chỉ khác nhau. Ngoài ra, hệ thống còn hỗ trợ đánh dấu địa chỉ mặc định, giúp tối ưu trải nghiệm khi thanh toán.
+Bảng 2.15: Bảng Address
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+_id
+ObjectId
+PK, Required
+Mã định danh địa chỉ
+user_id
+ObjectId
+FK, Required, Ref User
+Mã người dùng sở hữu địa chỉ
+streetAddress
+String
+Required
+Số nhà, tên đường
+ward
+String
+Required
+Phường/Xã
+district
+String
+Required
+Quận/Huyện
+province
+String
+Required
+Tỉnh/Thành phố
+phone
+String
+Required
+Số điện thoại nhận hàng
+isDefault
+Boolean
+Required, Default false
+Đánh dấu địa chỉ mặc định
+Bảng 2.16 trình bày cấu trúc bảng Category trong hệ thống, lưu trữ thông tin về danh mục sản phẩm nhằm phục vụ cho việc phân loại và tổ chức sản phẩm. Mỗi danh mục bao gồm tên, slug và có thể liên kết với danh mục cha thông qua parent_id để tạo cấu trúc phân cấp. Bảng Category giúp hệ thống hiển thị sản phẩm theo từng nhóm một cách logic, đồng thời hỗ trợ người dùng dễ dàng tìm kiếm và duyệt sản phẩm theo nhu cầu.
+Bảng 2.16: Bảng Category
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+_id
+ObjectId
+PK, Required
+Mã định danh danh mục
+name
+String
+Required
+Tên danh mục
+slug
+String
+Required, Unique
+Chuỗi thân thiện URL
+parent_id
+ObjectId
+FK, Optional, Self Ref Category
+Mã danh mục cha
+isActive
+Boolean
+Required, Default true
+Trạng thái hiển thị danh mục
+Bảng 2.17 trình bày cấu trúc bảng Product trong hệ thống, lưu trữ thông tin chi tiết về sản phẩm nhằm phục vụ cho việc quản lý và hiển thị sản phẩm. Mỗi sản phẩm bao gồm các thông tin như tên, mã SKU, mô tả, giá bán, giá gốc, số lượng tồn kho và danh sách hình ảnh. Bảng Product đóng vai trò trung tâm trong hệ thống thương mại điện tử, hỗ trợ các chức năng như tìm kiếm, hiển thị, quản lý sản phẩm, giỏ hàng và đặt hàng
+Bảng 2.17: Bảng Product
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+_id
+ObjectId
+PK, Required
+Mã định danh sản phẩm
+name
+String
+Required
+Tên sản phẩm
+slug
+String
+Required, Unique
+Chuỗi thân thiện URL
+sku
+String
+Optional, Unique
+Mã sản phẩm nội bộ
+description
+String
+Required
+Mô tả chi tiết sản phẩm
+price
+Number
+Required
+Giá bán hiện tại
+originalPrice
+Number
+Optional
+Giá gốc trước giảm giá
+stock
+Number
+Required, Default 0
+Số lượng tồn kho
+images
+Array
+Optional
+Danh sách ảnh sản phẩm
+brand
+String
+Optional
+Thương hiệu
+style
+String
+Optional
+Phong cách / kiểu dáng
+category_id
+ObjectId
+FK, Required, Ref Category
+Mã danh mục sản phẩm
+isPublished
+Boolean
+Required, Default true
+Trạng thái hiển thị trên website
+createdAt
+Date
+Required
+Thời gian tạo sản phẩm
+updatedAt
+Date
+Required
+Thời gian cập nhật gần nhất
+Bảng 2.18 trình bày cấu trúc bảng Review trong hệ thống, lưu trữ thông tin về đánh giá sản phẩm của người dùng nhằm phục vụ cho việc phản hồi và nâng cao chất lượng sản phẩm. Mỗi đánh giá bao gồm mã định danh, người dùng thực hiện đánh giá, sản phẩm được đánh giá, số điểm và nội dung nhận xét. Bảng này giúp hệ thống thu thập ý kiến người dùng, hỗ trợ khách hàng tham khảo trước khi mua và góp phần cải thiện trải nghiệm mua sắm.
+Bảng 2.18: Bảng Review
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+_id
+ObjectId
+PK, Required
+Mã định danh đánh giá
+user_id
+ObjectId
+FK, Required, Ref User
+Người dùng thực hiện đánh giá
+product_id
+ObjectId
+FK, Required, Ref Product
+Sản phẩm được đánh giá
+rating
+Number
+Required, Min 1, Max 5
+Điểm đánh giá
+comment
+String
+Optional
+Nội dung nhận xét
+createdAt
+Date
+Required
+Thời gian tạo đánh giá
+Bảng 2.19 trình bày cấu trúc bảng Voucher trong hệ thống, lưu trữ thông tin về các mã giảm giá nhằm phục vụ cho các chương trình khuyến mãi. Mỗi voucher bao gồm mã code, loại giảm giá, giá trị giảm, điều kiện áp dụng, thời gian hiệu lực và số lượng sử dụng. Bảng này giúp hệ thống quản lý các chiến dịch ưu đãi, kích thích nhu cầu mua sắm và tăng doanh thu.
+Bảng 2.19: Bảng Voucher
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+_id
+ObjectId
+PK, Required
+Mã định danh voucher
+code
+String
+Required, Unique
+Mã giảm giá
+discountType
+String
+Required
+Loại giảm giá: percentage hoặc fixed
+discountValue
+Number
+Required
+Giá trị giảm
+minOrderValue
+Number
+Optional
+Giá trị đơn hàng tối thiểu để áp dụng
+maxDiscount
+Number
+Optional
+Mức giảm tối đa
+quantity
+Number
+Required
+Số lượng voucher còn lại
+startDate
+Date
+Required
+Thời gian bắt đầu hiệu lực
+endDate
+Date
+Required
+Thời gian hết hiệu lực
+isActive
+Boolean
+Required, Default true
+Trạng thái hoạt động
+Bảng 2.20 trình bày cấu trúc bảng Cart trong hệ thống, lưu trữ thông tin về giỏ hàng của người dùng nhằm phục vụ cho quá trình mua sắm. Mỗi giỏ hàng được liên kết với một người dùng và chứa danh sách các sản phẩm đã chọn, cùng với tổng số lượng và tổng giá trị. Bảng này giúp người dùng quản lý sản phẩm trước khi đặt hàng và hỗ trợ quá trình thanh toán diễn ra thuận tiện.
+Bảng 2.20: Bảng Cart
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+_id
+ObjectId
+PK, Required
+Mã định danh giỏ hàng
+user_id
+ObjectId
+FK, Required, Ref User
+Người dùng sở hữu giỏ hàng
+items
+Array
+Optional, Embedded
+Danh sách sản phẩm trong giỏ
+totalItems
+Number
+Required, Default 0
+Tổng số lượng sản phẩm
+totalPrice
+Number
+Required, Default 0
+Tổng giá trị giỏ hàng
+updatedAt
+Date
+Required
+Thời gian cập nhật giỏ hàng gần nhất
+Bảng 2.21 trình bày cấu trúc bảng CartItem trong hệ thống, lưu trữ thông tin chi tiết từng sản phẩm trong giỏ hàng nhằm phục vụ cho việc tính toán và hiển thị. Mỗi mục bao gồm sản phẩm, tên, giá tại thời điểm thêm vào giỏ, số lượng và các thuộc tính như kích cỡ, màu sắc. Bảng này giúp hệ thống quản lý chính xác các sản phẩm trong giỏ hàng.
+Bảng 2.21: Bảng CartItem
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+product_id
+ObjectId
+FK, Required, Ref Product
+Mã sản phẩm
+name
+String
+Required
+Tên sản phẩm tại thời điểm thêm vào giỏ
+price
+Number
+Required
+Giá sản phẩm tại thời điểm thêm vào giỏ
+image
+String
+Optional
+Ảnh đại diện sản phẩm
+quantity
+Number
+Required, Min 1
+Số lượng đặt mua
+size
+String
+Optional
+Kích cỡ sản phẩm
+color
+String
+Optional
+Màu sắc sản phẩm
+Bảng 2.22 trình bày cấu trúc bảng Order trong hệ thống, lưu trữ thông tin về đơn hàng của người dùng nhằm phục vụ cho quá trình xử lý và theo dõi đơn hàng. Mỗi đơn hàng bao gồm người đặt, danh sách sản phẩm, thông tin giao hàng, phương thức thanh toán, trạng thái đơn hàng và tổng giá trị. Bảng này đóng vai trò trung tâm trong nghiệp vụ bán hàng của hệ thống.
+Bảng 2.22: Bảng Order
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+_id
+ObjectId
+PK, Required
+Mã định danh đơn hàng
+user_id
+ObjectId
+FK, Required, Ref User
+Người dùng đặt hàng
+orderCode
+String
+Required, Unique
+Mã đơn hàng
+orderItems
+Array
+Required, Embedded
+Danh sách sản phẩm trong đơn hàng
+shippingInfo
+Object
+Required, Embedded
+Thông tin giao hàng
+paymentMethod
+Enum/String
+Required
+Phương thức thanh toán
+paymentStatus
+Enum/String
+Required
+Trạng thái thanh toán
+orderStatus
+Enum/String
+Required
+Trạng thái đơn hàng
+voucher_id
+ObjectId
+FK, Optional, Ref Voucher
+Voucher được áp dụng
+discountAmount
+Number
+Optional, Default 0
+Số tiền được giảm
+itemsPrice
+Number
+Required
+Tổng tiền sản phẩm
+shippingPrice
+Number
+Required
+Phí vận chuyển
+totalPrice
+Number
+Required
+Tổng thanh toán cuối cùng
+isPaid
+Boolean
+Required, Default false
+Đánh dấu đã thanh toán hay chưa
+paidAt
+Date
+Optional
+Thời điểm thanh toán
+createdAt
+Date
+Required
+Thời gian tạo đơn hàng
+Bảng 2.23 trình bày cấu trúc bảng OrderItem trong hệ thống, lưu trữ thông tin chi tiết từng sản phẩm trong đơn hàng nhằm phục vụ cho việc quản lý và xử lý đơn hàng. Mỗi mục bao gồm sản phẩm, tên, giá tại thời điểm đặt, số lượng và các thuộc tính liên quan. Bảng này giúp đảm bảo tính chính xác của dữ liệu đơn hàng ngay cả khi thông tin sản phẩm thay đổi.
+Bảng 2.23: Bảng OrderItem
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+product_id
+ObjectId
+FK, Required, Ref Product
+Mã sản phẩm nguồn
+name
+String
+Required, Snapshot
+Tên sản phẩm tại thời điểm đặt hàng
+price
+Number
+Required, Snapshot
+Giá sản phẩm tại thời điểm đặt hàng
+image
+String
+Optional, Snapshot
+Ảnh sản phẩm tại thời điểm đặt hàng
+quantity
+Number
+Required
+Số lượng mua
+size
+String
+Optional
+Kích cỡ đặt mua
+color
+String
+Optional
+Màu sắc đặt mua
+Bảng 2.24 trình bày cấu trúc bảng ShippingInfo trong hệ thống, lưu trữ thông tin giao hàng của đơn hàng nhằm phục vụ cho quá trình vận chuyển. Bảng bao gồm thông tin người nhận, số điện thoại và địa chỉ chi tiết như tỉnh/thành phố, quận/huyện, phường/xã. Bảng này giúp đảm bảo việc giao hàng chính xác và hỗ trợ xử lý đơn hàng hiệu quả.
+Bảng 2.24: Bảng ShippingInfo
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+fullName
+String
+Required
+Họ tên người nhận
+phone
+String
+Required
+Số điện thoại nhận hàng
+streetAddress
+String
+Required
+Số nhà, tên đường
+ward
+String
+Required
+Phường/Xã
+district
+String
+Required
+Quận/Huyện
+province
+String
+Required
+Tỉnh/Thành phố
+CHƯƠNG 3: CÀI ĐẶT VÀ KIỂM THỬ ỨNG DỤNG
+Sơ đồ kiến trúc tổng thể
+Trong quá trình xây dựng hệ thống ToBi Shop, việc thiết kế kiến trúc tổng thể đóng vai trò quan trọng nhằm đảm bảo hệ thống hoạt động ổn định, dễ mở rộng và đáp ứng tốt các yêu cầu nghiệp vụ. Kiến trúc hệ thống được xây dựng theo mô hình phân tầng, giúp tách biệt rõ ràng giữa giao diện người dùng, xử lý nghiệp vụ và lưu trữ dữ liệu. Điều này không chỉ giúp tăng tính linh hoạt trong phát triển mà còn nâng cao khả năng bảo trì và mở rộng trong tương lai.
+Hình 3.1: Sơ đồ kiến trúc tổng thể
+Cài đặt hệ thống
+Thư viện và công  sử dụng
+Bảng 3.1: Danh sách thư viện và công cụ sử dụng cho Frontend
+Mục đích
+Công cụ
+Địa chỉ URL
+Thư viện chính xây dựng giao diện
+ReactJS (v19)
+https://react.dev
+Bộ UI Component theo Material Design
+Material UI (MUI)
+https://mui.com
+Framework CSS tối ưu hóa giao diện
+Tailwind CSS (v4)
+https://tailwindcss.com
+Quản lý State và gọi API hiệu quả
+Redux Toolkit / RTK Query
+https://redux-toolkit.js.org
+Điều hướng trang và quản lý Route
+React Router DOM (v7)
+https://reactrouter.com
+Thư viện gọi API (HTTP Client)
+Axios
+https://axios-http.com
+Bộ biểu tượng (Icons) hiện đại
+Lucide React / React Icons
+https://lucide.dev
+Hiển thị thông báo (Toast labels)
+React Toastify
+https://fkhadra.github.io/react-toastify/
+Thư viện vẽ biểu đồ trực quan
+Recharts
+https://recharts.org
+Tạo hiệu ứng chuyển động Premium
+Framer Motion
+https://www.framer.com/motion/
+Công cụ Build và Dev Server tốc độ cao
+Vite
+https://vitejs.dev
+Kiểm tra lỗi và chuẩn hóa mã nguồn
+ESLint
+https://eslint.org
+Bảng 3.2: Danh sách thư viện và công cụ sử dụng cho Backend
+Mục đích
+Công cụ
+Địa chỉ URL
+Môi trường thực thi phía Server
+Node.js
+https://nodejs.org
+Framework xây dựng API RESTful
+Express.js (v5)
+https://expressjs.com
+Hệ quản trị cơ sở dữ liệu NoSQL
+MongoDB Atlas
+https://www.mongodb.com
+Thư viện kết nối & quản lý Schema
+Mongoose
+https://mongoosejs.com
+Xác thực và bảo mật hệ thống
+JWT (JSON Web Token)
+https://jwt.io
+Trí tuệ nhân tạo (Chatbot/Tư vấn)
+Gemini AI (Google)
+https://ai.google.dev
+Lưu trữ hình ảnh và đa phương tiện
+Cloudinary
+https://cloudinary.com
+Tích hợp cổng thanh toán trực tuyến
+VNPay SDK
+https://vnpay.vn
+Mã hóa mật khẩu bảo mật
+Bcrypt.js
+https://www.npmjs.com/package/bcryptjs
+Gửi Email thông báo tự động
+Nodemailer
+https://nodemailer.com
+Xác thực mạng xã hội (Google/FB)
+Passport.js
+https://www.passportjs.org
+Giới thiệu về ReactJS
+ReactJS là một thư viện mã nguồn mở dùng để xây dựng giao diện người dùng, được phát triển bởi Meta  [5]. Thư viện này cho phép phát triển các ứng dụng web hiện đại với cấu trúc linh hoạt, dễ mở rộng và dễ bảo trì. Điểm nổi bật của ReactJS là kiến trúc dựa trên các thành phần, trong đó mỗi component đại diện cho một phần giao diện độc lập, có khả năng tái sử dụng trong toàn hệ thống, giúp giảm thiểu sự trùng lặp mã nguồn và tăng tính tổ chức cho ứng dụng .
+Về mặt hiệu năng, ReactJS áp dụng cơ chế luồng dữ liệu một chiều kết hợp với công nghệ Virtual DOM [6]. Thay vì thao tác trực tiếp với DOM thật, React sử dụng một bản sao ảo để theo dõi sự thay đổi trạng thái. Khi có cập nhật, hệ thống sẽ tiến hành so sánh giữa các phiên bản Virtual DOM và chỉ thực hiện re-render tại những thành phần cần thiết, từ đó cải thiện hiệu suất và giảm tải cho trình duyệt.
+Giới thiệu về NodeJS
+Node.js là một môi trường thời gian chạy JavaScript mã nguồn mở và đa nền tảng.Node.js được thiết kế với mục tiêu xây dựng các ứng dụng mạng có hiệu năng cao và khả năng xử lý đồng thời lớn, đặc biệt phù hợp với các hệ thống web hiện đại.Một trong những đặc điểm nổi bật của Node.js là mô hình xử lý bất đồng bộ (asynchronous) dựa trên cơ chế non-blocking I/O. Thay vì chờ hoàn tất từng tác vụ trước khi xử lý tiếp, Node.js cho phép thực hiện nhiều tác vụ cùng lúc thông qua cơ chế sự kiện (event-driven), giúp tối ưu hiệu suất và giảm thiểu thời gian chờ đợi của hệ thống [7].
+Giới thiệu về Express
+Express.js là một framework web backend miễn phí và mã nguồn mở dành cho Node.js. Nó được thiết kế để xây dựng các ứng dụng web một trang, đa trang, và các API RESTful. Với Express.js, lập trình viên có thể tạo ra các ứng dụng web với kiến trúc mạnh mẽ, dễ bảo trì, và có khả năng mở rộng.
+Express.js cung cấp một tập hợp các tính năng mạnh mẽ để phát triển ứng dụng web và API. Nó giúp quản lý định tuyến, xử lý request (yêu cầu) và response (phản hồi), cũng như tích hợp các middleware hiệu quả. Điều này làm cho việc phát triển web trở nên đơn giản hơn nhiều [8].
+Visual Studio Code
+Visual Studio Code (VS Code) là một trình soạn thảo mã nguồn miễn phí, được phát triển bởi Microsoft, hỗ trợ lập trình đa ngôn ngữ và đa nền tảng [9]. Công cụ này được xây dựng trên nền tảng Electron, cho phép hoạt động ổn định trên nhiều hệ điều hành với hiệu năng tốt. VS Code nổi bật với các tính năng như IntelliSense (gợi ý mã thông minh), Debugger hỗ trợ dò lỗi, tích hợp Git và hệ thống extension phong phú, giúp nâng cao hiệu quả phát triển phần mềm.
+Công nghệ thanh toán trực tuyến
+Hệ thống tích hợp VNPay để hỗ trợ thanh toán trực tuyến, giúp người dùng có thể thực hiện giao dịch ngay trên website thay vì chỉ sử dụng hình thức thanh toán khi nhận hàng (COD). Trong backend, module thanh toán được xây dựng riêng, bao gồm các luồng tạo giao dịch, xử lý kết quả trả về từ cổng thanh toán và cập nhật trạng thái đơn hàng sau khi thanh toán hoàn tất. Việc tích hợp này giúp hệ thống hoàn thiện quy trình mua hàng và nâng cao trải nghiệm người dùng.
+Việc lựa chọn VNPay xuất phát từ tính phổ biến và phù hợp với môi trường thương mại điện tử tại Việt Nam. So với các giải pháp khác như MoMo, ZaloPay, PayPal hoặc Stripe, VNPay có khả năng tích hợp dễ dàng và đáp ứng tốt nhu cầu thanh toán nội địa. Điều này giúp hệ thống có tính thực tiễn cao, đồng thời phù hợp với phạm vi và mục tiêu triển khai của đề tài.
+Công nghệ bảo mật và xác thực
+Hệ thống áp dụng các cơ chế bảo mật ở mức xác thực, phân quyền và bảo vệ dữ liệu người dùng. Mật khẩu người dùng được mã hóa một chiều bằng bcrypt nhằm đảm bảo an toàn lưu trữ, kết hợp với cơ chế salt để chống lại tấn công brute-force. Việc xác thực sử dụng JSON Web Token (JWT), một chuẩn mở cho phép truyền thông tin xác thực dưới dạng token có chữ ký số [11]. Token có thể được gửi qua header Authorization hoặc cookie để xác thực các request từ phía client. Ngoài ra, các token nhạy cảm như token khôi phục mật khẩu được băm bằng SHA-256 nhằm đảm bảo tính toàn vẹn và bảo mật [12].
+Trong quá trình đăng nhập, cookie xác thực được cấu hình với các thuộc tính httpOnly, secure theo môi trường triển khai và sameSite, góp phần giảm nguy cơ truy cập trái phép từ phía trình duyệt. Hệ thống đồng thời triển khai cơ chế phân quyền theo vai trò người dùng, đảm bảo chỉ các tài khoản có quyền phù hợp mới được truy cập các chức năng quản trị. Backend kiểm soát truy cập liên miền thông qua danh sách allowedOrigins, hỗ trợ đăng nhập mạng xã hội bằng Passport.js và ngăn chặn các tài khoản đã bị khóa hoặc vô hiệu hóa dù token vẫn còn hiệu lực.
+Các cơ chế trên giúp bảo vệ dữ liệu nhạy cảm như thông tin tài khoản, địa chỉ giao hàng, lịch sử đơn hàng và trạng thái thanh toán, đồng thời nâng cao mức độ an toàn cho các thao tác quản trị và giao dịch. So với các phương án phức tạp hơn, giải pháp được lựa chọn có ưu điểm là phổ biến, dễ tích hợp với kiến trúc Node.js/Express và phù hợp với phạm vi triển khai của hệ thống.
+Công nghệ Chatbot  với API Gemini
+Để hỗ trợ người dùng tra cứu thông tin và tương tác mua sắm thuận tiện hơn, hệ thống tích hợp một chatbot AI sử dụng API của Gemini. Hướng tiếp cận này cho phép tận dụng khả năng hiểu ngữ cảnh và phản hồi tự nhiên của mô hình ngôn ngữ lớn, đồng thời rút ngắn thời gian triển khai so với việc tự xây dựng hệ thống xử lý ngôn ngữ.
+Trong hệ thống, chatbot được kết nối với dữ liệu sản phẩm nhằm hỗ trợ tư vấn theo nhu cầu thực tế. Người dùng có thể đặt câu hỏi liên quan đến loại sản phẩm, phong cách hoặc nhu cầu sử dụng, từ đó hệ thống phân tích nội dung và đối chiếu với dữ liệu hiện có để đưa ra gợi ý phù hợp. Ví dụ, chatbot có thể đề xuất các sản phẩm theo phong cách cụ thể hoặc các mặt hàng đang được quan tâm. Bên cạnh đó, cơ chế lưu ngữ cảnh hội thoại theo từng phiên giúp duy trì mạch trao đổi trong nhiều lượt tương tác liên tiếp, từ đó nâng cao tính tự nhiên của phản hồi. Chatbot cũng hỗ trợ định hướng mua hàng thông qua việc gợi ý sản phẩm và liên kết tới thao tác thêm vào giỏ hàng, nhưng không thay thế các chức năng nghiệp vụ cốt lõi của hệ thống.
+Giao diện hệ thống
+Màn hình đăng nhập
+Hình 3.2: Màn hình đăng nhập
+Màn hình đăng nhập cho phép người dùng nhập email và mật khẩu để truy cập vào hệ thống ToBi Shop. Hình 3.2 minh họa giao diện của chức năng đăng nhập. Ngoài ra, hệ thống hỗ trợ chức năng ghi nhớ đăng nhập và đăng nhập nhanh thông qua các nền tảng bên thứ ba như Google và Facebook, góp phần nâng cao trải nghiệm người dùng.
+Màn hình đăng ký
+Hình 3.3: Màn hình đăng ký
+Màn hình đăng ký cho phép người dùng tạo tài khoản mới bằng cách nhập các thông tin cơ bản như tên, email, mật khẩu và tải ảnh đại diện. Hình 3.3 minh họa giao diện của chức năng này. Sau khi hoàn tất đăng ký, người dùng có thể sử dụng tài khoản để truy cập và trải nghiệm các chức năng của hệ thống ToBi Shop.
+Màn hình quên mật khẩu
+Hình 3.4: Màn hình quên mật khẩu
+Màn hình quên mật khẩu hỗ trợ người dùng khôi phục tài khoản bằng cách nhập email đã đăng ký. Hình 3.4 minh họa giao diện của chức năng này. Hệ thống sẽ gửi liên kết đặt lại mật khẩu qua email, đảm bảo tính bảo mật và thuận tiện cho người dùng.
+Màn hình trang chủ
+Hình 3.5: Màn hình trang chủ
+Màn hình trang chủ hiển thị banner quảng bá, danh mục sản phẩm và các nội dung nổi bật của hệ thống ToBi Shop. Hình 3.5 minh họa giao diện của trang chủ. Đây là nơi người dùng tiếp cận nhanh các sản phẩm và dễ dàng điều hướng đến các chức năng chính của hệ thống.
+Màn hình  sản phẩm
+Hình 3.6: Màn hình sản phẩm
+Màn hình danh sách sản phẩm cho phép người dùng xem, tìm kiếm và lọc sản phẩm theo danh mục, giá hoặc thuộc tính. Hình 3.6 minh họa giao diện của chức năng này, với khả năng sắp xếp và hiển thị theo dạng lưới, giúp người dùng dễ dàng lựa chọn sản phẩm.
+Màn hình giỏ hàng
+Hình 3.7: Màn hình giỏ hàng
+Màn hình giỏ hàng hiển thị danh sách các sản phẩm đã chọn, cho phép người dùng cập nhật số lượng, xóa sản phẩm và xem tổng tiền. Hình 3.7 minh họa giao diện của chức năng này, nơi người dùng có thể tiến hành đặt hàng và hoàn tất quá trình mua sắm.
+Màn hình thông tin giao hàng
+Hình 3.8: Màn hình thông tin giao hàng
+Màn hình nhập thông tin giao hàng cho phép người dùng cung cấp địa chỉ và số điện thoại. Hình 3.8 minh họa giao diện với các trường nhập liệu rõ ràng, giúp người dùng dễ dàng hoàn tất thông tin. Dữ liệu này đảm bảo quá trình giao hàng chính xác và thuận tiện.
+Màn hình xác nhận đơn hàng
+Hình 3.9: Màn hình xác nhận đơn hàng
+Màn hình xác nhận đơn hàng hiển thị thông tin khách hàng, sản phẩm, phương thức thanh toán và tổng tiền. Hình 3.9 minh họa giao diện cho phép người dùng kiểm tra trước khi đặt hàng, đảm bảo tính chính xác và hạn chế sai sót.
+Màn hình đặt hàng thành công
+Hình 3.10: Màn hình đặt hàng thành công
+Màn hình đặt hàng thành công thông báo kết quả giao dịch và cung cấp mã đơn hàng. Hình 3.10 minh họa giao diện giúp người dùng theo dõi đơn hàng hoặc tiếp tục mua sắm, góp phần nâng cao trải nghiệm.
+Màn hình hồ sơ người dùng
+Hình 3.11: Màn hình hồ sơ người dùng
+Màn hình hồ sơ người dùng hiển thị thông tin cá nhân và các chức năng quản lý tài khoản. Hình 3.11 minh họa giao diện giúp người dùng dễ dàng kiểm soát và cập nhật thông tin.
+Màn hình đơn hàng
+Hình 3.12: Màn hình đơn hàng
+Màn hình đơn hàng của tôi cho phép theo dõi trạng thái đơn hàng. Hình 3.12 minh họa giao diện hỗ trợ xem chi tiết, đánh giá và mua lại sản phẩm, giúp quản lý lịch sử mua sắm hiệu quả.
+Màn hình thông báo
+Hình 3.13: Màn hình thông báo
+Màn hình thông báo hiển thị các cập nhật về đơn hàng và khuyến mãi. Hình 3.13 minh họa giao diện giúp người dùng nắm bắt thông tin nhanh chóng và kịp thời.
+Màn hình voucher
+Hình 3.14: Màn hình voucher
+Màn hình kho voucher cho phép quản lý và sử dụng mã giảm giá. Hình 3.14 minh họa giao diện với các voucher được phân loại rõ ràng, giúp người dùng dễ lựa chọn.
+Màn hình cập nhật hồ sơ
+Hình 3.15: Màn hình cập nhật hồ sơ
+Màn hình cập nhật hồ sơ cho phép chỉnh sửa thông tin cá nhân. Hình 3.15 minh họa giao diện với các trường nhập liệu trực quan, đảm bảo dữ liệu được cập nhật chính xác.
+Màn hình dashboard
+Hình 3.16: Màn hình dashboard
+Màn hình dashboard quản trị cung cấp tổng quan về doanh thu, đơn hàng, sản phẩm và người dùng. Hình 3.16 minh họa giao diện với các biểu đồ và số liệu trực quan, giúp quản trị viên dễ dàng theo dõi hiệu suất hoạt động và đưa ra quyết định kịp thời.
+Màn hình quản lý sản phẩm
+Hình 3.17: Màn hình quản lý sản phẩm
+Màn hình quản lý sản phẩm cho phép quản trị viên thực hiện các thao tác như thêm, sửa, xóa và theo dõi tồn kho. Hình 3.17 minh họa giao diện dạng bảng, giúp quản lý thông tin sản phẩm một cách trực quan và hiệu quả.
+Màn hình quản lý người dùng
+Hình 3.18: Màn hình quản lý người dùng
+Màn hình quản lý người dùng hỗ trợ theo dõi danh sách tài khoản, phân quyền và thay đổi trạng thái hoạt động. Hình 3.18 minh họa giao diện giúp đảm bảo tính bảo mật và kiểm soát hệ thống hiệu quả.
+Màn hình quản lý đơn hàng
+Hình 3.19: Màn hình quản lý đơn hàng
+Màn hình quản lý đơn hàng cho phép theo dõi và cập nhật trạng thái đơn hàng. Hình 3.19 minh họa giao diện hỗ trợ tìm kiếm, lọc và xử lý đơn hàng, giúp quản trị viên quản lý quy trình giao dịch hiệu quả.
+Mành hình quản lý voucher
+Hình 3.20: Màn hình quản lý voucher
+Màn hình quản lý voucher hỗ trợ tạo và theo dõi các chương trình khuyến mãi. Hình 3.20 minh họa giao diện hiển thị danh sách voucher, giúp quản trị viên dễ dàng quản lý và điều chỉnh ưu đãi.
+Màn hình thêm mới voucher
+Hình 3.21: Màn hình thêm mới voucher
+Màn hình thiết lập voucher cho phép cấu hình chi tiết mã giảm giá như giá trị, điều kiện và thời gian áp dụng. Hình 3.21 minh họa giao diện giúp triển khai các chương trình khuyến mãi linh hoạt.
+Mà hình thêm và cập nhật sản phẩm
+Hình 3.22: Màn hình thêm và cập nhật sản phẩm
+Màn hình thêm sản phẩm hỗ trợ nhập thông tin như tên, danh mục, giá và thuộc tính sản phẩm. Hình 3.22 minh họa giao diện nhập liệu, giúp đảm bảo dữ liệu được tổ chức đầy đủ và nhất quán.
+Màn hình thêm sản phẩm bằng file
+Hình 3.23:  Màn hình thêm sản phẩm bằng file
+Màn hình import sản phẩm cho phép tải dữ liệu hàng loạt từ file Excel/CSV. Hình 3.23 minh họa giao diện giúp tiết kiệm thời gian nhập liệu và hỗ trợ quản lý dữ liệu quy mô lớn.
+Màn hình nhập hàng bằng file
+Hình 3.24: Màn hình nhập hàng bằng file
+Màn hình nhập hàng và cập nhật tồn kho hỗ trợ điều chỉnh số lượng sản phẩm trong kho. Hình 3.24 minh họa giao diện giúp đảm bảo dữ liệu tồn kho luôn chính xác và kịp thời.
+Màn hình thông tin shop
+Hình 3.25: Màn hình thông tin shop
+Màn hình cài đặt cho phép cấu hình thông tin cá nhân, cửa hàng và thông báo. Hình 3.25 minh họa giao diện giúp hệ thống vận hành linh hoạt và phù hợp với nhu cầu sử dụng.
+Màn hình chatbot  AI
+Hình 3.26: Màn hình chatbot AI
+Màn hình cài đặt cho phép cấu hình thông tin cá nhân, cửa hàng và thông báo. Hình 3.25 minh họa giao diện giúp hệ thống vận hành linh hoạt và phù hợp với nhu cầu sử dụng.
+Màn hình chi tiết sản phẩm
+Hình 3.27: Màn hình chi tiết sản phẩm
+Màn hình chi tiết sản phẩm hiển thị đầy đủ thông tin như hình ảnh, giá, đánh giá, thuộc tính (size, màu) và mô tả. Hình 3.27 minh họa giao diện cho phép người dùng lựa chọn sản phẩm, thêm vào giỏ hàng hoặc mua ngay, góp phần nâng cao trải nghiệm mua sắm
+Màn hình chi tiết đơn hàng
+Hình 3.28: Màn hình chi tiết đơn hàng
+Màn hình chi tiết đơn hàng cung cấp đầy đủ thông tin về khách hàng, sản phẩm, phương thức thanh toán và tổng tiền. Hình 3.28 minh họa giao diện giúp người dùng theo dõi chi tiết đơn hàng và hỗ trợ xuất hóa đơn PDF, phục vụ nhu cầu lưu trữ và kiểm tra
+Kiểm thử hệ thống
+Kiểm thử đăng  nhập
+Bảng 3.1:  Kiểm thử  đăng  nhập
+Chức năng “Đăng nhập” là một thành phần quan trọng trong hệ thống ToBi Shop, cho phép người dùng truy cập vào các chức năng cá nhân hóa. Bảng 3.3 trình bày các trường hợp kiểm thử của chức năng này. Việc kiểm thử nhằm đảm bảo hệ thống xác thực chính xác thông tin đăng nhập và ngăn chặn các truy cập không hợp lệ. Phạm vi kiểm tra bao gồm định dạng email, độ dài mật khẩu, trạng thái tài khoản và các trường hợp để trống dữ liệu. Tiêu chí đạt là hệ thống chỉ cho phép đăng nhập khi thông tin hợp lệ và hiển thị thông báo lỗi rõ ràng trong các trường hợp sai.
+Bảng 3.3: Kiểm thử đăng nhập
+Mô tả kiểm thử
+Dữ liệu đầu vào
+Kết quả mong đợi
+Đăng nhập hợp lệ
+Email + mật khẩu đúng
+Thành công
+Sai mật khẩu
+Email đúng, pass sai
+Thất bại
+Email trống
+Email rỗng
+Thất bại
+Sai format email
+useremail.com
+Thất bại
+Tài khoản bị khóa
+Email bị khóa
+Thất bại
+Kiểm thử đăng ký
+Chức năng “Đăng ký” cho phép người dùng tạo tài khoản mới trong hệ thống ToBi Shop. Bảng 3.4 trình bày các trường hợp kiểm thử của chức năng này. Việc kiểm thử nhằm đảm bảo dữ liệu đầu vào được xử lý chính xác và không xảy ra trùng lặp. Phạm vi kiểm tra bao gồm định dạng email, độ mạnh mật khẩu và các trường hợp thiếu dữ liệu. Tiêu chí đạt là hệ thống chỉ tạo tài khoản khi thông tin hợp lệ và hiển thị thông báo lỗi rõ ràng khi có sai sót.
+Bảng 3.4: Kiểm thử đăng ký
+Mô tả kiểm thử
+Dữ liệu đầu vào
+Kết quả mong đợi
+Đăng ký hợp lệ
+Email mới, mật khẩu hợp lệ
+Tạo tài khoản thành công
+Email trùng
+Email đã tồn tại
+Báo lỗi
+Mật khẩu yếu
+Mật khẩu ngắn
+Đăng ký thất bại
+Thiếu dữ liệu
+Bỏ trống trường
+Đăng ký thất bại
+Email sai format
+useremail.com
+Đăng ký thất bại
+Kiểm thử chức năng tìm kiếm
+Chức năng tìm kiếm giúp người dùng nhanh chóng tìm thấy sản phẩm mong muốn trong hệ thống ToBi Shop. Bảng 3.5 trình bày các trường hợp kiểm thử của chức năng này. Việc kiểm thử nhằm đảm bảo hệ thống trả về kết quả chính xác và xử lý hiệu quả các trường hợp đặc biệt. Phạm vi kiểm tra bao gồm tìm kiếm theo từ khóa và xử lý các ký tự đặc biệt. Tiêu chí đạt là hệ thống hiển thị đúng kết quả tương ứng hoặc cung cấp thông báo phù hợp khi không có dữ liệu.
+Bảng 3.5: Kiểm thử chức năng tìm kiếm
+Mô tả kiểm thử
+Dữ liệu đầu vào
+Kết quả mong đợi
+Tìm kiếm hợp lệ
+“Áo sơ mi”
+Hiển thị sản phẩm
+Không có kết quả
+xyzabc
+Empty state
+Ký tự đặc biệt
+'%OR 1=1--
+Không lỗi
+Không phân biệt hoa thường
+AO THUN
+Vẫn tìm được
+Kiểm thử chức năng gợi ý sản phẩm
+Chức năng gợi ý sản phẩm hỗ trợ người dùng khi không tìm thấy kết quả phù hợp trong hệ thống ToBi Shop. Bảng 3.6 trình bày các trường hợp kiểm thử của chức năng này. Việc kiểm thử nhằm đảm bảo hệ thống đưa ra các sản phẩm liên quan một cách hợp lý. Phạm vi kiểm tra bao gồm cơ chế fallback và thứ tự ưu tiên theo danh mục. Tiêu chí đạt là hệ thống luôn hiển thị danh sách gợi ý phù hợp nhằm cải thiện trải nghiệm người dùng.
+Bảng 3.6: Kiểm thử chức năng gợi ý sản phẩm
+Mô tả kiểm thử
+Dữ liệu đầu vào
+Kết quả mong đợi
+Fallback search
+Keyword không tồn tại
+Hiển thị sản phẩm liên quan
+Gợi ý đủ số lượng
+Search fail
+≥ 8 sản phẩm
+Ưu tiên danh mục
+Có subcategory
+Gợi ý đúng nhóm
+Fallback nhiều cấp
+Không đủ data
+Gợi ý best-seller
+Kiểm thử chức năng giỏ hàng
+Chức năng giỏ hàng cho phép người dùng lưu trữ và quản lý các sản phẩm trước khi tiến hành thanh toán trong hệ thống ToBi Shop. Bảng 3.7 trình bày các kịch bản kiểm thử tương ứng với chức năng này. Việc kiểm thử nhằm đảm bảo các thao tác thêm, cập nhật và xóa sản phẩm được thực hiện chính xác và đồng bộ. Phạm vi kiểm tra bao gồm số lượng sản phẩm, trạng thái tồn kho và tính nhất quán dữ liệu. Tiêu chí đạt là hệ thống cập nhật thông tin chính xác và phản hồi đúng với các hành động của người dùng.
+Bảng 3.7: Kiểm thử chức năng giỏ hàng
+Mô tả kiểm thử
+Dữ liệu đầu vào
+Kết quả mong đợi
+Thêm vào giỏ
+SP + biến thể
+Thành công
+Vượt tồn kho
+SL > stock
+Báo lỗi
+Giảm SL = 0
+SL về 0
+Xác nhận xóa
+Xóa sản phẩm
+Click delete
+Xóa thành công
+Kiểm thử chức năng thanh toán
+Chức năng thanh toán đảm bảo quá trình tạo đơn hàng diễn ra chính xác trong hệ thống ToBi Shop. Bảng 3.8 trình bày các trường hợp kiểm thử của chức năng này. Việc kiểm thử nhằm kiểm tra các phương thức thanh toán và khả năng xử lý lỗi của hệ thống. Phạm vi kiểm tra bao gồm thanh toán khi nhận hàng (COD) và thanh toán trực tuyến. Tiêu chí đạt là hệ thống tạo đơn hàng chính xác và xử lý đúng trạng thái thanh toán.
+Bảng 3.8: Kiểm thử chức năng thanh toán
+Mô tả kiểm thử
+Dữ liệu đầu vào
+Kết quả mong đợi
+Thanh toán COD
+Thông tin hợp lệ
+Tạo đơn thành công
+Voucher hết hạn
+Mã sai
+Báo lỗi
+Thanh toán VNPay
+Chọn VNPay
+Redirect + thành công
+Hủy giao dịch
+Thoát giữa chừng
+Đơn chưa thanh toán
+Hết hàng khi checkout
+SP hết
+Báo lỗi
+Kiểm thử chức năng đơn hàng
+Chức năng quản lý đơn hàng giúp người dùng theo dõi trạng thái các đơn đã đặt trong hệ thống ToBi Shop. Bảng 3.9 trình bày các trường hợp kiểm thử của chức năng này. Việc kiểm thử nhằm đảm bảo trạng thái đơn hàng được cập nhật chính xác theo từng giai đoạn xử lý. Phạm vi kiểm tra bao gồm chức năng xem chi tiết và hủy đơn hàng. Tiêu chí đạt là hệ thống xử lý đúng nghiệp vụ và không cho phép thực hiện các thao tác không hợp lệ.
+Bảng 3.9: Kiểm thử chức năng đơn hàng
+Mô tả kiểm thử
+Dữ liệu đầu vào
+Kết quả mong đợi
+Xem danh sách đơn
+Truy cập lịch sử
+Hiển thị
+Xem chi tiết
+Click đơn
+Hiển thị chi tiết
+Hủy đơn hợp lệ
+Trạng thái chờ
+Thành công
+Hủy khi đang giao
+Đang giao
+Không cho hủy
+Kiểm thử quản lý sản phẩm
+Chức năng này cho phép quản trị viên quản lý dữ liệu sản phẩm trong hệ thống ToBi Shop. Bảng 3.10 trình bày các trường hợp kiểm thử của chức năng này. Việc kiểm thử nhằm đảm bảo tính chính xác và toàn vẹn của dữ liệu sản phẩm. Phạm vi kiểm tra bao gồm các thao tác thêm, chỉnh sửa và xóa sản phẩm. Tiêu chí đạt là hệ thống chỉ chấp nhận các dữ liệu hợp lệ và xử lý đúng các nghiệp vụ tương ứng.
+Bảng 3.10: Kiểm thử quản lý sản phẩm
+Mô tả kiểm thử
+Dữ liệu đầu vào
+Kết quả mong đợi
+Thêm sản phẩm
+Dữ liệu hợp lệ
+Thành công
+Thiếu dữ liệu
+Thiếu name
+Báo lỗi
+Trùng SKU
+SKU trùng
+Báo lỗi
+Sửa sản phẩm
+Update
+Thành công
+Ẩn sản phẩm
+Hidden
+Không hiển thị
+Kiểm thử quản lý người dùng
+Chức năng “Quản lý người dùng” cho phép quản trị viên giám sát và kiểm soát các tài khoản trong hệ thống ToBi Shop. Bảng 3.11 trình bày các kịch bản kiểm thử tương ứng với chức năng này. Việc kiểm thử nhằm đảm bảo các thao tác quản lý được thực hiện chính xác, đồng thời tuân thủ đúng cơ chế phân quyền. Phạm vi kiểm tra bao gồm hiển thị danh sách người dùng, tìm kiếm, khóa hoặc mở khóa tài khoản và thay đổi vai trò. Tiêu chí đạt là hệ thống cập nhật chính xác trạng thái tài khoản và đảm bảo tính an toàn, nhất quán trong phân quyền.
+Bảng 3.11: Kiểm thử quản lý người dùng
+Mô tả kiểm thử
+Dữ liệu đầu vào
+Kết quả mong đợi
+Xem danh sách người dùng
+Truy cập trang quản lý người dùng
+Hệ thống hiển thị đầy đủ danh sách tài khoản
+Tìm kiếm người dùng
+Nhập tên hoặc email người dùng
+Hệ thống trả về đúng tài khoản phù hợp
+Khóa tài khoản
+Chọn một tài khoản đang hoạt động và nhấn khóa
+Tài khoản được chuyển sang trạng thái bị khóa
+Mở khóa tài khoản
+Chọn một tài khoản đang bị khóa và nhấn mở khóa
+Tài khoản được chuyển về trạng thái hoạt động
+Thay đổi vai trò
+Đổi vai trò từ User sang Admin hoặc ngược lại
+Hệ thống cập nhật vai trò thành công
+Tự khóa tài khoản admin hiện tại
+Admin đang đăng nhập tự khóa chính mình
+Hệ thống từ chối thao tác và hiển thị thông báo phù hợp
+Kiểm thử hiệu năng của hệ thống
+Hình 3.29: Kiểm thử tải hệ thống (Load Testing – 20 người dùng)
+Hình 3.29 trình bày kết quả kiểm thử tải hệ thống bằng công cụ k6 với kịch bản mô phỏng tối đa 20 người dùng đồng thời truy cập. Trong quá trình kiểm thử, hệ thống đã xử lý tổng cộng 1742 HTTP request với 871 vòng lặp được thực thi thành công. Mỗi vòng lặp bao gồm hai thao tác chính là đăng nhập hệ thống và truy vấn danh sách sản phẩm. Thời gian phản hồi trung bình đạt khoảng 52ms, với 95% số request được xử lý dưới 129ms, đồng thời không ghi nhận lỗi phát sinh (tỷ lệ lỗi 0%)
+Kết quả này cho thấy hệ thống backend hoạt động ổn định và có khả năng đáp ứng tốt dưới mức tải trung bình. Việc duy trì tốc độ xử lý khoảng 14 request mỗi giây mà không xảy ra lỗi chứng minh rằng các API đã được tối ưu hiệu năng hiệu quả. Ngoài ra, quy trình kiểm thử phản ánh rõ sự tách biệt giữa giao diện người dùng và lớp xử lý backend, góp phần đảm bảo tính chính xác dữ liệu và khả năng mở rộng của hệ thống trong môi trường thực tế.
+Hình 3.30: Kiểm thử tải hệ thống (Load Testing – 200 người dùng)
+Hình 3.30 trình bày kết quả kiểm thử tải hệ thống với kịch bản mô phỏng tối đa 200 người dùng đồng thời truy cập. Trong quá trình kiểm thử, hệ thống đã xử lý tổng cộng 3668 HTTP request với 1834 vòng lặp được thực thi thành công, tương ứng mỗi vòng lặp bao gồm hai thao tác chính là đăng nhập và truy vấn danh sách sản phẩm. Tốc độ xử lý đạt khoảng 30 request mỗi giây, không ghi nhận lỗi phát sinh (tỷ lệ lỗi 0%). Tuy nhiên, thời gian phản hồi trung bình tăng lên khoảng 2.55 giây, với 95% request có thời gian phản hồi lên tới gần 6 giây.
+Kết quả kiểm thử cho thấy khi số lượng người dùng tăng cao, hiệu năng hệ thống bắt đầu suy giảm rõ rệt, thể hiện qua độ trễ tăng đáng kể so với kịch bản tải thấp. Mặc dù hệ thống vẫn duy trì tính ổn định và không xảy ra lỗi, nhưng thời gian phản hồi cao có thể ảnh hưởng đến trải nghiệm người dùng thực tế. Điều này cho thấy hệ thống backend cần được tối ưu thêm về xử lý đồng thời, caching hoặc nâng cấp hạ tầng để đảm bảo khả năng mở rộng và đáp ứng tốt trong điều kiện tải lớn.
+Hình 3.31: Kiểm thử tải hệ thống (Load Testing – 300 người dùng)
+Hình 3.31 trình bày kết quả kiểm thử tải hệ thống với kịch bản mô phỏng tối đa 300 người dùng đồng thời truy cập. Trong quá trình kiểm thử, hệ thống đã xử lý tổng cộng 1650 HTTP request với 825 vòng lặp hoàn thành, mỗi vòng lặp bao gồm hai thao tác chính là đăng nhập và truy vấn danh sách sản phẩm. Tốc độ xử lý đạt khoảng 33 request mỗi giây, không ghi nhận lỗi phát sinh (tỷ lệ lỗi 0%). Tuy nhiên, thời gian phản hồi trung bình tăng lên khoảng 5.32 giây, với 95% request có thể lên tới gần 16 giây.
+Kết quả kiểm thử cho thấy khi tải hệ thống tiếp tục tăng lên mức cao, hiệu năng bị suy giảm nghiêm trọng, thể hiện qua độ trễ tăng mạnh so với các kịch bản trước. Mặc dù hệ thống vẫn duy trì tính ổn định và không phát sinh lỗi, nhưng thời gian phản hồi lớn có thể gây ảnh hưởng đáng kể đến trải nghiệm người dùng. Điều này cho thấy hệ thống đã đạt đến ngưỡng giới hạn về khả năng xử lý đồng thời, cần có các giải pháp tối ưu như cải thiện truy vấn cơ sở dữ liệu, sử dụng caching hoặc nâng cấp hạ tầng để đảm bảo hiệu năng trong điều kiện tải cao.
+Hình 3.32: Kết quả kiểm thử tương tác toàn diện hệ thống 50 người dùng
+Hình 3.32 trình bày kết quả kiểm thử tương tác toàn diện của hệ thống với kịch bản mô phỏng 50 người dùng đồng thời thực hiện nhiều thao tác như đăng nhập, xem hồ sơ, truy vấn sản phẩm, giỏ hàng, đơn hàng, địa chỉ và trợ lý ảo AI. Hệ thống xử lý tổng cộng 5215 request với 745 vòng lặp hoàn thành. Thời gian phản hồi trung bình khoảng 270ms, tuy nhiên tỷ lệ thành công chỉ đạt 57.14%, trong khi tỷ lệ lỗi chiếm 42.85%.
+Kết quả cho thấy các chức năng cốt lõi như đăng nhập, hồ sơ cá nhân, sản phẩm và đơn hàng vẫn hoạt động ổn định. Ngược lại, các API liên quan đến giỏ hàng, địa chỉ và trợ lý ảo AI gặp lỗi trong quá trình kiểm thử. Điều này cho thấy hệ thống chưa đảm bảo tính ổn định đồng đều giữa các chức năng, đồng thời cần kiểm tra lại cấu hình route, cơ chế xác thực và khả năng chịu tải của các dịch vụ tích hợp ngoài.
+KẾT LUẬN
+Đề tài “Xây dựng hệ thống thương mại điện tử bán quần áo và phụ kiện ToBi Shop” đã hoàn thành các mục tiêu đặt ra. Hệ thống đáp ứng đầy đủ các nghiệp vụ cốt lõi như quản lý sản phẩm, quản lý người dùng, giỏ hàng, đặt hàng và xử lý đơn hàng theo hình thức thanh toán khi nhận hàng (COD). Bên cạnh đó, việc tích hợp trợ lý ảo ToBi Assistant sử dụng mô hình trí tuệ nhân tạo đã góp phần hỗ trợ người dùng trong quá trình tìm kiếm và lựa chọn sản phẩm.
+Hệ thống được thiết kế với cơ chế xác thực bảo mật thông qua JWT, đảm bảo kiểm soát truy cập và phân quyền người dùng rõ ràng. Đồng thời, việc sử dụng Cloudinary trong quản lý tài nguyên hình ảnh giúp tối ưu hóa hiệu năng tải và lưu trữ. Kết quả kiểm thử hiệu năng bằng công cụ k6 cho thấy hệ thống có thể vận hành ổn định trong khoảng từ 20 đến 150 người dùng đồng thời, đáp ứng tốt yêu cầu của một hệ thống thương mại điện tử quy mô vừa trong bối cảnh đồ án tốt nghiệp.
+Mặc dù đạt được các kết quả tích cực, hệ thống vẫn còn một số hạn chế cần được cải thiện. Kết quả kiểm thử tải ở mức 300 người dùng đồng thời cho thấy độ trễ phản hồi (p95 latency) tăng đáng kể, phản ánh sự tồn tại của các điểm nghẽn trong truy vấn cơ sở dữ liệu và tầng xử lý trung gian. Ngoài ra, hệ thống gợi ý sản phẩm hiện tại chủ yếu dựa trên các quy tắc định sẵn, chưa áp dụng các mô hình học máy để cá nhân hóa theo hành vi người dùng.
+Tính năng trợ lý ảo AI vẫn phụ thuộc vào giới hạn của dịch vụ bên thứ ba, dẫn đến nguy cơ bị giới hạn số lượng yêu cầu trong các kịch bản tải cao. Bên cạnh đó, hệ thống chưa tích hợp các cổng thanh toán trực tuyến và chưa tối ưu hoàn toàn trải nghiệm trên thiết bị di động, làm giảm khả năng triển khai trong môi trường thương mại điện tử thực tế.
+Thông qua quá trình thực hiện đề tài, tôi nhận thấy rằng việc thiết kế cơ sở dữ liệu ngay từ đầu có ảnh hưởng trực tiếp đến hiệu năng và khả năng mở rộng của hệ thống. Việc lựa chọn cách tổ chức dữ liệu trong MongoDB,cần được cân nhắc kỹ lưỡng để đảm bảo cân bằng giữa tốc độ truy xuất và tính nhất quán dữ liệu.
+Trong tương lai, hệ thống có thể được cải thiện theo nhiều hướng để nâng cao hiệu năng và khả năng mở rộng. Trước hết, có thể triển khai cơ chế caching bằng Redis để giảm tải cho hệ thống, đồng thời kết hợp với load balancing nhằm phân phối lượng truy cập khi số lượng người dùng tăng cao
+Bên cạnh đó, hệ thống có thể được phát triển theo hướng thông minh hơn bằng cách áp dụng các mô hình học máy để cá nhân hóa gợi ý sản phẩm dựa trên hành vi và lịch sử mua sắm của người dùng. Ngoài ra, việc tích hợp các phương thức thanh toán trực tuyến và phát triển ứng dụng di động sẽ giúp hệ thống hoàn thiện hơn và có khả năng áp dụng trong thực tế cao hơn.
+TÀI LIỆU THAM KHẢO
+Static, E-commerce in Vietnam – Statistics & Facts, 2025: https://www.statista.com/topics/6231/e-commerce-in-vietnam/
+iPrice Group, Vietnam E-commerce Market Report, 2024.: https://iprice.vn/insights/mapofecommerce/
+Bộ Công Thương Việt Nam, Sách trắng Thương mại điện tử Việt Nam, 2024: https://idea.gov.vn/?page=document
+Google, Temasek & Bain & Company, e-Conomy SEA Report, 2024: https://economysea.withgoogle.com/
+Meta, React – A JavaScript library for building user interfaces.Link: https://react.dev/
+React Documentation, Rendering and Virtual DOM.Link: https://react.dev/learn/render-and-commi
+OpenJS Foundation, Node.js Documentation.Link: https://nodejs.org/en/docs
+Express.js, Express – Fast, unopinionated, minimalist web framework.Link: https://expressjs.com/
+Microsoft, Visual Studio Code Documentation.Link: https://code.visualstudio.com/docs
+MongoDB Inc., MongoDB Documentation – Introduction to MongoDB.Link: https://www.mongodb.com/docs/manual/introduction/
+JSON Web Tokens - Introduce: Link: JSON Web Tokens - jwt.io
+bcrypt – A library to help hash passwords. Truy cập tại: https://github.com/kelektiv/node.bcrypt.js
+22
+2
+2
+44
+4
+4
+99
+9
+9

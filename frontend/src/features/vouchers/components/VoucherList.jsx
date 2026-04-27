@@ -1,37 +1,51 @@
 import React from "react";
+import CircularProgress from "@mui/material/CircularProgress";
+import LocalActivityOutlinedIcon from "@mui/icons-material/LocalActivityOutlined";
+import SearchOffOutlinedIcon from "@mui/icons-material/SearchOffOutlined";
 import VoucherCard from "./VoucherCard";
-import { Loader2 } from "lucide-react";
 
 /**
- * Component hiển thị danh sách các thẻ Voucher kèm trạng thái loading/no-data
+ * Component hien thi danh sach cac the Voucher kem trang thai loading/no-data.
  */
-const VoucherList = ({ 
-    vouchers, 
-    loading, 
-    viewMode, 
-    onClaim, 
+const VoucherList = ({
+    vouchers,
+    loading,
+    viewMode,
+    onClaim,
     claimLoading,
     onRetry
 }) => {
+    const hasVouchers = Array.isArray(vouchers) && vouchers.length > 0;
+
     if (loading) {
         return (
             <div className="loading-state">
-                <Loader2 className="animate-spin" size={40} />
+                <CircularProgress size={34} thickness={4} sx={{ color: "#E85D75" }} />
                 <p>Đang tải kho voucher...</p>
             </div>
         );
     }
 
-    if (vouchers.length === 0) {
+    if (!hasVouchers) {
+        const emptyTitle = viewMode === "my_vouchers"
+            ? "Bạn chưa lưu voucher nào"
+            : "Hiện chưa có voucher phù hợp";
+
         return (
             <div className="no-vouchers">
-                <img
-                    src="https://deo.shopeemobile.com/shopee/shopee-pcmall-live-sg/assets/c9f754d67d6a5463.png"
-                    alt="No vouchers"
-                />
-                <p>Không tìm thấy mã giảm giá nào phù hợp</p>
+                <div className="empty-voucher-icon">
+                    {viewMode === "my_vouchers" ? (
+                        <LocalActivityOutlinedIcon />
+                    ) : (
+                        <SearchOffOutlinedIcon />
+                    )}
+                </div>
+                <h3>{emptyTitle}</h3>
+                <p>Các ưu đãi mới sẽ được cập nhật tại đây.</p>
                 {onRetry && (
-                    <button onClick={onRetry} className="retry-btn mt-4">Tải lại</button>
+                    <button type="button" onClick={onRetry} className="retry-btn">
+                        Tải lại
+                    </button>
                 )}
             </div>
         );
@@ -40,7 +54,7 @@ const VoucherList = ({
     return (
         <div className="voucher-list">
             {vouchers.map((voucher) => (
-                <VoucherCard 
+                <VoucherCard
                     key={voucher.id}
                     voucher={voucher}
                     viewMode={viewMode}

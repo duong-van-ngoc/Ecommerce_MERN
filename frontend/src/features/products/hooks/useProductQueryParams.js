@@ -1,11 +1,12 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 function useProductQueryParams() {
   const location = useLocation();
   const navigate = useNavigate();
+  const params = useParams();
 
   const searchParams = new URLSearchParams(location.search);
-  const keyword = searchParams.get("keyword");
+  const keyword = searchParams.get("keyword") || params.keyword || "";
   const categoryFromURL = searchParams.get("category");
   const pageFromURL = parseInt(searchParams.get("page"), 10) || 1;
 
@@ -42,6 +43,7 @@ function useProductQueryParams() {
     categoryFromURL,
     clearProductQuery,
     keyword,
+    locationSearch: location.search,
     pageFromURL,
     updateCategoryParam,
     updatePageParam,

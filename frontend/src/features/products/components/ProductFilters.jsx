@@ -1,3 +1,4 @@
+import React from "react";
 import ProductCategoryFilter from "./ProductCategoryFilter";
 import ProductPriceFilter from "./ProductPriceFilter";
 import ProductRatingFilter from "./ProductRatingFilter";
@@ -16,18 +17,12 @@ function ProductFilters({
   setPriceRange,
 }) {
   return (
-    <>
-      <style>
-        {`
-          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
-          .heading-serif { font-family: 'Playfair+Display', serif; }
-        `}
-      </style>
-
+    <div className="flex flex-col gap-7">
       <ProductCategoryFilter
         handleCategoryToggle={handleCategoryToggle}
         selectedCategories={selectedCategories}
       />
+      <div className="h-px bg-[#E5E7EB]" />
       <ProductPriceFilter
         handleApplyPrice={handleApplyPrice}
         handlePresetClick={handlePresetClick}
@@ -36,13 +31,14 @@ function ProductFilters({
         setPriceError={setPriceError}
         setPriceRange={setPriceRange}
       />
+      <div className="h-px bg-[#E5E7EB]" />
       <ProductRatingFilter
         handleRatingChange={handleRatingChange}
         isMobile={isMobile}
         selectedRating={selectedRating}
       />
-    </>
+    </div>
   );
 }
 
-export default ProductFilters;
+export default React.memo(ProductFilters);

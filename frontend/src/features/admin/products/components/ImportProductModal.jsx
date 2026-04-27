@@ -58,12 +58,12 @@
  */
 import React, { useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { importProducts, importProductsPreCheck } from '@/admin/adminSLice/adminSlice';
+import { importProducts, importProductsPreCheck } from '@/features/admin/state/adminSlice';
 import { selectAdminLoading } from '@/features/admin/state/adminSelectors';
 import { toast } from 'react-toastify';
 import { formatVND } from '@/shared/utils/formatCurrency';
 import * as XLSX from 'xlsx';
-import '@/pages/admin/styles/ImportProductModal.css';
+import '../styles/ImportProductModal.css';
 
 /**
  * ImportProductModal - Modal import sản phẩm từ Excel/CSV

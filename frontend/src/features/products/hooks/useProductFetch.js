@@ -5,10 +5,10 @@ import { getProduct } from "@/features/products/productSlice";
 
 function useProductFetch({
   appliedPrice,
+  category,
   currentPage,
   inStockOnly,
   keyword,
-  selectedCategories,
   selectedRating,
   sortBy,
 }) {
@@ -20,11 +20,10 @@ function useProductFetch({
     productCount = 0,
     hasResults,
     relatedProducts = [],
+    resultPerPage,
   } = useSelector((state) => state.product);
 
   useEffect(() => {
-    const category = selectedCategories.length > 0 ? selectedCategories[0] : null;
-
     dispatch(
       getProduct({
         keyword,
@@ -32,16 +31,14 @@ function useProductFetch({
         category,
         price: appliedPrice,
         sort: sortBy,
-        ratings: selectedRating
-          ? { gte: selectedRating, lt: selectedRating + 1 }
-          : null,
+        ratings: selectedRating ? { gte: selectedRating } : null,
         inStock: inStockOnly,
       }),
     );
   }, [
     dispatch,
     currentPage,
-    selectedCategories,
+    category,
     keyword,
     appliedPrice,
     sortBy,
@@ -56,6 +53,7 @@ function useProductFetch({
     productCount,
     products,
     relatedProducts,
+    resultPerPage,
   };
 }
 

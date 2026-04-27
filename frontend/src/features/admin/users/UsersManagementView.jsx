@@ -1,10 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { fetchAllUsers, updateUserRole, toggleUserStatus } from '@/admin/adminSLice/adminSlice';
+import { fetchAllUsers, updateUserRole, toggleUserStatus } from '@/features/admin/state/adminSlice';
 import { selectAdminUsers } from '@/features/admin/state/adminSelectors';
-import UserDetailModal from '@/admin/components/UserDetailModal';
-import '@/pages/admin/styles/UsersManagement.css';
+import UserDetailModal from '@/features/admin/users/components/UserDetailModal';
+import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
+import ClearOutlinedIcon from '@mui/icons-material/ClearOutlined';
+import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
+import LockOpenOutlinedIcon from '@mui/icons-material/LockOpenOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined';
+import PersonOffOutlinedIcon from '@mui/icons-material/PersonOffOutlined';
+import SearchOffOutlinedIcon from '@mui/icons-material/SearchOffOutlined';
+import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import './styles/UsersManagement.css';
+
+const getUserRole = (user) => user?.role_id?.name || user?.role;
+
+const getUserInitials = (name = '') => {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+
+  if (parts.length === 0) return 'U';
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+
+  return `${parts[0].charAt(0)}${parts[parts.length - 1].charAt(0)}`.toUpperCase();
+};
 
 function UsersManagementView() {
   const dispatch = useDispatch();
@@ -76,7 +97,7 @@ function UsersManagementView() {
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const userRole = user?.role_id?.name || user?.role;
+    const userRole = getUserRole(user);
     const matchesRole = roleFilter === 'all' || userRole === roleFilter;
 
     const matchesStatus = statusFilter === 'all'
@@ -85,6 +106,38 @@ function UsersManagementView() {
 
     return matchesSearch && matchesRole && matchesStatus;
   });
+
+  const totalUsers = users?.length || 0;
+  const activeUsers = users?.filter((user) => user.isActive !== false).length || 0;
+  const lockedUsers = users?.filter((user) => user.isActive === false).length || 0;
+  const adminUsers = users?.filter((user) => getUserRole(user) === 'admin').length || 0;
+
+  const statsCards = [
+    {
+      label: 'Tổng user',
+      value: totalUsers,
+      icon: <GroupOutlinedIcon />,
+      tone: 'neutral',
+    },
+    {
+      label: 'User hoạt động',
+      value: activeUsers,
+      icon: <PersonAddAltOutlinedIcon />,
+      tone: 'success',
+    },
+    {
+      label: 'User bị khóa',
+      value: lockedUsers,
+      icon: <PersonOffOutlinedIcon />,
+      tone: 'danger',
+    },
+    {
+      label: 'Admin',
+      value: adminUsers,
+      icon: <AdminPanelSettingsOutlinedIcon />,
+      tone: 'info',
+    },
+  ];
 
   if (loading) {
     return (
@@ -102,121 +155,178 @@ function UsersManagementView() {
           <h2 className="users-title">Quản lý người dùng</h2>
           <p className="users-subtitle">Quản lý tài khoản, quyền hạn và trạng thái người dùng</p>
         </div>
-      </div>
-
-      <div className="users-filters">
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Tìm kiếm theo tên hoặc email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div className="users-header-meta">
+          <GroupOutlinedIcon />
+          <span>{filteredUsers?.length || 0} người dùng đang hiển thị</span>
         </div>
-        <select
-          className="role-filter"
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
-        >
-          <option value="all">Tất cả quyền</option>
-          <option value="user">Người dùng</option>
-          <option value="admin">Quản trị viên</option>
-        </select>
-        <select
-          className="status-filter"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="all">Tất cả trạng thái</option>
-          <option value="active">Hoạt động</option>
-          <option value="locked">Bị khóa</option>
-        </select>
       </div>
 
-      <div className="users-table-container">
-        <table className="users-table">
-          <thead>
-            <tr>
-              <th>Người dùng</th>
-              <th>Quyền</th>
-              <th>Trạng thái</th>
-              <th>Ngày tham gia</th>
-              <th>Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers && filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => (
-                <tr key={user._id} className={user.isActive === false ? 'row-locked' : ''}>
-                  <td>
-                    <div className="user-info">
-                      <div className="user-avatar">
-                        {user.avatar?.url ? (
-                          <img src={user.avatar.url} alt={user.name} />
-                        ) : (
-                          <span className="avatar-placeholder">
-                            {user.name.charAt(0).toUpperCase()}
-                          </span>
-                        )}
-                      </div>
-                      <div className="user-details">
-                        <div className="user-name">{user.name}</div>
-                        <div className="user-email">{user.email}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <select
-                      className={`role-select ${(user?.role_id?.name || user?.role) === 'admin' ? 'role-admin' : 'role-user'}`}
-                      value={user?.role_id?.name || user?.role}
-                      onChange={(e) => handleRoleChange(user._id, e.target.value)}
-                    >
-                      <option value="user">Người dùng</option>
-                      <option value="admin">Quản trị viên</option>
-                    </select>
-                  </td>
-                  <td>
-                    <span className={`status-badge ${user.isActive === false ? 'status-locked' : 'status-active'}`}>
-                      {user.isActive === false ? 'Bị vô hiệu hóa' : 'Hoạt động'}
-                    </span>
-                  </td>
-                  <td>{new Date(user.createdAt).toLocaleDateString('vi-VN')}</td>
-                  <td>
-                    <div className="action-buttons">
-                      <button
-                        className="btn-view"
-                        onClick={() => handleViewDetail(user)}
-                        title="Xem chi tiết"
-                      >
-                        👁️
-                      </button>
-                      <button
-                        className={`btn-toggle-status ${user.isActive === false ? 'btn-unlock' : 'btn-lock'}`}
-                        onClick={() => handleToggleStatus(user)}
-                        title={user.isActive === false ? 'Mở khóa' : 'Khóa tài khoản'}
-                      >
-                        {user.isActive === false ? '🔓' : '🔒'}
-                      </button>
+      <div className="users-stats-grid">
+        {statsCards.map((stat) => (
+          <div key={stat.label} className={`users-stat-card ${stat.tone}`}>
+            <div className="users-stat-icon">{stat.icon}</div>
+            <div>
+              <span>{stat.label}</span>
+              <strong>{stat.value}</strong>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="users-table-card">
+        <div className="users-toolbar">
+          <div className="users-search-field">
+            <SearchOutlinedIcon />
+            <input
+              type="text"
+              placeholder="Tìm kiếm theo tên hoặc email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                className="users-clear-search"
+                onClick={() => setSearchTerm('')}
+                aria-label="Xóa tìm kiếm"
+              >
+                <ClearOutlinedIcon />
+              </button>
+            )}
+          </div>
+
+          <div className="users-filter-group">
+            <select
+              className="users-filter-select"
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+            >
+              <option value="all">Tất cả quyền</option>
+              <option value="user">Người dùng</option>
+              <option value="admin">Quản trị viên</option>
+            </select>
+            <select
+              className="users-filter-select"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">Tất cả trạng thái</option>
+              <option value="active">Hoạt động</option>
+              <option value="locked">Bị khóa</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="users-table-container">
+          <table className="users-table">
+            <thead>
+              <tr>
+                <th>Người dùng</th>
+                <th>Liên hệ</th>
+                <th>Vai trò</th>
+                <th>Trạng thái</th>
+                <th>Ngày tham gia</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredUsers && filteredUsers.length > 0 ? (
+                filteredUsers.map((user) => {
+                  const userRole = getUserRole(user);
+
+                  return (
+                    <tr key={user._id} className={user.isActive === false ? 'row-locked' : ''}>
+                      <td>
+                        <div className="user-info">
+                          <div className="user-avatar">
+                            {user.avatar?.url ? (
+                              <img src={user.avatar.url} alt={user.name} />
+                            ) : (
+                              <span className="avatar-placeholder">
+                                {getUserInitials(user.name)}
+                              </span>
+                            )}
+                          </div>
+                          <div className="user-details">
+                            <div className="user-name">{user.name}</div>
+                            <div className="user-id">ID: {user._id?.slice(-8).toUpperCase()}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="user-contact">
+                          <span>{user.email}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <select
+                          className={`role-select ${userRole === 'admin' ? 'role-admin' : 'role-user'}`}
+                          value={userRole}
+                          onChange={(e) => handleRoleChange(user._id, e.target.value)}
+                        >
+                          <option value="user">Người dùng</option>
+                          <option value="admin">Quản trị viên</option>
+                        </select>
+                      </td>
+                      <td>
+                        <span className={`status-badge ${user.isActive === false ? 'status-locked' : 'status-active'}`}>
+                          {user.isActive === false ? 'Bị vô hiệu hóa' : 'Hoạt động'}
+                        </span>
+                      </td>
+                      <td className="user-date">{new Date(user.createdAt).toLocaleDateString('vi-VN')}</td>
+                      <td>
+                        <div className="users-action-buttons">
+                          <button
+                            className="users-icon-button view"
+                            onClick={() => handleViewDetail(user)}
+                            title="Xem chi tiết"
+                            type="button"
+                          >
+                            <VisibilityOutlinedIcon />
+                          </button>
+                          <button
+                            className={`users-icon-button ${user.isActive === false ? 'unlock' : 'lock'}`}
+                            onClick={() => handleToggleStatus(user)}
+                            title={user.isActive === false ? 'Mở khóa' : 'Khóa tài khoản'}
+                            type="button"
+                          >
+                            {user.isActive === false ? <LockOpenOutlinedIcon /> : <LockOutlinedIcon />}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="6" className="no-users">
+                    <div className="users-empty-state">
+                      <SearchOffOutlinedIcon />
+                      <strong>Không tìm thấy người dùng nào</strong>
+                      <span>Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc.</span>
                     </div>
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="5" className="no-users">
-                  Không tìm thấy người dùng nào
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="users-table-footer">
+          <span>Hiển thị {filteredUsers?.length || 0} / {users?.length || 0} người dùng</span>
+        </div>
       </div>
 
       {showLockModal && (
         <div className="lock-modal-overlay" onClick={() => setShowLockModal(null)}>
           <div className="lock-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>🔒 Khóa tài khoản</h3>
-            <p>Nhập lý do khóa tài khoản (tùy chọn):</p>
+            <div className="lock-modal-header">
+              <span><LockOutlinedIcon /></span>
+              <div>
+                <h3>Khóa tài khoản</h3>
+                <p>Nhập lý do khóa tài khoản (tùy chọn):</p>
+              </div>
+            </div>
             <textarea
               className="lock-reason-input"
               value={lockReasonInput}

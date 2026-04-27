@@ -21,12 +21,17 @@ function useProductListing() {
     updatePageParam,
   } = useProductQueryParams();
   const [currentPage, setCurrentPage] = useState(pageFromURL);
+
+  useEffect(() => {
+    setCurrentPage((page) => (page === pageFromURL ? page : pageFromURL));
+  }, [pageFromURL]);
   const {
     activeFilterCount,
     appliedPrice,
     handleApplyPrice,
     handleCategoryToggle,
     handleClearAll,
+    handleClearPrice,
     handlePresetClick,
     handleRatingChange,
     handleSortChange,
@@ -51,12 +56,13 @@ function useProductListing() {
     productCount,
     products,
     relatedProducts,
+    resultPerPage,
   } = useProductFetch({
     appliedPrice,
+    category: categoryFromURL,
     currentPage,
     inStockOnly,
     keyword,
-    selectedCategories,
     selectedRating,
     sortBy,
   });
@@ -81,6 +87,7 @@ function useProductListing() {
     handleApplyPrice,
     handleCategoryToggle,
     handleClearAll,
+    handleClearPrice,
     handlePageChange,
     handlePresetClick,
     handleRatingChange,
@@ -100,6 +107,7 @@ function useProductListing() {
     setPriceRange,
     sortBy,
     hasResults,
+    resultPerPage,
   };
 }
 

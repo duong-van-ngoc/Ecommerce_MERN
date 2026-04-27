@@ -1,64 +1,81 @@
 import React from "react";
+import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
+import CardGiftcardOutlinedIcon from "@mui/icons-material/CardGiftcardOutlined";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import ConfirmationNumberOutlinedIcon from "@mui/icons-material/ConfirmationNumberOutlined";
 
 /**
- * Component hiển thị chi tiết một thẻ Voucher
+ * Component hien thi chi tiet mot the Voucher.
  */
 const VoucherCard = ({ voucher, viewMode, onClaim, claimLoading }) => {
-    const isUsed = voucher.status === 'used';
+    const isUsed = voucher.status === "used";
+    const usedPercent = Math.max(0, Math.min(Number(voucher.usedPercent) || 0, 100));
+    const voucherCode = voucher.code || voucher.title || voucher.originalId;
+    const isClaimDisabled = claimLoading || usedPercent >= 100;
 
     return (
-        <div className={`voucher-card type-${voucher.type} ${isUsed ? 'grayscale' : ''}`}>
-            {/* Phần bên trái: Icon & Badge */}
+        <div className={`voucher-card type-${voucher.type} ${isUsed ? "is-used" : ""}`}>
             <div className="voucher-left">
-                <span className="voucher-icon">
-                    {voucher.Icon && <voucher.Icon size={32} />}
-                </span>
+                <div className="voucher-icon">
+                    <ConfirmationNumberOutlinedIcon />
+                </div>
                 <span className="voucher-badge-type">{voucher.badgeLabel}</span>
                 <span className="voucher-discount">{voucher.discount}</span>
             </div>
-            
-            <div className="voucher-divider"></div>
 
-            {/* Phần bên phải: Nội dung & Hành động */}
+            <div className="voucher-divider" aria-hidden="true" />
+
             <div className="voucher-right">
                 <div className="voucher-info-group">
-                    <h3 className="voucher-title">{voucher.title}</h3>
+                    <div className="voucher-title-row">
+                        <h3 className="voucher-title">{voucher.title}</h3>
+                        <span className="voucher-code-badge">{voucherCode}</span>
+                    </div>
                     <p className="voucher-condition">{voucher.condition}</p>
                 </div>
-                
+
                 <div className="voucher-actions">
                     <div className="voucher-status-info">
-                        <span>
-                            {viewMode === "my_vouchers" ? "Voucher đã lưu" : `Đã dùng ${voucher.usedPercent}%`}
+                        <span className="voucher-status-text">
+                            <CardGiftcardOutlinedIcon />
+                            {viewMode === "my_vouchers" ? "Voucher đã lưu" : `Đã dùng ${usedPercent}%`}
                         </span>
-                        <span style={{ textTransform: 'none' }}>{voucher.expiry}</span>
+                        <span className="voucher-expiry">
+                            <AccessTimeOutlinedIcon />
+                            {voucher.expiry}
+                        </span>
                     </div>
-                    
-                    <div className="voucher-progress">
+
+                    <div className="voucher-progress" aria-hidden="true">
                         <div
                             className="progress-fill"
-                            style={{ width: `${voucher.usedPercent}%` }}
+                            style={{ width: `${usedPercent}%` }}
                         />
                     </div>
-                    
+
                     {viewMode === "my_vouchers" ? (
-                        <button 
+                        <button
+                            type="button"
                             className={`use-btn saved ${isUsed ? "used" : ""}`}
                             disabled={isUsed}
                         >
-                            {isUsed ? "Đã sử dụng" : (
+                            {isUsed ? (
+                                "Đã sử dụng"
+                            ) : (
                                 <>
-                                    <span style={{ fontSize: "14px", fontWeight: "bold" }}>✓</span> Đã lưu
+                                    <CheckCircleOutlineIcon fontSize="small" />
+                                    Đã lưu
                                 </>
                             )}
                         </button>
                     ) : (
-                        <button 
+                        <button
+                            type="button"
                             className={`use-btn claim-btn ${claimLoading ? "loading" : ""}`}
-                            disabled={claimLoading || voucher.usedPercent >= 100}
+                            disabled={isClaimDisabled}
                             onClick={() => onClaim(voucher.originalId)}
                         >
-                            {claimLoading ? "Đang xử lý..." : voucher.usedPercent >= 100 ? "Hết lượt" : "Lấy mã ngay"}
+                            {claimLoading ? "Đang lưu..." : usedPercent >= 100 ? "Hết lượt" : "Lưu voucher"}
                         </button>
                     )}
                 </div>

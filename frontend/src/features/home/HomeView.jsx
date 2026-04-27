@@ -1,45 +1,62 @@
+import React from "react";
 import Footer from "@/shared/components/Footer";
+import Navbar from "@/shared/components/Navbar";
 import PageTitle from "@/shared/components/PageTitle";
-import HomeHeader from "@/features/home/components/HomeHeader";
-import HomeCategoryGrid from "@/features/home/components/HomeCategoryGrid";
-import HomeFlashSale from "@/features/home/components/HomeFlashSale";
-import HomeFeaturedProducts from "@/features/home/components/HomeFeaturedProducts";
-import HomeBenefits from "@/features/home/components/HomeBenefits";
-import HomeTestimonials from "@/features/home/components/HomeTestimonials";
-import HomeMobileBottomNav from "@/features/home/components/HomeMobileBottomNav";
-import BannerSlider from "@/sections/home/banner/banner-slider";
+import HeroSection from "./components/HeroSection";
+import HomeBenefits from "./components/HomeBenefits";
+import FeaturedCategories from "./components/FeaturedCategories";
+import FlashSaleSection from "./components/FlashSaleSection";
+import NewArrivalSection from "./components/NewArrivalSection";
+import CollectionBanner from "./components/CollectionBanner";
+import BestSellerSection from "./components/BestSellerSection";
+import HomeMobileBottomNav from "./components/HomeMobileBottomNav";
 import useHomeData from "@/features/home/hooks/useHomeData";
-import {
-  HOME_BENEFITS,
-  HOME_CATEGORIES,
-  HOME_TESTIMONIALS,
-} from "@/features/home/constants/home.constants";
-import "@/features/home/styles/home.css";
+import { HOME_BENEFITS, HOME_CATEGORIES } from "@/features/home/constants/home.constants";
+import { motion } from "framer-motion";
+import "./styles/Home.css";
 
 function HomeView() {
-  const { loading, flashSaleProducts, featuredProducts, saleEndsAt } = useHomeData();
+  const { loading, featuredProducts, flashSaleProducts, saleEndsAt } = useHomeData();
 
   return (
-    <>
-      <PageTitle title="Trang chủ | ToBi Shop" />
-      <HomeHeader />
+    <div className="min-h-screen bg-[#FAFAFA] font-sans text-[#111827] selection:bg-[#E85D75]/20 overflow-x-hidden">
+      <PageTitle title="TOBI SHOP | Modern Fashion Commerce" />
+      <Navbar />
 
-      <main className="home-page">
-        <BannerSlider />
-        <HomeCategoryGrid categories={HOME_CATEGORIES} />
-        <HomeFlashSale
+      <motion.main
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.45 }}
+        className="pb-20 md:pb-0"
+      >
+        <HeroSection />
+
+        <HomeBenefits benefits={HOME_BENEFITS} />
+
+        <FeaturedCategories categories={HOME_CATEGORIES} />
+
+        <FlashSaleSection
           products={flashSaleProducts}
           loading={loading}
           saleEndsAt={saleEndsAt}
         />
-        <HomeFeaturedProducts products={featuredProducts} loading={loading} />
-        <HomeBenefits benefits={HOME_BENEFITS} />
-        <HomeTestimonials testimonials={HOME_TESTIMONIALS} />
-      </main>
+
+        <NewArrivalSection
+          products={featuredProducts}
+          loading={loading}
+        />
+
+        <CollectionBanner />
+
+        <BestSellerSection
+          products={featuredProducts}
+          loading={loading}
+        />
+      </motion.main>
 
       <Footer />
       <HomeMobileBottomNav />
-    </>
+    </div>
   );
 }
 

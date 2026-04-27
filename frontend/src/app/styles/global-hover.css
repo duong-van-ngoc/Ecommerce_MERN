@@ -18,13 +18,13 @@
   left: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(90deg, #ff6b6b, #ee5a6f);
+  background: linear-gradient(90deg, var(--accent-coral), #ee5a6f);
   transition: width 0.3s ease;
   border-radius: 2px;
 }
 
 .hover-link-slide:hover {
-  color: #ff6b6b !important;
+  color: var(--accent-coral) !important;
 }
 
 .hover-link-slide:hover::after,
@@ -34,7 +34,7 @@
 
 /* 2. Gradient Button with Scale & Shadow */
 .hover-btn-gradient {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  background: linear-gradient(135deg, var(--accent-coral) 0%, #ee5a6f 100%);
   color: white !important;
   border: none;
   transition: all 0.3s ease;
@@ -43,7 +43,7 @@
 
 .hover-btn-gradient:hover {
   transform: translateY(-2px) scale(1.02); /* Adjust scale for bigger buttons */
-  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.5);
+  box-shadow: var(--shadow-floating);
   color: white !important;
 }
 
@@ -60,10 +60,10 @@
 }
 
 .hover-icon-btn:hover {
-  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%) !important;
-  color: #ff6b6b !important;
+  background: rgba(255, 107, 90, 0.1) !important;
+  color: var(--accent-coral) !important;
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.15);
+  box-shadow: var(--shadow-soft);
   border-color: transparent !important;
 }
 
@@ -74,13 +74,13 @@
 /* 4. Subdued hover (Soft red outline/text for secondary buttons) */
 .hover-btn-outline {
   transition: all 0.3s ease;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border);
 }
 
 .hover-btn-outline:hover {
-  border-color: #ff6b6b;
-  color: #ff6b6b !important;
-  background: #fef2f2;
+  border-color: var(--accent-coral);
+  color: var(--accent-coral) !important;
+  background: rgba(255, 107, 90, 0.05);
 }
 
 /* 5. Scale up Element (For Cards/Images) */
@@ -91,3 +91,4 @@
 .hover-scale-up:hover {
   transform: scale(1.05);
 }
+

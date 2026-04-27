@@ -50,14 +50,15 @@
  * 
  * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
  *    - Chú ý phần `order.orderItems?.map`: Dấu `?.` cực kỳ quan trọng để tránh lỗi ứng dụng bị "văng" nếu một đơn hàng cũ bị thiếu dữ liệu sản phẩm.
- *    - Link `👁️`: Dẫn sang trang Chi tiết đơn hàng để Admin xem được địa chỉ giao hàng và số điện thoại khách.
+ *    - Link chi tiết: Dẫn sang trang Chi tiết đơn hàng để Admin xem được địa chỉ giao hàng và số điện thoại khách.
  */
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { fetchAllOrders, generateTrackingCode, updateOrderStatus } from '@/admin/adminSLice/adminSlice';
+import { fetchAllOrders, generateTrackingCode, updateOrderStatus } from '@/features/admin/state/adminSlice';
 import { selectAdminOrders } from '@/features/admin/state/adminSelectors';
+import { formatVND } from '@/shared/utils/formatCurrency';
 import { 
     Dialog, 
     DialogTitle, 
@@ -68,7 +69,60 @@ import {
     Typography,
     Box
 } from '@mui/material';
-import '@/pages/admin/styles/OrdersManagement.css';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import ClearOutlinedIcon from '@mui/icons-material/ClearOutlined';
+import CreditCardOutlinedIcon from '@mui/icons-material/CreditCardOutlined';
+import FilterListOutlinedIcon from '@mui/icons-material/FilterListOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
+import PendingActionsOutlinedIcon from '@mui/icons-material/PendingActionsOutlined';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import SearchOffOutlinedIcon from '@mui/icons-material/SearchOffOutlined';
+import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import './styles/OrdersManagement.css';
+
+const ORDER_STATUS_OPTIONS = ['Chờ xử lý', 'Đang giao', 'Đã giao', 'Đã hủy'];
+
+const STATUS_TABS = [
+    { value: 'all', label: 'Tất cả' },
+    ...ORDER_STATUS_OPTIONS.map((status) => ({ value: status, label: status })),
+];
+
+const getCustomerInitial = (name) => (name?.trim()?.charAt(0) || 'K').toUpperCase();
+
+const getPaymentIcon = (method = 'COD') => {
+    const normalizedMethod = method.toLowerCase();
+
+    if (normalizedMethod.includes('cod') || normalizedMethod.includes('nhận')) {
+        return <PaymentsOutlinedIcon />;
+    }
+
+    if (normalizedMethod.includes('vnpay') || normalizedMethod.includes('wallet')) {
+        return <AccountBalanceWalletOutlinedIcon />;
+    }
+
+    return <CreditCardOutlinedIcon />;
+};
+
+const getOrderPaymentMethod = (order) => (
+    order?.paymentMethod ||
+    order?.paymentInfo?.method ||
+    order?.paymentInfo?.provider ||
+    'COD'
+);
+
+const getPaymentLabel = (method = 'COD') => {
+    const normalizedMethod = method.toLowerCase();
+
+    if (normalizedMethod.includes('vnpay')) return 'VNPay';
+    if (normalizedMethod.includes('cod') || normalizedMethod.includes('nhận')) return 'COD';
+
+    return method;
+};
 
 /**
  * OrdersManagement - Trang quản lý đơn hàng
@@ -215,6 +269,54 @@ function OrdersManagementView() {
             });
     }, [orders, searchTerm, statusFilter]);
 
+    const statusCounts = useMemo(() => {
+        const counts = ORDER_STATUS_OPTIONS.reduce((acc, status) => {
+            acc[status] = 0;
+            return acc;
+        }, { all: orders?.length || 0 });
+
+        (orders || []).forEach((order) => {
+            if (Object.prototype.hasOwnProperty.call(counts, order?.orderStatus)) {
+                counts[order.orderStatus] += 1;
+            }
+        });
+
+        return counts;
+    }, [orders]);
+
+    const statsCards = [
+        {
+            label: 'Tổng đơn',
+            value: statusCounts.all,
+            icon: <ReceiptLongOutlinedIcon />,
+            tone: 'neutral',
+        },
+        {
+            label: 'Chờ xử lý',
+            value: statusCounts['Chờ xử lý'],
+            icon: <PendingActionsOutlinedIcon />,
+            tone: 'warning',
+        },
+        {
+            label: 'Đang giao',
+            value: statusCounts['Đang giao'],
+            icon: <LocalShippingOutlinedIcon />,
+            tone: 'info',
+        },
+        {
+            label: 'Đã giao',
+            value: statusCounts['Đã giao'],
+            icon: <CheckCircleOutlineIcon />,
+            tone: 'success',
+        },
+        {
+            label: 'Đã hủy',
+            value: statusCounts['Đã hủy'],
+            icon: <CancelOutlinedIcon />,
+            tone: 'danger',
+        },
+    ];
+
     // Get status badge class
     const getStatusClass = (status) => {
         switch (status) {
@@ -237,137 +339,198 @@ function OrdersManagementView() {
 
     return (
         <div className="orders-page">
-            {/* Header */}
             <div className="orders-header">
                 <div>
-                    <h2 className="orders-title">Quản Lý Đơn Hàng</h2>
-                    <p className="orders-subtitle">Quản lý và theo dõi đơn hàng khách hàng</p>
+                    <h2 className="orders-title">Quản lý đơn hàng</h2>
+                    <p className="orders-subtitle">Theo dõi và cập nhật trạng thái vận hành của cửa hàng.</p>
+                </div>
+                <div className="orders-header-meta">
+                    <ReceiptLongOutlinedIcon />
+                    <span>{filteredOrders.length} đơn đang hiển thị</span>
                 </div>
             </div>
 
-            {/* Search and Filter */}
-            <div className="orders-filters">
-                <div className="search-box">
-                    <input
-                        type="text"
-                        placeholder="Tìm kiếm theo mã đơn hoặc khách hàng..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <select
-                    className="status-filter"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                    <option value="all">Tất cả trạng thái</option>
-                    <option value="Chờ xử lý">Chờ xử lý</option>
-                    <option value="Đang giao">Đang giao</option>
-                    <option value="Đã giao">Đã giao</option>
-                    <option value="Đã hủy">Đã hủy</option>
-                </select>
+            <div className="orders-stats-grid">
+                {statsCards.map((stat) => (
+                    <div key={stat.label} className={`orders-stat-card ${stat.tone}`}>
+                        <div className="orders-stat-icon">{stat.icon}</div>
+                        <div>
+                            <span>{stat.label}</span>
+                            <strong>{stat.value}</strong>
+                        </div>
+                    </div>
+                ))}
             </div>
 
-            {/* Orders Table */}
-            <div className="orders-table-container">
-                <table className="orders-table">
-                    <thead>
-                        <tr>
-                            <th>Mã Đơn</th>
-                            <th>Khách Hàng</th>
-                            <th>Tên Sản Phẩm</th>
-                            <th>Số Lượng</th>
-                            <th>Tổng Tiền</th>
-                            <th>Mã Vận Đơn</th>
-                            <th>Thanh Toán</th>
-                            <th>Trạng Thái</th>
-                            <th>Ngày</th>
-                            <th>Hành Động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredOrders && filteredOrders.length > 0 ? (
-                            filteredOrders.map((order) => (
-                                <tr key={order._id}>
-                                    <td className="order-id">
-                                        {order.orderCode ? (
-                                            <span className="code-highlight">{order.orderCode}</span>
-                                        ) : (
-                                            `#${order._id.slice(-8).toUpperCase()}`
-                                        )}
-                                    </td>
-                                    <td>
-                                        <div>
-                                            <div className="customer-name">{order.user_id?.name || 'Khách vãng lai'}</div>
-                                            <div className="customer-email">{order.user_id?.email || ''}</div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="product-list">
-                                            {order.orderItems?.map((item, index) => (
-                                                <div key={index} className="product-item">
-                                                    {item.name}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="quantity-list">
-                                            {order.orderItems?.map((item, index) => (
-                                                <div key={index} className="quantity-item">
-                                                    x{item.quantity}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </td>
-                                    <td className="order-total">${order.totalPrice?.toLocaleString()}</td>
-                                    <td>
-                                        {order.trackingNumber ? (
-                                            <span className="tracking-badge" title="Nhấn để xem">{order.trackingNumber}</span>
-                                        ) : (
-                                            <span style={{ color: '#9ca3af', fontSize: '12px' }}>Chưa có</span>
-                                        )}
-                                    </td>
-                                    <td>
-                                        <span className="payment-method">{order.paymentInfo?.method || 'COD'}</span>
-                                    </td>
-                                    <td>
-                                        <select
-                                            className={`status-select ${getStatusClass(order.orderStatus)}`}
-                                            value={order.orderStatus}
-                                            onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                                        >
-                                            <option value="Chờ xử lý">Chờ xử lý</option>
-                                            <option value="Đang giao">Đang giao</option>
-                                            <option value="Đã giao">Đã giao</option>
-                                            <option value="Đã hủy">Đã hủy</option>
-                                        </select>
-                                        {order.orderStatus === 'Đã hủy' && order.cancellationReason && (
-                                            <div className="cancel-reason-hint" title={order.cancellationReason}>
-                                                Lý do: {order.cancellationReason.slice(0, 15)}{order.cancellationReason.length > 15 ? '...' : ''}
-                                            </div>
-                                        )}
-                                    </td>
-                                    <td>{new Date(order.createdAt).toLocaleDateString('vi-VN')}</td>
-                                    <td>
-                                        <div className="action-buttons">
-                                            <Link to={`/order/${order._id}`} className="btn-view" title="Xem">
-                                                👁️
-                                            </Link>
+            <div className="orders-status-tabs" aria-label="Lọc trạng thái đơn hàng">
+                {STATUS_TABS.map((tab) => (
+                    <button
+                        key={tab.value}
+                        type="button"
+                        className={`orders-status-tab ${statusFilter === tab.value ? 'active' : ''}`}
+                        onClick={() => setStatusFilter(tab.value)}
+                    >
+                        <span>{tab.label}</span>
+                        <strong>{statusCounts[tab.value] || 0}</strong>
+                    </button>
+                ))}
+            </div>
 
+            <div className="orders-table-card">
+                <div className="orders-toolbar">
+                    <div className="orders-search-field">
+                        <SearchOutlinedIcon />
+                        <input
+                            type="text"
+                            placeholder="Tìm mã đơn hoặc khách hàng..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        {searchTerm && (
+                            <button
+                                type="button"
+                                className="orders-clear-search"
+                                onClick={() => setSearchTerm('')}
+                                aria-label="Xóa tìm kiếm"
+                            >
+                                <ClearOutlinedIcon />
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="orders-filter-select">
+                        <FilterListOutlinedIcon />
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                            <option value="all">Tất cả trạng thái</option>
+                            {ORDER_STATUS_OPTIONS.map((status) => (
+                                <option key={status} value={status}>{status}</option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
+                <div className="orders-table-container">
+                    <table className="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Mã đơn</th>
+                                <th>Khách hàng</th>
+                                <th>Sản phẩm</th>
+                                <th>Tổng tiền</th>
+                                <th>Mã vận đơn</th>
+                                <th>Thanh toán</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredOrders && filteredOrders.length > 0 ? (
+                                filteredOrders.map((order) => {
+                                    const customerName = order.user_id?.name || 'Khách vãng lai';
+                                    const paymentMethod = getOrderPaymentMethod(order);
+                                    const visibleItems = order.orderItems?.slice(0, 2) || [];
+                                    const hiddenItems = Math.max((order.orderItems?.length || 0) - visibleItems.length, 0);
+
+                                    return (
+                                        <tr key={order._id}>
+                                            <td className="order-id">
+                                                <span className="code-highlight">
+                                                    {order.orderCode || `#${order._id.slice(-8).toUpperCase()}`}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div className="customer-cell">
+                                                    <span className="customer-avatar">{getCustomerInitial(customerName)}</span>
+                                                    <div>
+                                                        <div className="customer-name">{customerName}</div>
+                                                        {order.user_id?.email && (
+                                                            <div className="customer-email">{order.user_id.email}</div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className="order-products">
+                                                    {visibleItems.length > 0 ? (
+                                                        visibleItems.map((item, index) => (
+                                                            <div key={`${item.name}-${index}`} className="order-product-line">
+                                                                <span>{item.name || 'Sản phẩm'}</span>
+                                                                <strong>x{item.quantity || 1}</strong>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <div className="order-product-line muted">
+                                                            <span>Chưa có sản phẩm</span>
+                                                        </div>
+                                                    )}
+                                                    {hiddenItems > 0 && (
+                                                        <div className="order-products-more">+{hiddenItems} sản phẩm khác</div>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="order-total">{formatVND(order.totalPrice || 0)}</td>
+                                            <td>
+                                                {order.trackingNumber ? (
+                                                    <span className="tracking-badge" title={order.trackingNumber}>{order.trackingNumber}</span>
+                                                ) : (
+                                                    <span className="tracking-empty">Chưa có</span>
+                                                )}
+                                            </td>
+                                            <td>
+                                                <span className="payment-method">
+                                                    {getPaymentIcon(paymentMethod)}
+                                                    {getPaymentLabel(paymentMethod)}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <select
+                                                    className={`status-select ${getStatusClass(order.orderStatus)}`}
+                                                    value={order.orderStatus}
+                                                    onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                                                >
+                                                    {ORDER_STATUS_OPTIONS.map((status) => (
+                                                        <option key={status} value={status}>{status}</option>
+                                                    ))}
+                                                </select>
+                                                {order.orderStatus === 'Đã hủy' && order.cancellationReason && (
+                                                    <div className="cancel-reason-hint" title={order.cancellationReason}>
+                                                        Lý do: {order.cancellationReason.slice(0, 15)}{order.cancellationReason.length > 15 ? '...' : ''}
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td className="order-date">{new Date(order.createdAt).toLocaleDateString('vi-VN')}</td>
+                                            <td>
+                                                <div className="action-buttons">
+                                                    <Link to={`/order/${order._id}`} className="btn-view" title="Xem chi tiết">
+                                                        <VisibilityOutlinedIcon />
+                                                    </Link>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            ) : (
+                                <tr>
+                                    <td colSpan="9" className="no-orders">
+                                        <div className="orders-empty-state">
+                                            <SearchOffOutlinedIcon />
+                                            <strong>Không tìm thấy đơn hàng nào</strong>
+                                            <span>Thử thay đổi từ khóa tìm kiếm hoặc trạng thái lọc.</span>
                                         </div>
                                     </td>
                                 </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="9" className="no-orders">
-                                    Không tìm thấy đơn hàng nào
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div className="orders-table-footer">
+                    <span>Hiển thị {filteredOrders.length} / {orders?.length || 0} đơn hàng</span>
+                </div>
             </div>
 
             {/* Modal Nhập thông tin bổ sung (Mã vận đơn / Lý do hủy) */}
@@ -376,18 +539,22 @@ function OrdersManagementView() {
                 onClose={() => setOpenModal(false)}
                 maxWidth="sm"
                 fullWidth
+                PaperProps={{ className: 'orders-modal-paper' }}
             >
-                <DialogTitle sx={{ fontWeight: 'bold', borderBottom: '1px solid #eee' }}>
-                    {modalData.status === "Đang giao" ? '📦 Thông tin vận chuyển' : '🚫 Xác nhận hủy đơn'}
+                <DialogTitle className="orders-modal-title">
+                    <span className={modalData.status === "Đang giao" ? 'modal-title-icon shipping' : 'modal-title-icon danger'}>
+                        {modalData.status === "Đang giao" ? <LocalShippingOutlinedIcon /> : <CancelOutlinedIcon />}
+                    </span>
+                    {modalData.status === "Đang giao" ? 'Thông tin vận chuyển' : 'Xác nhận hủy đơn'}
                 </DialogTitle>
-                <DialogContent sx={{ mt: 2 }}>
-                    <Box sx={{ py: 1 }}>
+                <DialogContent className="orders-modal-content">
+                    <Box className="orders-modal-body">
                         <Typography variant="body2" color="text.secondary" gutterBottom>
                             Đơn hàng: <strong>#{modalData.orderId.slice(-6).toUpperCase()}</strong>
                         </Typography>
                         
                         {modalData.status === "Đang giao" ? (
-                            <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start', mt: 2 }}>
+                            <Box className="orders-tracking-field-row">
                                 <TextField
                                     label="Mã vận đơn (Tracking Number)"
                                     fullWidth
@@ -404,7 +571,7 @@ function OrdersManagementView() {
                                     variant="outlined"
                                     onClick={handleGenerateTrackingCode}
                                     disabled={isGeneratingTrackingCode}
-                                    sx={{ minWidth: 120, height: 56, whiteSpace: 'nowrap' }}
+                                    className="orders-generate-code-btn"
                                 >
                                     {isGeneratingTrackingCode ? 'Đang tạo...' : 'Tạo mã'}
                                 </Button>
@@ -424,17 +591,18 @@ function OrdersManagementView() {
                             />
                         )}
                         
-                        <Typography variant="caption" color="primary" sx={{ display: 'block', mt: 1 }}>
-                            ℹ️ Hệ thống sẽ tự động gửi Email thông báo trạng thái này cho khách hàng.
+                        <Typography className="orders-modal-note" variant="caption">
+                            <InfoOutlinedIcon />
+                            Hệ thống sẽ tự động gửi Email thông báo trạng thái này cho khách hàng.
                         </Typography>
                     </Box>
                 </DialogContent>
-                <DialogActions sx={{ p: 2, borderTop: '1px solid #eee' }}>
-                    <Button onClick={() => setOpenModal(false)} color="inherit">Hủy bỏ</Button>
+                <DialogActions className="orders-modal-actions">
+                    <Button className="orders-modal-cancel" onClick={() => setOpenModal(false)} color="inherit">Hủy bỏ</Button>
                     <Button 
                         onClick={handleModalSubmit} 
                         variant="contained" 
-                        color={modalData.status === "Đang giao" ? "primary" : "error"}
+                        className={modalData.status === "Đang giao" ? 'orders-modal-confirm' : 'orders-modal-confirm danger'}
                     >
                         Xác nhận cập nhật
                     </Button>

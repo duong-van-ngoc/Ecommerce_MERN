@@ -56,11 +56,11 @@
  */
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { createProduct, updateProduct } from '@/admin/adminSLice/adminSlice';
+import { createProduct, updateProduct } from '@/features/admin/state/adminSlice';
 import { toast } from 'react-toastify';
 import { getLevel1Categories, getLevel2Categories, getLevel3Categories } from '@/shared/constants/categories';
 import { STYLE_OPTIONS } from '@/shared/constants/aiSettings';
-import '@/pages/admin/styles/ProductFormModal.css';
+import '../styles/ProductFormModal.css';
 
 function ProductFormModal({ product, onClose, initialData }) {
     const dispatch = useDispatch();

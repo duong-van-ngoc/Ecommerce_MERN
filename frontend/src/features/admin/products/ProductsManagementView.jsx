@@ -56,13 +56,24 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { fetchAllProducts, deleteProduct } from '@/admin/adminSLice/adminSlice';
+import AddIcon from '@mui/icons-material/Add';
+import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined';
+import ClearOutlinedIcon from '@mui/icons-material/ClearOutlined';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
+import FilterListOutlinedIcon from '@mui/icons-material/FilterListOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import SearchOffOutlinedIcon from '@mui/icons-material/SearchOffOutlined';
+import StarRoundedIcon from '@mui/icons-material/StarRounded';
+import WhatshotOutlinedIcon from '@mui/icons-material/WhatshotOutlined';
+import { fetchAllProducts, deleteProduct } from '@/features/admin/state/adminSlice';
 import { selectAdminProducts } from '@/features/admin/state/adminSelectors';
 import { formatVND } from '@/shared/utils/formatCurrency';
-import '@/pages/admin/styles/ProductsManagement.css';
-import ProductFormModal from '@/admin/components/ProductFormModal';
-import ImportProductModal from '@/admin/components/ImportProductModal';
-import StockManagement from '@/admin/components/StockManagement';
+import './styles/ProductsManagement.css';
+import ProductFormModal from '@/features/admin/products/components/ProductFormModal';
+import ImportProductModal from '@/features/admin/products/components/ImportProductModal';
+import StockManagement from '@/features/admin/products/components/StockManagement';
 import { STYLE_OPTIONS } from '@/shared/constants/aiSettings';
 
 /**
@@ -120,6 +131,17 @@ function ProductsManagementView() {
         dispatch(fetchAllProducts());
     };
 
+    const getProductCategory = (product) => {
+        if (typeof product.category === 'object') {
+            return product.category?.level1 || 'Chưa phân loại';
+        }
+        return product.category || 'Chưa phân loại';
+    };
+
+    const getProductCode = (product) => {
+        return product.sku || product._id?.slice(-8)?.toUpperCase() || 'NO-ID';
+    };
+
     if (loading && products.length === 0) {
         return (
             <div className="loading-state">
@@ -154,75 +176,87 @@ function ProductsManagementView() {
 
     return (
         <div className="products-page-content">
-            {/* Header */}
             <div className="products-header">
                 <div>
-                    <h2 className="products-page-title">Quản Lý Sản Phẩm</h2>
-                    <p className="products-subtitle">Hiển thị {filteredProducts?.length || 0} / Tổng số {products?.length || 0} sản phẩm</p>
+                    <h2 className="products-page-title">Quản lý sản phẩm</h2>
+                    <p className="products-subtitle">Quản lý kho hàng và trạng thái hiển thị của các bộ sưu tập.</p>
                 </div>
                 <div className="products-header-actions">
-                    <button className="btn-import-product" onClick={() => setShowImportModal(true)}>
-                        📥 Nhập Excel/CSV
+                    <button type="button" className="btn-import-product" onClick={() => setShowImportModal(true)}>
+                        <FileUploadOutlinedIcon />
+                        Nhập Excel/CSV
                     </button>
-                    <button className="btn-add-product" onClick={handleAddNew}>
-                        ➕ Thêm Sản Phẩm
+                    <button type="button" className="btn-add-product" onClick={handleAddNew}>
+                        <AddIcon />
+                        Thêm sản phẩm mới
                     </button>
                 </div>
             </div>
 
-            {/* Tab Navigation */}
             <div className="products-tabs">
                 <button
-                    className={`tab-btn ${activeTab === 'list' ? 'active' : ''}`}
+                    type="button"
+                    className={`products-tab-btn ${activeTab === 'list' ? 'active' : ''}`}
                     onClick={() => setActiveTab('list')}
                 >
-                    📦 Danh sách sản phẩm
+                    <Inventory2OutlinedIcon />
+                    Danh sách sản phẩm
                 </button>
                 <button
-                    className={`tab-btn ${activeTab === 'stock' ? 'active' : ''}`}
+                    type="button"
+                    className={`products-tab-btn ${activeTab === 'stock' ? 'active' : ''}`}
                     onClick={() => setActiveTab('stock')}
                 >
-                    📊 Nhập hàng
+                    <BarChartOutlinedIcon />
+                    Nhập hàng
                 </button>
-                {activeTab === 'list' && (
-                    <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        <span style={{ fontSize: '13px', color: '#666' }}>Lọc phong cách:</span>
-                        <select 
-                            className="form-select" 
-                            style={{ padding: '6px 12px', fontSize: '13px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+            </div>
+
+            {activeTab === 'list' && (
+                <div className="products-filter-bar">
+                    <div className="products-filter-control">
+                        <FilterListOutlinedIcon />
+                        <label htmlFor="products-style-filter">Phong cách</label>
+                        <select
+                            id="products-style-filter"
+                            className="products-style-select"
                             value={filterStyle}
                             onChange={(e) => setFilterStyle(e.target.value)}
                         >
                             <option value="">Tất cả</option>
                             {STYLE_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                         </select>
-                        <button 
+                    </div>
+
+                    <div className="products-filter-meta">
+                        <span>Hiển thị {filteredProducts?.length || 0} / Tổng số {products?.length || 0} sản phẩm</span>
+                        {filterStyle && (
+                            <button
+                            type="button"
                             className="btn-clear-filter"
-                            style={{ background: 'none', border: 'none', color: '#004aeb', fontSize: '13px', cursor: 'pointer', display: filterStyle ? 'block' : 'none' }}
                             onClick={() => setFilterStyle('')}
                         >
+                            <ClearOutlinedIcon />
                             Xóa lọc
                         </button>
+                        )}
                     </div>
-                )}
-            </div>
+                </div>
+            )}
 
-            {/* Tab Content */}
             {activeTab === 'list' && (
                 <>
-                    {/* Products Table */}
                     <div className="products-table-container">
                         <table className="products-table">
                             <thead>
                                 <tr>
-                                    <th>Hình Ảnh</th>
-                                    <th>Tên Sản Phẩm</th>
+                                    <th>Sản phẩm</th>
                                     <th>Giá</th>
                                     <th>Phong cách</th>
-                                    <th>Danh Mục</th>
+                                    <th>Danh mục</th>
                                     <th>Kho</th>
-                                    <th>Đánh Giá</th>
-                                    <th>Hành Động</th>
+                                    <th>Đánh giá</th>
+                                    <th>Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -230,6 +264,7 @@ function ProductsManagementView() {
                                     filteredProducts.map((product) => (
                                         <tr key={product._id}>
                                             <td>
+                                                <div className="product-cell">
                                                 {(() => {
                                                     const imgUrl = product.images?.[0]?.url;
                                                     const placeholder = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><rect fill="%23f4f4f2" width="60" height="60" rx="8"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%23a8a29e" font-size="12" font-family="sans-serif">Chưa có ảnh</text></svg>';
@@ -245,28 +280,36 @@ function ProductsManagementView() {
                                                         />
                                                     );
                                                 })()}
+                                                    <div className="product-cell-info">
+                                                        <strong>{product.name}</strong>
+                                                        <span>{getProductCode(product)}</span>
+                                                    </div>
+                                                </div>
                                             </td>
-                                            <td className="product-name">{product.name}</td>
                                             <td className="product-price">{formatVND(product.price)}</td>
                                             <td>
-                                                <div style={{display: 'flex', flexDirection: 'column', gap: '2px'}}>
+                                                <div className="product-style-stack">
                                                     <span className={`style-badge ${!product.style ? 'no-style' : ''}`}>
                                                         {product.style || 'Chưa gắn tag'}
                                                     </span>
                                                     {product.trending && (
-                                                        <span className="trending-tag">HOT</span>
+                                                        <span className="trending-tag">
+                                                            <WhatshotOutlinedIcon />
+                                                            HOT
+                                                        </span>
                                                     )}
                                                 </div>
                                             </td>
-                                            <td>{typeof product.category === 'object' ? product.category?.level1 : product.category}</td>
+                                            <td className="product-category">{getProductCategory(product)}</td>
                                             <td>
-                                                <span className={`stock-badge ${product.stock < 10 ? 'low' : ''}`}>
+                                                <span className={`product-stock-badge ${product.stock < 10 ? 'low' : ''}`}>
                                                     {product.stock}
                                                 </span>
                                             </td>
                                             <td>
-                                                <span className="rating">
-                                                    ⭐ {product.ratings?.toFixed(1) || 0} ({product.numOfReviews || 0})
+                                                <span className="products-rating">
+                                                    <StarRoundedIcon />
+                                                    {product.ratings?.toFixed(1) || 0} ({product.numOfReviews || 0})
                                                 </span>
                                             </td>
                                             <td>
@@ -275,15 +318,17 @@ function ProductsManagementView() {
                                                         className="btn-edit"
                                                         onClick={() => handleEdit(product)}
                                                         title="Sửa"
+                                                        type="button"
                                                     >
-                                                        ✏️
+                                                        <EditOutlinedIcon />
                                                     </button>
                                                     <button
                                                         className="btn-delete"
                                                         onClick={() => handleDelete(product._id)}
                                                         title="Xóa"
+                                                        type="button"
                                                     >
-                                                        🗑️
+                                                        <DeleteOutlineIcon />
                                                     </button>
                                                 </div>
                                             </td>
@@ -292,9 +337,15 @@ function ProductsManagementView() {
                                 ) : (
                                     <tr>
                                         <td colSpan="7" className="no-products">
-                                            {globalSearchQuery 
-                                                ? `Không tìm thấy sản phẩm nào khớp với "${globalSearchQuery}"` 
-                                                : "Chưa có sản phẩm nào"}
+                                            <div className="products-empty-state">
+                                                <SearchOffOutlinedIcon />
+                                                <strong>
+                                                    {globalSearchQuery
+                                                        ? `Không tìm thấy sản phẩm nào khớp với "${globalSearchQuery}"`
+                                                        : "Chưa có sản phẩm nào"}
+                                                </strong>
+                                                <span>Thử thay đổi bộ lọc hoặc thêm sản phẩm mới vào hệ thống.</span>
+                                            </div>
                                         </td>
                                     </tr>
                                 )}

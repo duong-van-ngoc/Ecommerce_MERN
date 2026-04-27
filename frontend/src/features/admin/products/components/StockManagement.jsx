@@ -54,11 +54,11 @@
  */
 import React, { useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { importStock, updateSingleStock } from '@/admin/adminSLice/adminSlice';
+import { importStock, updateSingleStock } from '@/features/admin/state/adminSlice';
 import { selectAdminProducts } from '@/features/admin/state/adminSelectors';
 import { toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
-import '@/pages/admin/styles/StockManagement.css';
+import '../styles/StockManagement.css';
 
 const normalizeSearchText = (value = '') =>
     String(value)

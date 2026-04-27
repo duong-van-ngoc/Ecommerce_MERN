@@ -3,49 +3,54 @@ import { Route, Routes } from "react-router-dom";
 import RequireAdmin from "@/app/guards/RequireAdmin";
 import RequireAuth from "@/app/guards/RequireAuth";
 import AdminLayout from "@/app/layouts/AdminLayout";
-import Dashboard from "@/Pages/admin/Dashboard";
-import OrdersManagement from "@/Pages/admin/OrdersManagement";
-import ProductsManagement from "@/Pages/admin/ProductsManagement";
-import Settings from "@/Pages/admin/Settings";
-import UsersManagement from "@/Pages/admin/UsersManagement";
-import VouchersManagement from "@/Pages/admin/VouchersManagement";
-import ForgotPassword from "@/Pages/auth/ForgotPassword";
-import Login from "@/Pages/auth/Login";
-import LoginSuccess from "@/Pages/auth/LoginSuccess";
-import Register from "@/Pages/auth/Register";
-import ResetPassword from "@/Pages/auth/ResetPassword";
-import Cart from "@/Pages/checkout/Cart.jsx";
-import OrderConfirm from "@/Pages/checkout/OrderConfirm";
-import OrderSuccess from "@/Pages/checkout/OrderSuccess";
-import Payment from "@/Pages/checkout/Payment";
-import Shipping from "@/Pages/checkout/Shipping.jsx";
-import VnpayResult from "@/Pages/checkout/VnpayResult";
-import MyOrders from "@/Pages/orders/MyOrders";
-import OrderDetails from "@/Pages/orders/OrderDetails";
-import Home from "@/Pages/public/Home.jsx";
-import ProductDetails from "@/Pages/public/ProductDetails.jsx";
-import Products from "@/Pages/public/Products.jsx";
-import Addresses from "@/Pages/user/Addresses";
-import Notifications from "@/Pages/user/Notifications";
-import Profile from "@/Pages/user/Profile";
-import UpdatePassword from "@/Pages/user/UpdatePassword";
-import UpdateProfile from "@/Pages/user/UpdateProfile";
-import VoucherPage from "@/Pages/user/voucher-page";
-import CartAction from "@/features/cart/components/CartAction.jsx";
+
+// Feature-owned routes: old Pages/* files for these screens were bridge/wrapper layer only.
+import Dashboard from "@/features/admin/dashboard/DashboardView";
+import OrdersManagement from "@/features/admin/orders/OrdersManagementView";
+import ProductsManagement from "@/features/admin/products/ProductsManagementView";
+import Settings from "@/features/admin/settings/SettingsView";
+import UsersManagement from "@/features/admin/users/UsersManagementView";
+import VouchersManagement from "@/features/admin/vouchers/VouchersManagementView";
+import Home from "@/features/home/HomeView";
+import Products from "@/features/products/ProductListView";
+import Addresses from "@/features/address/AddressesView";
+import Notifications from "@/features/notifications/NotificationsView";
+import Profile from "@/features/user/ProfileView";
+import UpdatePassword from "@/features/user/UpdatePasswordView";
+import UpdateProfile from "@/features/user/UpdateProfileView";
+import VoucherPage from "@/features/vouchers/VoucherPageView";
+
+// Auth flows — use barrel export from features/auth.
+import { ForgotPasswordView as ForgotPassword, LoginView as Login, LoginSuccessView as LoginSuccess, RegisterView as Register, ResetPasswordView as ResetPassword } from "@/features/auth";
+
+// Cart — dedicated module in features/cart.
+import { CartView as Cart, CartAction } from "@/features/cart";
+// Checkout flow — barrel import from features/checkout.
+import { ShippingView as Shipping, OrderConfirmView as OrderConfirm, OrderSuccessView as OrderSuccess, PaymentView as Payment, VnpayResultView as VnpayResult } from "@/features/checkout";
+// Orders flow — barrel import from features/orders.
+import { MyOrdersView as MyOrders, OrderDetailsView as OrderDetails } from "@/features/orders";
+// Product detail — migrated to dedicated features/product-detail module.
+import { ProductDetailView as ProductDetails } from "@/features/product-detail";
 
 function AppRoutes() {
   return (
     <Routes>
+      {/* Feature storefront routes: legacy Pages/public Home/Products wrappers are no longer active here. */}
       <Route path="/" element={<Home />} />
+
+      {/* Legacy ProductDetails route remains on Pages/* for now. */}
       <Route path="/product/:id" element={<ProductDetails />} />
       <Route path="/products" element={<Products />} />
       <Route path="/products/:keyword" element={<Products />} />
+
+      {/* Legacy auth routes remain on Pages/* for now. */}
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/login/success" element={<LoginSuccess />} />
       <Route path="/password/forgot" element={<ForgotPassword />} />
       <Route path="/password/reset/:token" element={<ResetPassword />} />
 
+      {/* Feature account routes: old Pages/user wrappers are no longer active here. */}
       <Route
         path="/profile"
         element={
@@ -79,6 +84,7 @@ function AppRoutes() {
         }
       />
 
+      {/* Mixed cart/checkout/order group: /cart/add uses a feature action, the rest remain on Pages/* for now. */}
       <Route path="/cart" element={<Cart />} />
       <Route path="/cart/add/:id" element={<CartAction />} />
       <Route
@@ -146,6 +152,7 @@ function AppRoutes() {
         }
       />
 
+      {/* Feature notification/voucher routes: old Pages/user wrappers are no longer active here. */}
       <Route
         path="/notifications"
         element={
@@ -196,6 +203,7 @@ function AppRoutes() {
         }
       />
 
+      {/* Feature admin routes: old Pages/admin wrappers are no longer active here. */}
       <Route
         path="/admin"
         element={

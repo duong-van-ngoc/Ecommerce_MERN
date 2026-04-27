@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import '@/Pages/user/styles/Addresses.css';
-import '@/pages/user/styles/AccountShared.css';
+import '@/features/address/styles/Addresses.css';
+import '@/features/user/styles/AccountShared.css';
 import PageTitle from '@/shared/components/PageTitle';
 import Navbar from '@/shared/components/Navbar';
 import Footer from '@/shared/components/Footer';
-import AccountSidebar from '@/shared/components/AccountSidebar';
+import AccountSidebar from '@/features/user/components/AccountSidebar';
 import Loader from '@/shared/components/Loader';
 import AddressFormDialog from '@/features/address/components/AddressFormDialog';
 import {

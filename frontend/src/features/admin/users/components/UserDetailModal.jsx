@@ -1,3 +1,7 @@
+import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+
 const UserDetailModal = ({ user, isOpen, onClose }) => {
   if (!isOpen || !user) return null;
 
@@ -26,7 +30,9 @@ const UserDetailModal = ({ user, isOpen, onClose }) => {
   return (
     <div className="user-detail-overlay" onClick={onClose}>
       <div className="user-detail-modal" onClick={handleModalContentClick}>
-        <button className="modal-close-btn" onClick={onClose}>&times;</button>
+        <button className="modal-close-btn" onClick={onClose} type="button" aria-label="Đóng">
+          <CloseOutlinedIcon />
+        </button>
 
         <div className="modal-header">
           <div className="user-avatar-large">
@@ -48,7 +54,7 @@ const UserDetailModal = ({ user, isOpen, onClose }) => {
 
         <div className="modal-body">
           <div className="info-section">
-            <h3>Thông tin tài khoản</h3>
+            <h3><InfoOutlinedIcon /> Thông tin tài khoản</h3>
             <div className="info-grid">
               <div className="info-item">
                 <label>Mã người dùng</label>
@@ -86,7 +92,8 @@ const UserDetailModal = ({ user, isOpen, onClose }) => {
 
         <div className="modal-footer">
           <button className="btn-download" onClick={downloadUserInfo}>
-            📥 Tải thông tin
+            <FileDownloadOutlinedIcon />
+            Tải thông tin
           </button>
           <button className="btn-close-modal" onClick={onClose}>Đóng</button>
         </div>

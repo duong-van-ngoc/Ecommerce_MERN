@@ -1,3 +1,5 @@
+// @deprecated Home currently uses "@/features/home/components/BannerSlider".
+// Keep this legacy hero component until historical usage is confirmed safe to remove.
 import React from "react";
 import { Link } from "react-router-dom";
 

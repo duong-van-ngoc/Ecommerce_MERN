@@ -1,19 +1,23 @@
-import "@/Pages/public/styles/Products.css";
+import React from "react";
 
-import Footer from "@/shared/components/Footer";
 import Navbar from "@/shared/components/Navbar";
-import PageTitle from "@/shared/components/PageTitle";
-
-import ProductEmptyState from "./components/ProductEmptyState";
-import ProductFilters from "./components/ProductFilters";
+import Footer from "@/shared/components/Footer";
+import ProductSideNav from "./components/ProductSideNav";
+import ProductToolbar from "./components/ProductToolbar";
 import ProductGrid from "./components/ProductGrid";
 import ProductLoadingGrid from "./components/ProductLoadingGrid";
+import ProductEmptyState from "./components/ProductEmptyState";
 import ProductPagination from "./components/ProductPagination";
-import ProductToolbar from "./components/ProductToolbar";
-import useProductListing from "./hooks/useProductListing";
+import ActiveFilterChips from "./components/ActiveFilterChips";
+import MobileFilterDrawer from "./components/MobileFilterDrawer";
+
+import { PRICE_MAX, PRICE_MIN } from "@/features/products/constants/productFilters.constants";
+import useProductsPage from "./hooks/useProductsPage";
+import "./styles/Products.css";
 
 function ProductListView() {
-  const listing = useProductListing();
+  const listing = useProductsPage();
+
   const filterProps = {
     handleApplyPrice: listing.handleApplyPrice,
     handleCategoryToggle: listing.handleCategoryToggle,
@@ -27,143 +31,85 @@ function ProductListView() {
     setPriceRange: listing.setPriceRange,
   };
 
+  const clearPrice = () => {
+    if (listing.handleClearPrice) {
+      listing.handleClearPrice();
+      return;
+    }
+
+    listing.setPriceRange({ min: PRICE_MIN, max: PRICE_MAX });
+  };
+
   return (
-    <>
-      <PageTitle title="Tất cả sản phẩm" />
+    <div className="products-page-container min-h-screen bg-[#FAFAFA] text-[#111827]">
       <Navbar />
 
-      <div className="mobile-filter-bar">
-        <div className="mobile-filter-container">
-          <button
-            type="button"
-            className="mobile-filter-btn"
-            onClick={() => listing.setIsMobileDrawerOpen(true)}
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M2.5 5.83333H17.5M5.83333 10H14.1667M8.33333 14.1667H11.6667"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeWidth="2"
-              />
-            </svg>
-            <span>Bộ lọc</span>
-            {listing.activeFilterCount > 0 && (
-              <span className="filter-count-badge">{listing.activeFilterCount}</span>
-            )}
-          </button>
-        </div>
-      </div>
+      <main className="mx-auto max-w-[1280px] px-4 pb-20 pt-28 sm:px-6 lg:px-8 lg:pt-32">
+        <ProductToolbar
+          productCount={listing.productCount}
+          keyword={listing.keyword}
+          sortBy={listing.sortBy}
+          onSortChange={listing.handleSortChange}
+          onOpenMobileFilter={() => listing.setIsMobileDrawerOpen(true)}
+        />
 
-      <div className="products-main">
-        <div className="products-wrapper">
-          <div className="products-layout">
-            <aside className="desktop-filters">
-              <div className="filters-sticky">
-                <div className="filter-sidebar">
-                  <div className="filter-header">
-                    <h2>Bộ lọc</h2>
-                    {listing.activeFilterCount > 0 && (
-                      <button
-                        type="button"
-                        className="clear-all-btn"
-                        onClick={listing.handleClearAll}
-                      >
-                        Xóa tất cả
-                      </button>
-                    )}
-                  </div>
-                  <ProductFilters {...filterProps} />
+        <ActiveFilterChips
+          selectedCategories={listing.selectedCategories}
+          keyword={listing.keyword}
+          priceRange={listing.priceRange}
+          onCategoryToggle={listing.handleCategoryToggle}
+          onClearKeyword={listing.handleClearAll} // Simplify for now
+          onClearPrice={clearPrice}
+          onClearAll={listing.handleClearAll}
+        />
+
+        <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
+          <ProductSideNav
+            {...filterProps}
+            onCategoryToggle={listing.handleCategoryToggle}
+          />
+
+          <div className="min-w-0 flex-1">
+            {listing.loading ? (
+              <div>
+                <ProductLoadingGrid count={9} />
+              </div>
+            ) : listing.products && listing.products.length > 0 ? (
+              <div className="space-y-12">
+                <ProductGrid products={listing.products} />
+
+                <div className="product-pagination-container">
+                  <ProductPagination
+                    currentPage={listing.currentPage}
+                    resultPerPage={listing.resultPerPage}
+                    totalItems={listing.productCount}
+                    onPageChange={listing.handlePageChange}
+                  />
                 </div>
               </div>
-            </aside>
-
-            <div
-              className={`mobile-drawer-overlay ${
-                listing.isMobileDrawerOpen ? "" : "hidden"
-              }`}
-            >
-              <div
-                className={`drawer-backdrop ${
-                  listing.isMobileDrawerOpen ? "show" : ""
-                }`}
-                onClick={() => listing.setIsMobileDrawerOpen(false)}
-              />
-              <div
-                className={`mobile-drawer ${
-                  listing.isMobileDrawerOpen ? "open" : ""
-                }`}
-              >
-                <div className="drawer-header">
-                  <h2>Bộ lọc</h2>
-                  <button
-                    type="button"
-                    className="close-drawer-btn"
-                    onClick={() => listing.setIsMobileDrawerOpen(false)}
-                  >
-                    ×
-                  </button>
-                </div>
-                <ProductFilters {...filterProps} isMobile />
-                <div className="drawer-actions">
-                  <button
-                    type="button"
-                    className="drawer-clear-btn"
-                    onClick={listing.handleClearAll}
-                  >
-                    Xóa tất cả
-                  </button>
-                  <button
-                    type="button"
-                    className="drawer-apply-btn"
-                    onClick={() => listing.setIsMobileDrawerOpen(false)}
-                  >
-                    Áp dụng
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="products-content">
-              <ProductToolbar
-                onSortChange={listing.handleSortChange}
-                productCount={listing.productCount}
-                productsCount={listing.products.length}
-                sortBy={listing.sortBy}
-              />
-
-              {listing.loading && <ProductLoadingGrid />}
-
-              {!listing.loading && !listing.hasResults && (
+            ) : (
+              <div>
                 <ProductEmptyState
                   keyword={listing.keyword}
                   onResetFilters={listing.handleClearAll}
                   relatedProducts={listing.relatedProducts}
                 />
-              )}
-
-              {!listing.loading && listing.products.length > 0 && (
-                <>
-                  <ProductGrid products={listing.products} />
-                  <ProductPagination
-                    currentPage={listing.currentPage}
-                    onPageChange={listing.handlePageChange}
-                  />
-                </>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      </main>
+
+      <MobileFilterDrawer
+        isOpen={listing.isMobileDrawerOpen}
+        onClose={() => listing.setIsMobileDrawerOpen(false)}
+        filterProps={filterProps}
+        activeFilterCount={listing.activeFilterCount}
+        onClearAll={listing.handleClearAll}
+      />
 
       <Footer />
-    </>
+    </div>
   );
 }
 

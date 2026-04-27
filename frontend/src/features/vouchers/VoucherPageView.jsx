@@ -3,8 +3,10 @@ import AccountSidebar from "@/features/user/components/AccountSidebar";
 import PageTitle from "@/shared/components/PageTitle";
 import Navbar from "@/shared/components/Navbar";
 import Footer from "@/shared/components/Footer";
-import "@/Pages/user/styles/Vouchers.css";
-import "@/Pages/user/styles/AccountShared.css";
+import CardGiftcardOutlinedIcon from "@mui/icons-material/CardGiftcardOutlined";
+import LocalActivityOutlinedIcon from "@mui/icons-material/LocalActivityOutlined";
+import "@/features/vouchers/styles/Vouchers.css";
+import "@/features/user/styles/AccountShared.css";
 
 // Import từ module Voucher (Mô hình mới)
 import { useVouchers } from "@/features/vouchers/hooks/useVouchers";
@@ -37,7 +39,7 @@ const VoucherPageView = () => {
         <>
             <PageTitle title="Kho Voucher" />
             <Navbar />
-            <div className="account-container">
+            <div className="account-container voucher-page">
                 <div className="account-content">
                     <AccountSidebar />
                     <div className="account-main">
@@ -47,8 +49,7 @@ const VoucherPageView = () => {
                             <div className="hero-content">
                                 <span className="hero-badge">Trung tâm ưu đãi</span>
                                 <h1 className="hero-title">
-                                    Kho voucher <br />
-                                    <span className="hero-title-highlight">của bạn</span>
+                                    Kho voucher của bạn
                                 </h1>
                                 <p className="hero-desc">
                                     Khám phá các ưu đãi đang có và lưu voucher phù hợp cho lần mua sắm tiếp theo.
@@ -70,15 +71,19 @@ const VoucherPageView = () => {
                         {/* SELECTOR CHẾ ĐỘ (My Vouchers vs Center) */}
                         <div className="voucher-mode-selector">
                             <button 
+                                type="button"
                                 className={`mode-btn ${viewMode === "my_vouchers" ? "active" : ""}`}
                                 onClick={() => { setViewMode("my_vouchers"); setActiveTab("all"); }}
                             >
+                                <LocalActivityOutlinedIcon fontSize="small" />
                                 Kho voucher của tôi
                             </button>
                             <button 
+                                type="button"
                                 className={`mode-btn center ${viewMode === "voucher_center" ? "active" : ""}`}
                                 onClick={() => { setViewMode("voucher_center"); setActiveTab("all"); }}
                             >
+                                <CardGiftcardOutlinedIcon fontSize="small" />
                                 Voucher nổi bật
                             </button>
                         </div>
@@ -88,6 +93,7 @@ const VoucherPageView = () => {
                             <div className="account-tabs">
                                 {tabs.map(tab => (
                                     <button
+                                        type="button"
                                         key={tab.id}
                                         className={`account-tab ${activeTab === tab.id ? "active" : ""}`}
                                         onClick={() => setActiveTab(tab.id)}

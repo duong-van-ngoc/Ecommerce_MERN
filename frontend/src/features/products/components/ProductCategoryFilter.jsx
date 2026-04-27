@@ -1,68 +1,66 @@
-import { PRODUCT_CATEGORY_TREE } from "@/features/products/constants/productFilters.constants";
+import React from "react";
+import { categoryTree } from "../config/categoryTree";
 
 function ProductCategoryFilter({ handleCategoryToggle, selectedCategories }) {
-  const renderCategoryLink = (label, filterValue, isBold = false) => {
-    const isActive = selectedCategories.includes(filterValue);
+  const renderCategoryLink = (item) => {
+    const isActive = selectedCategories.includes(item.value);
 
     return (
       <button
+        key={item.value}
         type="button"
-        className={`hover-link-slide text-left inline-block ${
-          isActive || isBold ? "font-medium text-black active" : "text-gray-600"
+        className={`w-full rounded-lg px-3 py-2 text-left text-sm transition ${
+          isActive
+            ? "bg-[#E85D75]/10 font-semibold text-[#E85D75]"
+            : "font-medium text-[#6B7280] hover:bg-[#FAFAFA] hover:text-[#111827]"
         }`}
         onClick={(event) => {
           event.preventDefault();
-          handleCategoryToggle(filterValue);
+          handleCategoryToggle(item.value);
         }}
       >
-        {label}
+        {item.label}
       </button>
     );
   };
 
-  const renderCategoryItems = (items = []) =>
-    items.map((item) => (
-      <li key={item.value}>
-        {renderCategoryLink(item.label, item.value, item.isBold)}
-      </li>
-    ));
-
   return (
-    <div className="filter-section">
-      <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-6">
-        Khám Phá Danh Mục
-      </h2>
-      <div className="space-y-8">
-        {PRODUCT_CATEGORY_TREE.map((section) => (
-          <div key={section.title}>
-            <h3 className="text-sm font-semibold mb-4 flex items-center justify-between group cursor-pointer">
-              {section.title}
+    <section className="space-y-5">
+      <div>
+        <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#6B7280]">
+          Danh mục
+        </p>
+        <h2 className="mt-2 text-lg font-semibold text-[#111827]">
+          Khám phá danh mục
+        </h2>
+      </div>
+
+      <div className="space-y-6">
+        {categoryTree.map((section) => (
+          <div key={section.id} className="space-y-3">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-[#111827]">
+              {section.label}
             </h3>
 
-            {section.groups ? (
-              <ul className="space-y-4 pl-1 text-sm text-gray-600">
-                {section.groups.map((group) => (
-                  <li key={group.title}>
-                    <span className="block font-medium text-black mb-2">
-                      {group.title}
-                    </span>
-                    <ul className="pl-3 space-y-2 border-l border-gray-100">
-                      {renderCategoryItems(group.items)}
-                    </ul>
-                  </li>
-                ))}
-                {renderCategoryItems(section.items)}
-              </ul>
-            ) : (
-              <ul className="space-y-3 pl-1 text-sm text-gray-600">
-                {renderCategoryItems(section.items)}
-              </ul>
-            )}
+            <div className="space-y-4">
+              {section.groups?.map((group) => (
+                <div key={group.label} className="space-y-2">
+                  <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-[#6B7280]">
+                    {group.label}
+                  </span>
+                  <div className="space-y-1">{group.items.map(renderCategoryLink)}</div>
+                </div>
+              ))}
+
+              {section.items && (
+                <div className="space-y-1">{section.items.map(renderCategoryLink)}</div>
+              )}
+            </div>
           </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 }
 
-export default ProductCategoryFilter;
+export default React.memo(ProductCategoryFilter);

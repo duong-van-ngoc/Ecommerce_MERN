@@ -1,9 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   PRICE_MAX,
   PRICE_MIN,
 } from "@/features/products/constants/productFilters.constants";
+
+function getCategoriesFromURL(categoryFromURL) {
+  return categoryFromURL ? [categoryFromURL] : [];
+}
+
+function areCategoriesEqual(first, second) {
+  return first.length === second.length && first.every((item, index) => item === second[index]);
+}
 
 function useProductFilters({
   categoryFromURL,
@@ -12,7 +20,7 @@ function useProductFilters({
   updateCategoryParam,
 }) {
   const [selectedCategories, setSelectedCategories] = useState(
-    categoryFromURL ? [categoryFromURL] : [],
+    getCategoriesFromURL(categoryFromURL),
   );
   const [priceRange, setPriceRange] = useState({
     min: PRICE_MIN,
@@ -23,6 +31,16 @@ function useProductFilters({
   const [selectedRating, setSelectedRating] = useState(null);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [sortBy, setSortBy] = useState("newest");
+
+  useEffect(() => {
+    const nextCategories = getCategoriesFromURL(categoryFromURL);
+
+    setSelectedCategories((currentCategories) =>
+      areCategoriesEqual(currentCategories, nextCategories)
+        ? currentCategories
+        : nextCategories,
+    );
+  }, [categoryFromURL]);
 
   const handleCategoryToggle = (category) => {
     const isRemoving = selectedCategories.includes(category);
@@ -62,6 +80,13 @@ function useProductFilters({
     setCurrentPage(1);
   };
 
+  const handleClearPrice = () => {
+    setPriceRange({ min: PRICE_MIN, max: PRICE_MAX });
+    setAppliedPrice(null);
+    setPriceError("");
+    setCurrentPage(1);
+  };
+
   const handleRatingChange = (rating) => {
     setSelectedRating(rating === selectedRating ? null : rating);
     setCurrentPage(1);
@@ -95,6 +120,7 @@ function useProductFilters({
     handleApplyPrice,
     handleCategoryToggle,
     handleClearAll,
+    handleClearPrice,
     handlePresetClick,
     handleRatingChange,
     handleSortChange,
