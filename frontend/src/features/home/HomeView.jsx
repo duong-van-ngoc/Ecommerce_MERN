@@ -13,7 +13,7 @@ import HomeMobileBottomNav from "./components/HomeMobileBottomNav";
 import useHomeData from "@/features/home/hooks/useHomeData";
 import { HOME_BENEFITS, HOME_CATEGORIES } from "@/features/home/constants/home.constants";
 import { motion } from "framer-motion";
-import "./styles/Home.css";
+import "./styles/home.css";
 
 function HomeView() {
   const { loading, featuredProducts, flashSaleProducts, saleEndsAt } = useHomeData();
