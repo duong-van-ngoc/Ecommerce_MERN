@@ -49,14 +49,9 @@
  *    - Nếu bạn đổi sang một nhà cung cấp dữ liệu địa chỉ khác, bạn chỉ cần sửa duy nhất file này mà không cần chạm vào logic ở giao diện.
  */
 import axios from "axios";
+import { API_V1_BASE_URL } from "@/shared/config/api";
 
-const rawApiUrl = import.meta.env.VITE_API_URL?.trim().replace(/\/$/, "");
-const normalizedApiUrl = rawApiUrl?.endsWith("/api/v1")
-  ? rawApiUrl.slice(0, -7)
-  : rawApiUrl;
-
-const API_BASE_URL = normalizedApiUrl || "";
-const API_URL = `${API_BASE_URL}/api/v1/address`;
+const API_URL = API_V1_BASE_URL ? `${API_V1_BASE_URL}/address` : "/api/v1/address";
 
 const http = axios.create({
   baseURL: API_URL,

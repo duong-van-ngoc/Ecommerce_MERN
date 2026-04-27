@@ -47,13 +47,9 @@
  *    - `withCredentials: true` là bắt buộc nếu Backend sử dụng cơ chế Cookie-based Authentication.
  */
 import axios from "axios";
+import { API_ORIGIN } from "@/shared/config/api";
 
-const rawApiUrl = import.meta.env.VITE_API_URL?.trim().replace(/\/$/, "");
-const normalizedApiUrl = rawApiUrl?.endsWith("/api/v1")
-  ? rawApiUrl.slice(0, -7)
-  : rawApiUrl;
-
-axios.defaults.baseURL = normalizedApiUrl || "";
+axios.defaults.baseURL = API_ORIGIN || "";
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 

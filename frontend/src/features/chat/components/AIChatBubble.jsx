@@ -55,7 +55,7 @@
  *    - Cơ chế "Add to Cart": Đây là điểm chạm quan trọng kết nối AI với doanh thu. Nếu muốn thay đổi cách thêm hàng, hãy tìm hàm xử lý `components.a` trong `ReactMarkdown`.
  */
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import axios from '@/shared/api/http.js';
 import { useSelector, useDispatch } from 'react-redux';
 import { addItemsToCart } from '@/features/cart/cartSlice';
 import ReactMarkdown from 'react-markdown';
@@ -139,7 +139,7 @@ const AIChatBubble = () => {
         setLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:8000/api/v1/ai/chat', { 
+            const response = await axios.post('/api/v1/ai/chat', { 
                 message: userMessage.content,
                 sessionId: sessionId,
                 userName: userName // Pass user name for personalization
