@@ -33,11 +33,10 @@ export default function Sidebar({ user }) {
         <aside className="admin-sidebar" aria-label="Điều hướng quản trị">
             <Link to="/admin/dashboard" className="admin-sidebar-brand">
                 <span className="admin-sidebar-logo">
-                    <AutoAwesomeOutlinedIcon />
+                    <HomeOutlinedIcon />
                 </span>
                 <span>
                     <strong>TOBI SHOP</strong>
-                    <small>Hệ thống quản trị</small>
                 </span>
             </Link>
 
