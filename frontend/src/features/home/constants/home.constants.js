@@ -1,45 +1,45 @@
 export const HOME_HERO = {
-  eyebrow: "New Season Essentials",
-  title: "New Collection",
-  description: "Thoi trang toi gian, hien dai va de ung dung cho moi ngay.",
+  eyebrow: "Tinh chọn mùa mới",
+  title: "Bộ sưu tập mới",
+  description: "Thời trang tối giản, hiện đại và dễ ứng dụng cho mỗi ngày.",
   ctaLabel: "Mua ngay",
   ctaTo: "/products",
   image: "/images/banner_1.png",
-  imageAlt: "TOBI SHOP fashion editorial",
+  imageAlt: "Bộ ảnh thời trang TOBI SHOP",
 };
 
 export const HOME_CATEGORIES = [
-  { id: "women", label: "Women", icon: "sparkles", to: "/products?category=Áo sơ mi nữ" },
-  { id: "men", label: "Men", icon: "user", to: "/products?category=Áo thun nam" },
-  { id: "dresses", label: "Dresses", icon: "shirt", to: "/products?category=Váy dài nữ" },
-  { id: "shoes", label: "Shoes", icon: "badge", to: "/products?category=Giày dép unisex" },
-  { id: "bags", label: "Bags", icon: "bag", to: "/products?category=Túi xách nữ" },
-  { id: "accessories", label: "Accessories", icon: "watch", to: "/products?category=Phụ kiện unisex" },
+  { id: "women", label: "Nữ", icon: "sparkles", to: "/products?category=Áo sơ mi nữ" },
+  { id: "men", label: "Nam", icon: "user", to: "/products?category=Áo thun nam" },
+  { id: "dresses", label: "Váy", icon: "shirt", to: "/products?category=Váy dài nữ" },
+  { id: "shoes", label: "Giày dép", icon: "badge", to: "/products?category=Giày dép unisex" },
+  { id: "bags", label: "Túi xách", icon: "bag", to: "/products?category=Túi xách nữ" },
+  { id: "accessories", label: "Phụ kiện", icon: "watch", to: "/products?category=Phụ kiện unisex" },
 ];
 
 export const HOME_BENEFITS = [
   {
     id: "shipping",
-    title: "Free shipping",
-    description: "Cho don hang du dieu kien.",
+    title: "Miễn phí vận chuyển",
+    description: "Áp dụng cho đơn hàng đủ điều kiện.",
     icon: "truck",
   },
   {
     id: "returns",
-    title: "Easy return",
-    description: "Doi tra ro rang va don gian.",
+    title: "Đổi trả dễ dàng",
+    description: "Chính sách đổi trả rõ ràng, đơn giản.",
     icon: "return",
   },
   {
     id: "payment",
-    title: "Secure payment",
-    description: "Thanh toan bao mat trong checkout.",
+    title: "Thanh toán an toàn",
+    description: "Bảo mật trong toàn bộ quy trình thanh toán.",
     icon: "shield",
   },
   {
     id: "support",
-    title: "24/7 support",
-    description: "Ho tro nhanh khi ban can.",
+    title: "Hỗ trợ 24/7",
+    description: "Luôn sẵn sàng hỗ trợ khi bạn cần.",
     icon: "support",
   },
 ];

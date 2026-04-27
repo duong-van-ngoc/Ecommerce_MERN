@@ -8,29 +8,29 @@ const BANNERS = [
   {
     id: 1,
     image: "/images/banner_1.png",
-    subtitle: "Limited Edition",
-    title: "NEW COLLECTION",
+    subtitle: "Phiên bản giới hạn",
+    title: "BỘ SƯU TẬP MỚI",
     year: "2024",
     description:
-      "Kham pha phong cach thoi trang toi gian, sang trong va dinh hinh dau an ca nhan cung TOBI SHOP.",
+      "Khám phá phong cách thời trang tối giản, sang trọng và định hình dấu ấn cá nhân cùng TOBI SHOP.",
   },
   {
     id: 2,
     image: "/images/banner_2.png",
-    subtitle: "Premium Quality",
-    title: "ELEGANT STYLE",
-    year: "ESSENTIAL",
+    subtitle: "Chất lượng cao cấp",
+    title: "PHONG CÁCH TINH TẾ",
+    year: "CỐT LÕI",
     description:
-      "Su ket hop hoan hao giua chat lieu cao cap va thiet ke tinh te trong tung duong net.",
+      "Sự kết hợp hoàn hảo giữa chất liệu cao cấp và thiết kế tinh tế trong từng đường nét.",
   },
   {
     id: 3,
     image: "/images/banner_3.png",
-    subtitle: "Exclusive Release",
-    title: "STREETWEAR",
-    year: "LUXURY",
+    subtitle: "Ra mắt độc quyền",
+    title: "THỜI TRANG ĐƯỜNG PHỐ",
+    year: "CAO CẤP",
     description:
-      "Nang tam phong cach duong pho voi nhung thiet ke dot pha, dan dau xu huong thoi trang.",
+      "Nâng tầm phong cách đường phố với những thiết kế đột phá, dẫn đầu xu hướng thời trang.",
   },
 ];
 
@@ -80,7 +80,7 @@ function HeroSection() {
           >
             <BrandLogo to={null} size="sm" tone="light" className="mb-4" />
             <h1 className="text-5xl font-semibold tracking-tight sm:text-6xl lg:text-7xl">
-              New Collection
+              Bộ sưu tập mới
             </h1>
             <p className="mt-5 max-w-lg text-base leading-7 text-white/80 sm:text-lg">
               Khám phá những thiết kế tối giản, hiện đại và dễ mặc mỗi ngày.
@@ -112,7 +112,7 @@ function HeroSection() {
             type="button"
             onClick={() => setCurrent(index)}
             className="group flex h-6 items-center"
-            aria-label={`Chuyen den banner ${index + 1}`}
+            aria-label={`Chuyển đến banner ${index + 1}`}
           >
             <span
               className={`h-0.5 rounded-full transition-all duration-300 ${

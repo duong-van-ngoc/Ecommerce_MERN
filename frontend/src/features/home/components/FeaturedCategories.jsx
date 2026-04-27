@@ -22,17 +22,17 @@ function FeaturedCategories({ categories = [] }) {
         <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between md:mb-10">
           <div>
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-[#E85D75]">
-              Categories
+              Danh mục
             </p>
             <h2 className="text-3xl font-semibold tracking-tight text-[#111827] md:text-4xl">
-              Featured categories
+              Danh mục nổi bật
             </h2>
           </div>
           <Link
             to="/products"
             className="text-sm font-semibold text-[#111827] underline underline-offset-4 transition-colors hover:text-[#E85D75]"
           >
-            View all
+            Xem tất cả
           </Link>
         </div>
 
@@ -58,7 +58,7 @@ function FeaturedCategories({ categories = [] }) {
                 </div>
                 <div className="p-4">
                   <h3 className="text-sm font-semibold text-[#111827]">{category.label}</h3>
-                  <p className="mt-1 text-xs text-[#6B7280]">Explore</p>
+                  <p className="mt-1 text-xs text-[#6B7280]">Khám phá</p>
                 </div>
               </Link>
             </motion.article>

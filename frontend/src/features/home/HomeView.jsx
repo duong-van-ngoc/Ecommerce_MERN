@@ -20,7 +20,7 @@ function HomeView() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans text-[#111827] selection:bg-[#E85D75]/20 overflow-x-hidden">
-      <PageTitle title="TOBI SHOP | Modern Fashion Commerce" />
+      <PageTitle title="TOBI SHOP | Thời trang hiện đại" />
       <Navbar />
 
       <motion.main

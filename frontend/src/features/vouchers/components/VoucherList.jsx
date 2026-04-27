@@ -21,15 +21,15 @@ const VoucherList = ({
         return (
             <div className="loading-state">
                 <CircularProgress size={34} thickness={4} sx={{ color: "#E85D75" }} />
-                <p>Đang tải kho voucher...</p>
+                <p>Đang tải kho mã giảm giá...</p>
             </div>
         );
     }
 
     if (!hasVouchers) {
         const emptyTitle = viewMode === "my_vouchers"
-            ? "Bạn chưa lưu voucher nào"
-            : "Hiện chưa có voucher phù hợp";
+            ? "Bạn chưa lưu mã giảm giá nào"
+            : "Hiện chưa có mã giảm giá phù hợp";
 
         return (
             <div className="no-vouchers">

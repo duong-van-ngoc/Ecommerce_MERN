@@ -21,9 +21,9 @@ function getDiscountPercent(product) {
 }
 
 function getCategoryLabel(category) {
-  if (!category) return "Collection";
+  if (!category) return "Bộ sưu tập";
   if (typeof category === "string") return category;
-  return category.level3 || category.level2 || category.level1 || category.name || "Collection";
+  return category.level3 || category.level2 || category.level1 || category.name || "Bộ sưu tập";
 }
 
 function getSaleProgress(product) {
@@ -67,7 +67,7 @@ function FlashSaleProductCard({ product }) {
 
         <div className="absolute left-4 top-4 flex items-center gap-2">
           <span className="rounded-full bg-[#FF4D5D] px-2.5 py-1 text-[10px] font-bold text-white">
-            {discountPercent > 0 ? `-${discountPercent}%` : "SALE"}
+            {discountPercent > 0 ? `-${discountPercent}%` : "ƯU ĐÃI"}
           </span>
         </div>
       </div>
@@ -134,7 +134,7 @@ function FlashSaleSection({ products = [], loading, saleEndsAt }) {
             <div className="mb-4 flex items-center gap-2 text-[#111827]">
               <Zap size={14} fill="#FF7A2F" className="text-[#FF7A2F]" />
               <span className="text-[11px] font-semibold uppercase tracking-[0.16em]">
-                Flash Sale
+                Flash sale
               </span>
             </div>
 

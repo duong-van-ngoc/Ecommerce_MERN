@@ -38,7 +38,7 @@ const VoucherCard = ({ voucher, viewMode, onClaim, claimLoading }) => {
                     <div className="voucher-status-info">
                         <span className="voucher-status-text">
                             <CardGiftcardOutlinedIcon />
-                            {viewMode === "my_vouchers" ? "Voucher đã lưu" : `Đã dùng ${usedPercent}%`}
+                            {viewMode === "my_vouchers" ? "Mã giảm giá đã lưu" : `Đã dùng ${usedPercent}%`}
                         </span>
                         <span className="voucher-expiry">
                             <AccessTimeOutlinedIcon />
@@ -75,7 +75,7 @@ const VoucherCard = ({ voucher, viewMode, onClaim, claimLoading }) => {
                             disabled={isClaimDisabled}
                             onClick={() => onClaim(voucher.originalId)}
                         >
-                            {claimLoading ? "Đang lưu..." : usedPercent >= 100 ? "Hết lượt" : "Lưu voucher"}
+                            {claimLoading ? "Đang lưu..." : usedPercent >= 100 ? "Hết lượt" : "Lưu mã giảm giá"}
                         </button>
                     )}
                 </div>

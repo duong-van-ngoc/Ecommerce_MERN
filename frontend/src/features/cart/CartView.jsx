@@ -195,7 +195,7 @@ function CartView() {
                     <LocalOfferOutlinedIcon />
                   </span>
                   <span className="summary-voucher-copy">
-                    <strong>Voucher ToBi</strong>
+                    <strong>Mã giảm giá ToBi</strong>
                     {appliedCoupon ? (
                       <span>{appliedCoupon.name}</span>
                     ) : (

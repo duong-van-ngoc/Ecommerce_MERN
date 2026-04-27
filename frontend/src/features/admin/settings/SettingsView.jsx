@@ -116,7 +116,7 @@ function SettingsView() {
                     </div> */}
                 </div>
 
-                <div className="settings-tabs" aria-label="Settings tabs">
+                <div className="settings-tabs" aria-label="Thẻ cài đặt">
                     <button type="button" className="active">Thông tin cửa hàng</button>
                     <button type="button">Thanh toán</button>
                     <button type="button">Vận chuyển</button>
@@ -213,7 +213,7 @@ function SettingsView() {
                                     <label htmlFor="currency">Tiền tệ</label>
                                     <select id="currency" defaultValue="VND">
                                         <option value="VND">VND - Việt Nam Đồng</option>
-                                        <option value="USD">USD - US Dollar</option>
+                                        <option value="USD">USD - Đô la Mỹ</option>
                                     </select>
                                 </div>
 
@@ -320,7 +320,7 @@ function SettingsView() {
 
                         <div className="settings-side-card status">
                             <span className="status-dot"></span>
-                            <h3>Store status</h3>
+                            <h3>Trạng thái cửa hàng</h3>
                             <p>Hệ thống đang hoạt động ổn định.</p>
                         </div>
 

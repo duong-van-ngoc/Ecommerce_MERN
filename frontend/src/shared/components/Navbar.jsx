@@ -301,7 +301,7 @@ function Navbar() {
               className="fixed top-0 right-0 bottom-0 w-full max-w-sm bg-white z-[70] shadow-2xl p-10 flex flex-col"
             >
               <div className="flex items-center justify-between mb-16">
-                <span className="text-2xl font-black text-primary tracking-tighter">MENU</span>
+                <span className="text-2xl font-black text-primary tracking-tighter">DANH MỤC</span>
                 <button 
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="p-2 hover:bg-slate-50 rounded-full transition-colors"

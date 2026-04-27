@@ -90,7 +90,7 @@ const VoucherModal = ({
         
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-[20px] font-medium text-[#222]">Chọn voucher ToBi</h2>
+          <h2 className="text-[20px] font-medium text-[#222]">Chọn mã giảm giá ToBi</h2>
           <button
             onClick={onClose}
             className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-[#ff5a5f] transition-colors"
@@ -104,7 +104,7 @@ const VoucherModal = ({
           <div className="flex flex-col sm:flex-row gap-3">
             <input
               type="text"
-              placeholder="Nhập mã voucher"
+              placeholder="Nhập mã giảm giá"
               value={couponCode}
               onChange={(e) => {
                 setCouponCode(e.target.value);
@@ -125,7 +125,7 @@ const VoucherModal = ({
 
         {/* Voucher List Section */}
         <div className="overflow-y-auto bg-[#f5f5f5] p-6 space-y-4 flex-grow scroll-smooth">
-          <div className="text-[13px] font-medium text-[#222]">Voucher có thể dùng</div>
+          <div className="text-[13px] font-medium text-[#222]">Mã giảm giá có thể dùng</div>
           
           {activeVouchers && activeVouchers.length > 0 ? (
             activeVouchers.map((v) => {
@@ -145,7 +145,7 @@ const VoucherModal = ({
                   <div className={`w-[118px] flex-shrink-0 flex flex-col items-center justify-center px-3 py-4 text-center border-r border-dashed
                     ${isSelected || !isInsufficient ? 'bg-[#fff4f1] border-[#f2c7bd]' : 'bg-gray-100 border-gray-300'}`}>
                     <div className={`text-[13px] font-semibold leading-5 ${isSelected || !isInsufficient ? 'text-[#ff5a5f]' : 'text-gray-500'}`}>
-                      Voucher ToBi
+                      Mã giảm giá ToBi
                     </div>
                     <div className={`mt-1 text-[12px] ${isSelected || !isInsufficient ? 'text-[#ff5a5f]' : 'text-gray-500'}`}>
                       {isPercentage ? `Giảm ${discountValue}%` : `Giảm ${formatVND(discountValue)}`}
@@ -207,7 +207,7 @@ const VoucherModal = ({
             })
           ) : (
             <div className="bg-white border border-dashed border-gray-300 rounded-sm px-6 py-10 text-center">
-               <div className="text-[14px] text-gray-500">Hiện chưa có voucher khả dụng</div>
+               <div className="text-[14px] text-gray-500">Hiện chưa có mã giảm giá khả dụng</div>
             </div>
           )}
         </div>

@@ -12,7 +12,6 @@ function BestSellerSection({ products = [] }) {
         <div className="flex items-center justify-between mb-20">
           <div>
             <h2 className="text-[32px] md:text-[48px] font-black text-primary tracking-tighter mb-4">SẢN PHẨM BÁN CHẠY</h2>
-            <p className="text-slate-500 font-medium">Những lựa chọn được yêu thích nhất từ cộng đồng TOBI.</p>
           </div>
           <div className="hidden md:flex gap-4">
             <button className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center hover:bg-white hover:shadow-xl transition-all">

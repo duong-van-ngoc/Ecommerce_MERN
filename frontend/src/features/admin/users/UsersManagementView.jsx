@@ -114,25 +114,25 @@ function UsersManagementView() {
 
   const statsCards = [
     {
-      label: 'Tổng user',
+      label: 'Tổng người dùng',
       value: totalUsers,
       icon: <GroupOutlinedIcon />,
       tone: 'neutral',
     },
     {
-      label: 'User hoạt động',
+      label: 'Người dùng hoạt động',
       value: activeUsers,
       icon: <PersonAddAltOutlinedIcon />,
       tone: 'success',
     },
     {
-      label: 'User bị khóa',
+      label: 'Người dùng bị khóa',
       value: lockedUsers,
       icon: <PersonOffOutlinedIcon />,
       tone: 'danger',
     },
     {
-      label: 'Admin',
+      label: 'Quản trị viên',
       value: adminUsers,
       icon: <AdminPanelSettingsOutlinedIcon />,
       tone: 'info',

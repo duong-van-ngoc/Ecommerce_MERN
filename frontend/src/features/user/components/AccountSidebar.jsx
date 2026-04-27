@@ -41,7 +41,7 @@ function AccountSidebar() {
         },
         {
             icon: <SellOutlinedIcon />,
-            label: "Kho voucher",
+            label: "Kho mã giảm giá",
             path: "/vouchers",
         },
     ];

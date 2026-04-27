@@ -88,7 +88,7 @@ const VoucherFilterDrawer = ({ open, onClose, currentFilters, onApply, onReset }
                         {/* 1. Trạng thái Voucher */}
                         <Accordion defaultExpanded elevation={0} sx={{ border: '1px solid #f0f0f0', borderRadius: '16px !important', overflow: 'hidden' }}>
                             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#191c1d' }}>Trạng thái voucher</Typography>
+                                <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#191c1d' }}>Trạng thái mã giảm giá</Typography>
                             </AccordionSummary>
                             <AccordionDetails sx={{ pt: 0 }}>
                                 <FormGroup>
@@ -145,7 +145,7 @@ const VoucherFilterDrawer = ({ open, onClose, currentFilters, onApply, onReset }
                         {/* 3. Giá trị Voucher (Range) */}
                         <Accordion defaultExpanded elevation={0} sx={{ border: '1px solid #f0f0f0', borderRadius: '16px !important', overflow: 'hidden' }}>
                             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#191c1d' }}>Giá trị voucher (VNĐ)</Typography>
+                                <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#191c1d' }}>Giá trị mã giảm giá (VNĐ)</Typography>
                             </AccordionSummary>
                             <AccordionDetails sx={{ pt: 0 }}>
                                 <Stack direction="row" spacing={2} sx={{ mt: 1 }}>

@@ -47,7 +47,7 @@ function LoginView() {
           <div className="relative hidden min-h-[720px] overflow-hidden md:block">
             <img
               src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=1887&auto=format&fit=crop"
-              alt="Premium fashion editorial"
+              alt="Bộ ảnh thời trang cao cấp"
               className="h-full w-full object-cover"
             />
             <div className="absolute inset-0 bg-black/45" />
@@ -55,7 +55,7 @@ function LoginView() {
               <BrandLogo size="lg" tone="light" />
               <div className="max-w-sm">
                 <p className="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-white/70">
-                  Minimal Fashion
+                  Thời trang tối giản
                 </p>
                 <h2 className="text-4xl font-semibold leading-tight tracking-tight">
                   Nâng tầm phong cách cá nhân
@@ -177,7 +177,7 @@ function LoginView() {
 
       <footer className="border-t border-[#E5E7EB] bg-white/70">
         <div className="mx-auto flex max-w-[1120px] items-center justify-center px-5 py-5 text-xs text-[#6B7280]">
-          © {new Date().getFullYear()} TOBI SHOP. Minimal fashion commerce.
+          © {new Date().getFullYear()} TOBI SHOP. Thời trang tối giản cho nhịp sống hiện đại.
         </div>
       </footer>
     </div>

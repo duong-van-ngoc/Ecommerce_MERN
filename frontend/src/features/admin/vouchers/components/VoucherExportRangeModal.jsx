@@ -57,7 +57,7 @@ const VoucherExportRangeModal = ({ open, onClose, onConfirm }) => {
 
             <DialogContent sx={{ p: 3 }}>
                 <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
-                    Hệ thống sẽ lấy danh sách voucher được tạo trong khoảng thời gian này để xuất file .xlsx.
+                    Hệ thống sẽ lấy danh sách mã giảm giá được tạo trong khoảng thời gian này để xuất file .xlsx.
                 </Typography>
                 
                 <Stack spacing={3}>

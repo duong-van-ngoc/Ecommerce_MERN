@@ -83,10 +83,10 @@ const VoucherFormModal = ({ voucher, onClose }) => {
         try {
             if (isEditMode) {
                 await dispatch(updateVoucher({ id: voucher._id, voucherData: payload })).unwrap();
-                toast.success('Cập nhật voucher thành công!');
+                toast.success('Cập nhật mã giảm giá thành công!');
             } else {
                 await dispatch(createVoucher(payload)).unwrap();
-                toast.success('Tạo voucher thành công!');
+                toast.success('Tạo mã giảm giá thành công!');
             }
             onClose();
         } catch (error) {
@@ -111,7 +111,7 @@ const VoucherFormModal = ({ voucher, onClose }) => {
                 <div className="flex items-start justify-between gap-4 border-b border-[#E5E7EB] px-6 py-5 md:px-8">
                     <div>
                         <h2 className="text-2xl font-bold text-[#111827]">
-                            {isEditMode ? 'Chỉnh sửa Voucher' : 'Tạo Voucher'}
+                            {isEditMode ? 'Chỉnh sửa mã giảm giá' : 'Tạo mã giảm giá'}
                         </h2>
                         <p className="mt-1 text-sm text-[#6B7280]">
                             Thiết lập điều kiện, mức giảm và thời gian áp dụng cho mã khuyến mãi.
@@ -159,7 +159,7 @@ const VoucherFormModal = ({ voucher, onClose }) => {
                                 </div>
 
                                 <div>
-                                    <label className={labelClass} htmlFor="voucher-type">Phân nhóm Voucher</label>
+                                    <label className={labelClass} htmlFor="voucher-type">Phân nhóm mã giảm giá</label>
                                     <select
                                         id="voucher-type"
                                         name="type"
@@ -169,9 +169,9 @@ const VoucherFormModal = ({ voucher, onClose }) => {
                                     >
                                         <option value="general">Khách hàng phổ thông</option>
                                         <option value="limited">Tài khoản giới hạn</option>
-                                        <option value="exclusive">Độc quyền (VIP/Partner)</option>
+                                        <option value="exclusive">Độc quyền (VIP/Đối tác)</option>
                                     </select>
-                                    <p className={helperClass}>Chọn nhóm khách hàng được phép sử dụng voucher.</p>
+                                    <p className={helperClass}>Chọn nhóm khách hàng được phép sử dụng mã giảm giá.</p>
                                 </div>
                             </div>
                         </section>
@@ -361,7 +361,7 @@ const VoucherFormModal = ({ voucher, onClose }) => {
                         form="voucher-form"
                         className="min-h-11 rounded-xl bg-[#004ac6] px-6 text-sm font-bold text-white shadow-sm transition hover:bg-[#003ea8]"
                     >
-                        {isEditMode ? 'Lưu thay đổi' : 'Tạo voucher'}
+                        {isEditMode ? 'Lưu thay đổi' : 'Tạo mã giảm giá'}
                     </button>
                 </div>
             </div>

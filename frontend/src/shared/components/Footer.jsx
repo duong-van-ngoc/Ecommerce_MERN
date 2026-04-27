@@ -34,7 +34,7 @@ function Footer() {
           <div className="space-y-6">
             <h3 className="text-sm font-bold uppercase tracking-widest text-white/90">Mua sắm</h3>
             <ul className="space-y-3">
-              {['Tất cả sản phẩm', 'Flash Sale', 'Bộ sưu tập mới', 'Bán chạy nhất'].map((item) => (
+              {['Tất cả sản phẩm', 'Giờ vàng', 'Bộ sưu tập mới', 'Bán chạy nhất'].map((item) => (
                 <li key={item}>
                   <Link to="/products" className="text-sm font-light text-slate-400 hover:text-accent transition-colors duration-200">
                     {item}
@@ -81,12 +81,12 @@ function Footer() {
         {/* Bottom */}
         <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-6">
           <p className="text-xs font-light text-slate-500 tracking-wider">
-            &copy; {currentYear} TOBI SHOP. Crafted for excellence.
+            &copy; {currentYear} TOBI SHOP. Phong cách hiện đại mỗi ngày.
           </p>
           <div className="flex items-center gap-2 text-xs font-light text-slate-500 tracking-wider">
-            <span>Made with</span>
+            <span>Phát triển bởi</span>
             <Heart size={14} className="text-accent fill-accent" />
-            <span>by Tobi Team</span>
+            <span>đội ngũ Tobi</span>
           </div>
         </div>
       </div>

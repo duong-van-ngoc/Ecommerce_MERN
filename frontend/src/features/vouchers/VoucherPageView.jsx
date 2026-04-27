@@ -32,12 +32,12 @@ const VoucherPageView = () => {
 
     const tabs = [
         { id: "all", label: "Tất Cả" },
-        { id: "shop", label: "Voucher của cửa hàng" },
+        { id: "shop", label: "Mã giảm giá của cửa hàng" },
     ];
 
     return (
         <>
-            <PageTitle title="Kho Voucher" />
+            <PageTitle title="Kho mã giảm giá" />
             <Navbar />
             <div className="account-container voucher-page">
                 <div className="account-content">
@@ -49,10 +49,10 @@ const VoucherPageView = () => {
                             <div className="hero-content">
                                 <span className="hero-badge">Trung tâm ưu đãi</span>
                                 <h1 className="hero-title">
-                                    Kho voucher của bạn
+                                    Kho mã giảm giá của bạn
                                 </h1>
                                 <p className="hero-desc">
-                                    Khám phá các ưu đãi đang có và lưu voucher phù hợp cho lần mua sắm tiếp theo.
+                                    Khám phá các ưu đãi đang có và lưu mã giảm giá phù hợp cho lần mua sắm tiếp theo.
                                 </p>
                             </div>
                             <div className="hero-stats">
@@ -76,7 +76,7 @@ const VoucherPageView = () => {
                                 onClick={() => { setViewMode("my_vouchers"); setActiveTab("all"); }}
                             >
                                 <LocalActivityOutlinedIcon fontSize="small" />
-                                Kho voucher của tôi
+                                Kho mã giảm giá của tôi
                             </button>
                             <button 
                                 type="button"
@@ -84,7 +84,7 @@ const VoucherPageView = () => {
                                 onClick={() => { setViewMode("voucher_center"); setActiveTab("all"); }}
                             >
                                 <CardGiftcardOutlinedIcon fontSize="small" />
-                                Voucher nổi bật
+                                Mã giảm giá nổi bật
                             </button>
                         </div>
 

@@ -43,7 +43,7 @@ export const fetchMyVouchers = createAsyncThunk(
       return await voucherApi.fetchMyVouchers();
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "Không thể lấy kho voucher của bạn"
+        error.response?.data?.message || "Không thể tải kho mã giảm giá của bạn"
       );
     }
   }

@@ -118,10 +118,10 @@ const VouchersManagementView = () => {
         const status = getVoucherStatus(v);
         return {
             "STT": index + 1,
-            "Mã voucher": v.code,
-            "Giá trị voucher": v.discount.type === 'percentage' ? `${v.discount.value}%` : formatVND(v.discount.value),
+            "Mã giảm giá": v.code,
+            "Giá trị giảm giá": v.discount.type === 'percentage' ? `${v.discount.value}%` : formatVND(v.discount.value),
             "Giảm tối đa": v.discount.maxAmount ? formatVND(v.discount.maxAmount) : "Không có",
-            "Loại voucher": v.type === 'exclusive' ? 'Độc quyền' : v.type === 'limited' ? 'Giới hạn' : 'Phổ thông',
+            "Loại mã": v.type === 'exclusive' ? 'Độc quyền' : v.type === 'limited' ? 'Giới hạn' : 'Phổ thông',
             "Trạng thái": status.label,
             "Ngày tạo": formatDateTime(v.createdAt),
             "Ngày hết hạn": formatDateOnly(v.conditions.endDate),
@@ -136,7 +136,7 @@ const VouchersManagementView = () => {
         try {
             const worksheet = XLSX.utils.json_to_sheet(data);
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Vouchers");
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Mã giảm giá");
 
             const wscols = [
                 { wch: 5 }, { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 15 },
@@ -159,7 +159,7 @@ const VouchersManagementView = () => {
         if (!vouchers || vouchers.length === 0) return toast.warning("Không có dữ liệu để xuất");
         setExportLoading(true);
         const data = vouchers.map((v, i) => transformVoucherToExcel(v, i));
-        generateExcelFile(data, "Danh_sach_voucher_hien_tai");
+        generateExcelFile(data, "Danh_sach_ma_giam_gia_hien_tai");
         setAnchorEl(null);
     };
 
@@ -169,7 +169,7 @@ const VouchersManagementView = () => {
         try {
             const result = await dispatch(fetchAllAdminVouchers({ limit: 1000 })).unwrap();
             const data = result.vouchers.map((v, i) => transformVoucherToExcel(v, i));
-            generateExcelFile(data, "Danh_sach_tat_ca_voucher");
+            generateExcelFile(data, "Danh_sach_tat_ca_ma_giam_gia");
         } catch {
             toast.error("Không thể lấy toàn bộ dữ liệu");
             setExportLoading(false);
@@ -186,7 +186,7 @@ const VouchersManagementView = () => {
 
         dispatch(fetchAllAdminVouchers(rangeFilters)).unwrap().then(result => {
             const data = result.vouchers.map((v, i) => transformVoucherToExcel(v, i));
-            generateExcelFile(data, `Danh_sach_voucher_tu_${range.startDate}_den_${range.endDate}`);
+            generateExcelFile(data, `Danh_sach_ma_giam_gia_tu_${range.startDate}_den_${range.endDate}`);
         }).catch(() => {
             toast.error("Lỗi khi lấy dữ liệu theo thời gian");
             setExportLoading(false);
@@ -197,7 +197,7 @@ const VouchersManagementView = () => {
         if (window.confirm('Bạn có chắc muốn xóa mã giảm giá này? Người dùng sẽ không thể sử dụng mã này nữa.')) {
             try {
                 await dispatch(deleteVoucher(id)).unwrap();
-                toast.success('Xóa voucher thành công!');
+                toast.success('Xóa mã giảm giá thành công!');
             } catch (err) {
                 toast.error(err || 'Xóa thất bại');
             }
@@ -210,7 +210,7 @@ const VouchersManagementView = () => {
 
     const handleCopyCode = (code) => {
         navigator.clipboard.writeText(code);
-        toast.info(`Đã copy mã: ${code}`, { autoClose: 2000 });
+        toast.info(`Đã sao chép mã: ${code}`, { autoClose: 2000 });
     };
 
     const getVoucherStatus = (v) => {
@@ -261,7 +261,7 @@ const VouchersManagementView = () => {
     const statCards = [
         {
             icon: <ConfirmationNumberIcon />,
-            label: 'Tổng voucher',
+            label: 'Tổng mã giảm giá',
             value: totalVouchers || 0,
             tone: 'neutral',
         },
@@ -293,7 +293,7 @@ const VouchersManagementView = () => {
         <div className="vouchers-page">
             <div className="vouchers-header">
                 <div>
-                    <h1 className="vouchers-title">Quản lý Voucher</h1>
+                    <h1 className="vouchers-title">Quản lý mã giảm giá</h1>
                     <p className="vouchers-subtitle">Xem, tạo và quản lý các chương trình khuyến mãi của cửa hàng.</p>
                 </div>
 
@@ -312,7 +312,7 @@ const VouchersManagementView = () => {
                         onClick={() => { setSelectedVoucher(null); setShowModal(true); }}
                     >
                         <AddIcon />
-                        Tạo Voucher
+                        Tạo mã giảm giá
                     </button>
                 </div>
 
@@ -361,9 +361,9 @@ const VouchersManagementView = () => {
                     <div>
                         <h2 className="vouchers-section-title">
                             <TableIcon />
-                            Danh sách Voucher
+                            Danh sách mã giảm giá
                         </h2>
-                        <p className="vouchers-section-subtitle">Hiển thị {vouchers?.length || 0} / {totalVouchers || 0} voucher</p>
+                        <p className="vouchers-section-subtitle">Hiển thị {vouchers?.length || 0} / {totalVouchers || 0} mã giảm giá</p>
                     </div>
 
                     <div className="vouchers-toolbar-actions">
@@ -389,7 +389,7 @@ const VouchersManagementView = () => {
                         <SearchIcon />
                         <input
                             type="text"
-                            placeholder="Tìm kiếm mã voucher hoặc tên chiến dịch..."
+                            placeholder="Tìm kiếm mã giảm giá hoặc tên chiến dịch..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -400,7 +400,7 @@ const VouchersManagementView = () => {
                     <table className="vouchers-table">
                         <thead>
                             <tr>
-                                <th>Mã Voucher</th>
+                                <th>Mã giảm giá</th>
                                 <th>Giá trị / Loại</th>
                                 <th>Cấu hình sử dụng</th>
                                 <th>Thời hạn</th>
@@ -421,7 +421,7 @@ const VouchersManagementView = () => {
                                     <td colSpan="6" className="vouchers-empty-cell">
                                         <div className="vouchers-empty-state">
                                             <SearchOffIcon />
-                                            <strong>Không tìm thấy voucher nào</strong>
+                                            <strong>Không tìm thấy mã giảm giá nào</strong>
                                             <span>Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc.</span>
                                             <button type="button" onClick={handleResetFilter}>Xóa bộ lọc</button>
                                         </div>
@@ -536,7 +536,7 @@ const VouchersManagementView = () => {
 
                 <div className="vouchers-pagination">
                     <div className="vouchers-pagination-info">
-                        <span>Hiển thị <strong>{vouchers?.length || 0}</strong> trên <strong>{totalVouchers || 0}</strong> voucher</span>
+                        <span>Hiển thị <strong>{vouchers?.length || 0}</strong> trên <strong>{totalVouchers || 0}</strong> mã giảm giá</span>
                         <label>
                             Bản ghi mỗi trang:
                             <select value={filters.limit} onChange={handleRowsPerPageChange}>
@@ -583,8 +583,8 @@ const VouchersManagementView = () => {
             <div className="vouchers-insight-grid">
                 <div className="vouchers-insight-card">
                     <div>
-                        <span className="vouchers-insight-kicker">Insight</span>
-                        <h3>Tối ưu hiệu quả Voucher</h3>
+                        <span className="vouchers-insight-kicker">Gợi ý</span>
+                        <h3>Tối ưu hiệu quả mã giảm giá</h3>
                         <p>
                             {bestVoucher
                                 ? `Mã "${bestVoucher.code}" đang dẫn đầu với ${bestVoucher.usedCount || 0} lượt dùng. Hãy cân nhắc gia hạn hoặc tung thêm các mã tương tự.`

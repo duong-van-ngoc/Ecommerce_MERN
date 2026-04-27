@@ -10,7 +10,7 @@ const BENEFIT_ICONS = {
 
 function HomeBenefits({ benefits = [] }) {
   return (
-    <section className="bg-[#FAFAFA] pb-10" aria-label="Service benefits">
+    <section className="bg-[#FAFAFA] pb-10" aria-label="Lợi ích dịch vụ">
       <div className="mx-auto max-w-[1280px] px-5 md:px-8">
         <div className="grid overflow-hidden rounded-xl border border-[#E5E7EB] bg-white shadow-[0_12px_30px_rgba(17,24,39,0.04)] sm:grid-cols-2 lg:grid-cols-4">
           {benefits.map((benefit) => {

@@ -12,11 +12,11 @@ import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import { logout } from '@/features/user/userSlice';
 
 const navItems = [
-    { name: 'Dashboard', icon: <DashboardOutlinedIcon />, path: '/admin/dashboard' },
+    { name: 'Tổng quan', icon: <DashboardOutlinedIcon />, path: '/admin/dashboard' },
     { name: 'Sản phẩm', icon: <Inventory2OutlinedIcon />, path: '/admin/products' },
     { name: 'Đơn hàng', icon: <ReceiptLongOutlinedIcon />, path: '/admin/orders' },
     { name: 'Người dùng', icon: <GroupOutlinedIcon />, path: '/admin/users' },
-    { name: 'Voucher', icon: <LocalOfferOutlinedIcon />, path: '/admin/vouchers' },
+    { name: 'Mã giảm giá', icon: <LocalOfferOutlinedIcon />, path: '/admin/vouchers' },
     { name: 'Cài đặt', icon: <SettingsOutlinedIcon />, path: '/admin/settings' },
 ];
 
@@ -30,7 +30,7 @@ export default function Sidebar({ user }) {
     };
 
     return (
-        <aside className="admin-sidebar" aria-label="Admin navigation">
+        <aside className="admin-sidebar" aria-label="Điều hướng quản trị">
             <Link to="/admin/dashboard" className="admin-sidebar-brand">
                 <span className="admin-sidebar-logo">
                     <AutoAwesomeOutlinedIcon />
@@ -68,10 +68,10 @@ export default function Sidebar({ user }) {
                 <div className="admin-sidebar-profile">
                     <img
                         src={user?.avatar?.url || '/images/profile.png'}
-                        alt={user?.name || 'Admin'}
+                        alt={user?.name || 'Quản trị viên'}
                     />
                     <div>
-                        <strong>{user?.name || 'Admin'}</strong>
+                        <strong>{user?.name || 'Quản trị viên'}</strong>
                         <span>{(user?.role_id?.name || user?.role) === 'admin' ? 'Quản trị viên' : 'Nhân viên'}</span>
                     </div>
                 </div>

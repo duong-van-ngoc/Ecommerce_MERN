@@ -38,7 +38,7 @@ export const useVouchers = (viewMode) => {
     // Xử lý thông báo sau khi lưu voucher
     useEffect(() => {
         if (claimSuccess) {
-            toast.success("Đã lưu voucher vào kho của bạn.");
+            toast.success("Đã lưu mã giảm giá vào kho của bạn.");
             dispatch(resetClaimState());
         }
         if (error && viewMode === "voucher_center") {

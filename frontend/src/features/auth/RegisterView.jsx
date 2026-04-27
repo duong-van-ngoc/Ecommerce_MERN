@@ -51,7 +51,7 @@ function RegisterView() {
           <div className="relative hidden min-h-[780px] overflow-hidden md:block">
             <img
               src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop"
-              alt="Fashion editorial"
+              alt="Bộ ảnh thời trang"
               className="h-full w-full object-cover"
             />
             <div className="absolute inset-0 bg-black/45" />
@@ -59,7 +59,7 @@ function RegisterView() {
               <BrandLogo size="lg" tone="light" />
               <div className="max-w-sm">
                 <p className="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-white/70">
-                  New Wardrobe
+                  Tủ đồ mới
                 </p>
                 <h2 className="text-4xl font-semibold leading-tight tracking-tight">
                   Nâng tầm phong cách cá nhân
@@ -86,7 +86,7 @@ function RegisterView() {
               <form className="space-y-5" onSubmit={handleSubmit} encType="multipart/form-data">
                 <div className="flex items-center gap-4 rounded-xl border border-[#E5E7EB] bg-[#FAFAFA] p-4">
                   <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border border-[#E5E7EB] bg-white">
-                    <img src={avatarPreview} alt="Avatar preview" className="h-full w-full object-cover" />
+                    <img src={avatarPreview} alt="Xem trước ảnh đại diện" className="h-full w-full object-cover" />
                     <label
                       htmlFor="register-avatar"
                       className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black/35 opacity-0 transition-opacity hover:opacity-100"
@@ -273,7 +273,7 @@ function RegisterView() {
 
       <footer className="border-t border-[#E5E7EB] bg-white/70">
         <div className="mx-auto flex max-w-[1120px] items-center justify-center px-5 py-5 text-xs text-[#6B7280]">
-          © {new Date().getFullYear()} TOBI SHOP. Minimal fashion commerce.
+          © {new Date().getFullYear()} TOBI SHOP. Thời trang tối giản cho nhịp sống hiện đại.
         </div>
       </footer>
     </div>
