@@ -3,7 +3,7 @@ import Voucher from "../models/voucherModel.js";
 import User from "../models/userModel.js";
 import asyncErrorHandler from "../middleware/handleAsyncError.js";
 import HandleError from "../utils/handleError.js";
-import { validateVoucher } from "../utils/v2/voucherValidator.js";
+import { validateVoucherClaim } from "../utils/voucherValidator.js";
 
 // 1. [USER] Bấm "Lấy mã" - Claim Voucher
 export const claimVoucher = asyncErrorHandler(async (req, res, next) => {
@@ -16,19 +16,16 @@ export const claimVoucher = asyncErrorHandler(async (req, res, next) => {
         return next(new HandleError("Mã giảm giá không tồn tại.", 404));
     }
 
-    // Kiểm tra tính hiệu lực cơ bản (Dùng lại validator cũ)
-    const validation = await validateVoucher(voucher, req.user, 0); // orderAmount = 0 vì đây là bước claim, chưa dùng
+    // Kiểm tra tính hiệu lực cơ bản (KHÔNG check minOrderAmount ở bước claim)
+    const validation = validateVoucherClaim(voucher);
+    if (!validation.isValid) {
+        return next(new HandleError(validation.message, 400));
+    }
     
-    // Lưu ý: validateVoucher kiểm tra userUsageCount bằng cách đếm Order. 
-    // Ở bước CLAIM này, chúng ta cần kiểm tra xem user đã sở hữu trong ví chưa.
+    // Kiểm tra user đã sở hữu trong ví chưa
     const existingWalletVoucher = await UserVoucher.findOne({ user: userId, voucher: voucherId });
     if (existingWalletVoucher) {
         return next(new HandleError("Bạn đã sở hữu mã giảm giá này trong kho rồi.", 400));
-    }
-
-    // Kiểm tra số lượng còn lại của Voucher hệ thống
-    if (voucher.conditions.usageLimit !== -1 && voucher.usedCount >= voucher.conditions.usageLimit) {
-        return next(new HandleError("Rất tiếc, mã giảm giá này đã hết lượt phát hành.", 0));
     }
 
     // Tạo bản ghi UserVoucher
@@ -39,11 +36,8 @@ export const claimVoucher = asyncErrorHandler(async (req, res, next) => {
         claimedAt: new Date()
     });
 
-    // Cập nhật số lượng đã phát hành (usedCount trong context này là số lượt đã được lấy/dùng)
-    // Tùy nghiệp vụ: thường usedCount chỉ tăng khi order hoàn tất, 
-    // nhưng ở đây ta có thể coi usedCount là số lượt đã được CLAIM nếu muốn giới hạn lượt phát hành.
-    // Theo yêu cầu của bạn: "khi claimVoucher thành công thì cần tăng / kiểm soát usedCount"
-    voucher.usedCount += 1;
+    // Tăng claimedCount (lượt phát hành), KHÔNG tăng usedCount (lượt dùng thật trong đơn hàng)
+    voucher.claimedCount = (voucher.claimedCount || 0) + 1;
     await voucher.save();
 
     res.status(201).json({
@@ -121,8 +115,8 @@ export const distributeVoucher = asyncErrorHandler(async (req, res, next) => {
 
     await UserVoucher.insertMany(records, { ordered: false });
 
-    // Cập nhật usedCount
-    voucher.usedCount += records.length;
+    // Tăng claimedCount (lượt phát hành), KHÔNG tăng usedCount (lượt dùng thật)
+    voucher.claimedCount = (voucher.claimedCount || 0) + records.length;
     await voucher.save();
 
     res.status(200).json({

@@ -1,92 +1,97 @@
-/**
- * 1. FILE NÀY LÀ GÌ: 
- *    Đây là Component Chân Trang (Footer).
- * 
- * 2. VAI TRÒ TRONG DỰ ÁN:
- *    - Là điểm kết thúc của mọi trang web, cung cấp thông tin "về đích" cho người dùng.
- *    - Chứa các thông tin pháp lý, liên hệ và các liên kết mạng xã hội để tăng độ uy tín (Brand Trust) cho cửa hàng.
- *    - Hỗ trợ tốt cho SEO nhờ cấu trúc thẻ HTML5 chuẩn.
- * 
- * 3. FILE NÀY THUỘC LUỒNG NÀO:
- *    - Luồng Giao diện Chung (Shared UI Layout Flow).
- * 
- * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
- *    - Stateless Functional Component: Đây là một Component "câm", không chứa logic hay state phức tạp. Nó chỉ nhận lệnh và render nội dung cố định, giúp React chạy cực nhẹ và nhanh.
- *    - Material UI Icons: Sử dụng thư viện icon `@mui/icons-material` (Phone, Mail, GitHub...) để giao diện trông hiện đại và chuyên nghiệp thay vì dùng ảnh bitmap nặng nề.
- *    - Semantic HTML5: Sử dụng thẻ `<footer>` thay vì thẻ `<div>` thông thường. Điều này cực kỳ quan trọng cho các công cụ tìm kiếm (Google, Bing) và các thiết bị đọc màn hình dành cho người khiếm thị.
- *    - CSS Micro-interactions: Sử dụng các class như `hover-scale-up` và `hover-icon-btn` để tạo hiệu ứng phóng to nhẹ khi người dùng rà chuột qua, tăng tính tương tác sinh động.
- * 
- * 5. INPUT / OUTPUT CỦA FILE:
- *    - Input: Không có (Thành phần tĩnh).
- *    - Output: Đoạn mã HTML hiển thị thông tin ở cuối trang.
- * 
- * 6. STATE / PROPS / PARAMS / ... : 
- *    - Không sử dụng State hay Props vì dữ liệu của Footer thường ít thay đổi.
- * 
- * 7. CÁC HÀM / CHỨC NƠNG CHÍNH:
- *    - Chỉ thực hiện hàm `render()` (trả về JSX).
- * 
- * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
- *    - Bước 1: Được nạp vào trang chủ (`App.jsx`).
- *    - Bước 2: Luôn nằm ở dưới cùng của Viewport nhờ vào cấu trúc Flexbox/Grid của layout tổng.
- * 
- * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
- *    - Không có tương tác với Server.
- * 
- * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
- *    - Không có logic rẽ nhánh. Render đồng nhất cho mọi đối tượng người dùng (Khách, Thành viên, Admin).
- * 
- * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
- *    - Không có.
- * 
- * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
- *    - Dòng bản quyền `&copy; 2025 DuongNgoc`: Nếu bạn muốn cập nhật năm tự động, có thể dùng `new Date().getFullYear()`.
- *    - Các liên kết `<a>`: Nhớ thêm `target='_blank'` và `rel='noopener noreferrer'` khi liên kết ra trang ngoài để bảo mật thông tin người dùng.
- */
-import React from 'react'
-import '@/shared/components/styles/Footer.css'
-import {Phone, Mail,GitHub, Facebook, Instagram } from '@mui/icons-material'
-
+import React from 'react';
+import { Phone, Mail, Heart } from 'lucide-react';
+import { FaFacebook, FaGithub, FaInstagram } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import BrandLogo from '@/shared/components/BrandLogo';
 
 function Footer() {
+  const currentYear = new Date().getFullYear();
+
   return (
-        <footer className="footer"> 
-          <div className="footer-container">
-          {/* SECTION 1*/}
-          <div className="footer-section contact">
-            <h3>Kết nối với chúng tôi</h3>
-            <p><Phone fontSize='small'/>Phone : +84123456789</p>
-            <p><Mail fontSize='small'/>Mail : dvn150903@gmail.com</p>
-          </div>
-          {/* SECTION 2*/}
-          <div className="footer-section social">
-            <h3>Theo dõi chúng tôi</h3>
-            <div className="social-">
-              <a href="" target='_blank' className="hover-scale-up">
-                  <GitHub  className='social-icon hover-icon-btn' />
-              </a>
-              <a href="" target='_blank' className="hover-scale-up">
-                <Facebook className='social-icon hover-icon-btn'/>
-              </a>
-              <a href="" target='_blank' className="hover-scale-up">
-                <Instagram className='socail-icon hover-icon-btn'/>
-              </a>
+    <footer className="bg-white text-white pt-20 pb-10 border-t border-white/5">
+      <div className="max-w-[1280px] mx-auto px-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
+          {/* Brand Info */}
+          <div className="space-y-6">
+            <BrandLogo size="lg" tone="light" />
+            <p className="text-slate-400 text-sm leading-relaxed max-w-xs font-light">
+              Định nghĩa lại phong cách thời trang hiện đại với sự kết hợp hoàn hảo giữa tối giản và sang trọng. Trải nghiệm mua sắm đẳng cấp nhất.
+            </p>
+            <div className="flex items-center gap-4">
+              {[FaFacebook, FaInstagram, FaGithub].map((Icon, i) => (
+                <a 
+                  key={i}
+                  href="#" 
+                  className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center hover:bg-accent hover:border-accent transition-all duration-300 group"
+                >
+                  <Icon size={18} />
+                </a>
+              ))}
             </div>
           </div>
-          {/* SECTION 3*/}
-          <div className="footer-section about">
-          <h3>Về chúng tôi</h3>
-          <p></p>
-          </div>
+
+          {/* Quick Links */}
+          <div className="space-y-6">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-white/90">Mua sắm</h3>
+            <ul className="space-y-3">
+              {['Tất cả sản phẩm', 'Giờ vàng', 'Bộ sưu tập mới', 'Bán chạy nhất'].map((item) => (
+                <li key={item}>
+                  <Link to="/products" className="text-sm font-light text-slate-400 hover:text-accent transition-colors duration-200">
+                    {item}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <div className="footer-bottom">
-            <p>&copy; 2025 DuongNgoc </p>
+          {/* Customer Service */}
+          <div className="space-y-6">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-white/90">Hỗ trợ</h3>
+            <ul className="space-y-3">
+              {['Về chúng tôi', 'Chính sách bảo mật', 'Điều khoản dịch vụ', 'Liên hệ'].map((item) => (
+                <li key={item}>
+                  <Link to="/about-us" className="text-sm font-light text-slate-400 hover:text-accent transition-colors duration-200">
+                    {item}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
-          
-        </footer>
 
-  )
+          {/* Contact */}
+          <div className="space-y-6">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-white/90">Liên hệ</h3>
+            <ul className="space-y-5">
+              <li className="flex items-center gap-4 text-sm font-light text-slate-400">
+                <div className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center text-accent">
+                  <Phone size={16} strokeWidth={1.5} />
+                </div>
+                <span>+84 123 456 789</span>
+              </li>
+              <li className="flex items-center gap-4 text-sm font-light text-slate-400">
+                <div className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center text-accent">
+                  <Mail size={16} strokeWidth={1.5} />
+                </div>
+                <span>contact@tobishop.vn</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Bottom */}
+        <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <p className="text-xs font-light text-slate-500 tracking-wider">
+            &copy; {currentYear} TOBI SHOP. Phong cách hiện đại mỗi ngày.
+          </p>
+          <div className="flex items-center gap-2 text-xs font-light text-slate-500 tracking-wider">
+            <span>Phát triển bởi</span>
+            <Heart size={14} className="text-accent fill-accent" />
+            <span>đội ngũ Tobi</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
 }
 
-export default Footer
+export default Footer;

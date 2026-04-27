@@ -1,6 +1,6 @@
 import express from 'express';
 import Voucher from '../models/voucherModel.js';
-import { validateVoucher } from '../utils/v2/voucherValidator.js';
+import { validateVoucher } from '../utils/voucherValidator.js';
 import { verifyUserAuth } from '../middleware/userAuth.js';
 import { isAuthenticatedAdmin } from '../middleware/adminAuth.js';
 import asyncErrorHandler from "../middleware/handleAsyncError.js";

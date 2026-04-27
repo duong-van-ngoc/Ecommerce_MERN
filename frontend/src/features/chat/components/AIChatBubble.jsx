@@ -299,7 +299,7 @@ const AIChatBubble = () => {
                                     <div className={`${msg.role === "bot" ? "bg-white/80 backdrop-blur-md rounded-tl-none text-[#211a1a]" : "bg-[#561922] text-white rounded-tr-none"} p-4 rounded-2xl shadow-sm text-sm leading-relaxed markdown-body`}>
                                         <ReactMarkdown
                                             components={{
-                                                a: ({ node, ...props }) => {
+                                                a: (props) => {
                                                     // Intercept Add to Cart links
                                                     if (props.href && props.href.includes('cart/add/')) {
                                                         const parts = props.href.split('/');

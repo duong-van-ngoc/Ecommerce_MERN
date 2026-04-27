@@ -53,6 +53,28 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import axios from '@/shared/api/http.js'
 
+const getOrderTimestamp = (order) => {
+    const rawDate = order?.createdAt || order?.orderDate || order?.created_at || order?.updatedAt;
+    const timestamp = rawDate ? new Date(rawDate).getTime() : Number.NaN;
+    return Number.isFinite(timestamp) ? timestamp : -1;
+};
+
+const sortOrdersByNewest = (orders = []) =>
+    [...orders].sort((a, b) => getOrderTimestamp(b) - getOrderTimestamp(a));
+
+const prependUniqueOrder = (orders = [], newOrder) => {
+    if (!newOrder?._id) {
+        return sortOrdersByNewest(orders);
+    }
+
+    const remainingOrders = orders.filter((order) => order?._id !== newOrder._id);
+
+    if (getOrderTimestamp(newOrder) < 0) {
+        return [newOrder, ...sortOrdersByNewest(remainingOrders)];
+    }
+
+    return sortOrdersByNewest([newOrder, ...remainingOrders]);
+};
 
 
 // Tạo order slice
@@ -141,6 +163,7 @@ const orderSlice = createSlice({
                 state.order = action.payload.order
                 state.success = action.payload.success
                 state.orderId = action.payload?.orderId || action.payload?.order?._id || null;
+                state.orders = prependUniqueOrder(state.orders, action.payload?.order);
 
             })
             .addCase(createOrder.rejected, (state, action) => {
@@ -156,7 +179,7 @@ const orderSlice = createSlice({
             })
             .addCase(getMyOrders.fulfilled, (state, action) => {
                 state.loading = false;
-                state.orders = action.payload?.orders || [];
+                state.orders = sortOrdersByNewest(action.payload?.orders || []);
             })
             .addCase(getMyOrders.rejected, (state, action) => {
                 state.loading = false;
@@ -180,7 +203,7 @@ const orderSlice = createSlice({
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(cancelOrder.fulfilled, (state, action) => {
+            .addCase(cancelOrder.fulfilled, (state) => {
                 state.loading = false;
                 state.cancelSuccess = true; // Chỉ bật cancelSuccess
             })
@@ -194,4 +217,3 @@ const orderSlice = createSlice({
 export const { removeErrors, removeSuccess } = orderSlice.actions
 
 export default orderSlice.reducer
-

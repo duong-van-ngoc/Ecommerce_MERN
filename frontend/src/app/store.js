@@ -49,9 +49,9 @@ import userReducer from '@/features/user/userSlice';
 import cartReducer from '@/features/cart/cartSlice';
 import orderReducer from '@/features/orders/orderSlice';
 import addressReducer from '@/features/address/addressSlice';
-import adminReducer from '@/admin/adminSLice/adminSlice';
-import voucherReducer from '@/modules/voucher';
-import notificationReducer from '@/features/notification/notificationSlice';
+import adminReducer from '@/features/admin/state/adminSlice';
+import voucherReducer from '@/features/vouchers/voucherSlice';
+import notificationReducer from '@/features/notifications/notificationSlice';
 
 
 export const store = configureStore({

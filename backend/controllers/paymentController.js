@@ -53,6 +53,7 @@ import handleAsyncError from '../middleware/handleAsyncError.js';
 import Order from '../models/orderModel.js';
 import Cart from '../models/cartModel.js';
 import CartItem from '../models/cartItemModel.js';
+import Voucher from '../models/voucherModel.js';
 import HandleError from '../utils/handleError.js';
 import sendEmail from '../utils/sendEmail.js';
 
@@ -80,10 +81,24 @@ const getVnpayInstance = () => {
  */
 export const createVnpayPayment = handleAsyncError(async (req, res, next) => {
     try {
-        const { amount, orderId, orderDescription } = req.body;
+        const { orderId, orderDescription } = req.body;
 
-        if (!amount || !orderId) {
-            return next(new HandleError("Thiếu thông tin số tiền hoặc ID đơn hàng", 400));
+        if (!orderId) {
+            return next(new HandleError("Thiếu ID đơn hàng", 400));
+        }
+
+        // SECURITY: Lấy totalPrice từ DB, không tin amount FE gửi lên
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return next(new HandleError("Không tìm thấy đơn hàng", 404));
+        }
+
+        if (order.user_id.toString() !== req.user._id.toString() && req.user.role !== 'admin' && req.user.role_id?.name !== 'admin') {
+            return next(new HandleError("Bạn không có quyền thanh toán đơn hàng này", 403));
+        }
+
+        if (order.isPaid) {
+            return next(new HandleError("Đơn hàng đã được thanh toán", 400));
         }
 
         // Lấy IP address và chuẩn hóa (VNPay không thích ::1)
@@ -92,15 +107,14 @@ export const createVnpayPayment = handleAsyncError(async (req, res, next) => {
             ipAddr = '127.0.0.1';
         }
 
-        const vnp_Amount = Math.round(Number(amount) );
+        const vnp_Amount = Math.round(Number(order.totalPrice));
         const vnp_OrderInfo = orderDescription || `Thanh toan don hang ${orderId}`;
         const vnp_TxnRef = orderId.toString();
 
         console.log("----- [VNPay DEBUG PARAMS] -----");
-        console.log("- vnp_Amount:", vnp_Amount);
+        console.log("- vnp_Amount (from DB):", vnp_Amount);
         console.log("- vnp_TxnRef:", vnp_TxnRef);
         console.log("- vnp_OrderInfo:", vnp_OrderInfo);
-        console.log("- vnp_OrderType:", "100000"); // Fashion/Consumer
         console.log("- vnp_IpAddr:", ipAddr);
         console.log("- vnp_ReturnUrl:", process.env.VNP_RETURN_URL);
         console.log("---------------------------------");
@@ -111,13 +125,12 @@ export const createVnpayPayment = handleAsyncError(async (req, res, next) => {
             vnp_IpAddr: ipAddr,
             vnp_TxnRef,
             vnp_OrderInfo,
-            vnp_OrderType: '100000', // Sử dụng mã số thay vì enum 'other'
+            vnp_OrderType: '100000',
             vnp_ReturnUrl: process.env.VNP_RETURN_URL,
             vnp_Locale: VnpLocale.VN,
             vnp_CurrCode: VnpCurrCode.VND,
             vnp_CreateDate: new Date(),
         });
-
 
         res.status(200).json({
             success: true,
@@ -142,7 +155,8 @@ const updateOrderPaymentStatus = async (query) => {
     if (!order) return { success: false, code: '01', message: 'Order not found' };
     
     // Check amount (VNPay vnp_Amount is multiplied by 100)
-    if (Number(query.vnp_Amount) / 100 !== order.totalPrice) {
+    // Dùng Math.round để tránh sai lệch số thập phân (totalPrice = 12.5 -> VNPay 13)
+    if (Number(query.vnp_Amount) / 100 !== Math.round(Number(order.totalPrice))) {
         return { success: false, code: '04', message: 'Invalid amount' };
     }
 
@@ -265,15 +279,23 @@ const updateOrderPaymentStatus = async (query) => {
         return { success: true, code: '00', message: 'Success' };
     } else {
         // Payment failed
-        order.paymentStatus = "Failed";
-        order.paymentInfo = {
-            ...order.paymentInfo,
-            resultCode: responseCode,
-            message: "Thanh toán thất bại",
-        };
-        order.orderStatus = "Đã hủy";
-        await order.save();
-        return { success: true, code: '00', message: 'Payment Failed recorded' };
+        if (order.orderStatus !== "Đã hủy") {
+            order.paymentStatus = "Failed";
+            order.paymentInfo = {
+                ...order.paymentInfo,
+                resultCode: responseCode,
+                message: "Thanh toán thất bại",
+            };
+            order.orderStatus = "Đã hủy";
+            
+            // Hoàn lại lượt dùng voucher
+            if (order.voucher_id) {
+                await Voucher.findByIdAndUpdate(order.voucher_id, { $inc: { usedCount: -1 } });
+            }
+            
+            await order.save();
+        }
+        return { success: true, code: responseCode, message: 'Payment Failed recorded' };
     }
 };
 
@@ -285,16 +307,21 @@ export const vnpayReturn = handleAsyncError(async (req, res, next) => {
     const vnpay = getVnpayInstance();
     const verify = vnpay.verifyReturnUrl(query);
 
-    if (verify.isSuccess) {
-        // Cập nhật database ngay lập tức (Hữu ích cho localhost và feedback nhanh)
-        await updateOrderPaymentStatus(query);
+    if (verify.isVerified) {
+        // Cập nhật database VÀ kiểm tra kết quả trước khi redirect
+        const result = await updateOrderPaymentStatus(query);
 
-        if (query.vnp_ResponseCode === '00') {
+        // Chú ý: result.code === '02' nghĩa là IPN đã cập nhật đơn hàng thành công trước khi Return URL được gọi
+        if (query.vnp_ResponseCode === '00' && result.success && (result.code === '00' || result.code === '02')) {
+            // Chữ ký hợp lệ + VNPay báo thành công + DB update thành công + amount khớp
             res.redirect(`${process.env.FRONTEND_URL}/payment/success?orderId=${query.vnp_TxnRef}&vnp_ResponseCode=${query.vnp_ResponseCode}`);
         } else {
-            res.redirect(`${process.env.FRONTEND_URL}/payment/failed?orderId=${query.vnp_TxnRef}&vnp_ResponseCode=${query.vnp_ResponseCode}`);
+            // Thất bại: amount sai (code 04), DB update fail, hoặc VNPay báo lỗi
+            const failCode = result.code || query.vnp_ResponseCode || 'unknown';
+            res.redirect(`${process.env.FRONTEND_URL}/payment/failed?orderId=${query.vnp_TxnRef}&vnp_ResponseCode=${failCode}`);
         }
     } else {
+        // Chữ ký không hợp lệ
         res.redirect(`${process.env.FRONTEND_URL}/payment/failed?orderId=${query.vnp_TxnRef}&vnp_ResponseCode=97`);
     }
 });
@@ -307,7 +334,7 @@ export const vnpayIPN = handleAsyncError(async (req, res, next) => {
     const vnpay = getVnpayInstance();
     const verify = vnpay.verifyIpnCall(query);
 
-    if (verify.isSuccess) {
+    if (verify.isVerified) {
         const result = await updateOrderPaymentStatus(query);
         return res.status(200).json({ RspCode: result.code, Message: result.message });
     } else {
