@@ -5,7 +5,11 @@ import { formatVND } from '@/shared/utils/formatCurrency';
  * ProductInfo — tên, rating, giá, mô tả ngắn, benefits.
  * Không chứa logic chọn biến thể hay nút mua — xem ProductActions.
  */
-function ProductInfo({ product, discountPercent, originalPrice, soldCount }) {
+function ProductInfo({ product, discountPercent, originalPrice, soldCount, quantity }) {
+  const unitPrice = Number(product?.price || 0);
+  const displayPrice = unitPrice * quantity;
+  const displayOriginalPrice = Number(originalPrice || 0) * quantity;
+
   return (
     <div>
       <h1 className="product-title">{product.name}</h1>
@@ -28,12 +32,17 @@ function ProductInfo({ product, discountPercent, originalPrice, soldCount }) {
 
       {/* Price */}
       <div className="price-section">
-        <span className="current-price">{formatVND(product.price)}</span>
+        <span className="current-price">{formatVND(displayPrice)}</span>
         {discountPercent > 0 && (
           <>
-            <span className="original-price">{formatVND(originalPrice)}</span>
+            <span className="original-price">{formatVND(displayOriginalPrice)}</span>
             <span className="discount-badge">-{discountPercent}%</span>
           </>
+        )}
+        {quantity > 1 && (
+          <div className="price-breakdown">
+            {quantity} x {formatVND(unitPrice)}
+          </div>
         )}
       </div>
 

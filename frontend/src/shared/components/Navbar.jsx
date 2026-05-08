@@ -83,7 +83,7 @@ function Navbar() {
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           isScrolled 
             ? "bg-white/90 backdrop-blur-md border-b border-slate-200/60 py-3 shadow-soft" 
-            : "bg-white/10 backdrop-blur-sm border-b border-white/10 py-5"
+            : "bg-white/72 backdrop-blur-xl border-b border-white/60 py-4 shadow-[0_12px_30px_rgba(15,23,42,0.08)]"
         }`}
       >
         <div className="max-w-[1280px] mx-auto px-6">
@@ -100,7 +100,9 @@ function Navbar() {
                     className={`text-[12px] font-bold tracking-widest transition-all duration-300 relative group flex items-center gap-1 ${
                       isActive(link.path) 
                         ? "text-primary" 
-                        : "text-text-secondary hover:text-primary"
+                        : isScrolled
+                          ? "text-text-secondary hover:text-primary"
+                          : "text-slate-700 hover:text-primary"
                     }`}
                   >
                     {link.name}

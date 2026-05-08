@@ -89,6 +89,7 @@ function ProductDetailView() {
                 discountPercent={discountPercent}
                 originalPrice={originalPrice}
                 soldCount={soldCount}
+                quantity={quantity}
               />
               <ProductActions
                 product={product}
