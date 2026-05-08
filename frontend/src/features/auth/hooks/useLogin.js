@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { login, removeErrors } from "@/features/user/userSlice";
-import { API_ORIGIN } from "@/shared/config/api";
+import { API_V1_BASE_URL } from "@/shared/config/api";
 
 /**
  * useLogin — encapsulates all login form logic.
@@ -17,7 +17,7 @@ export function useLogin() {
   const location = useLocation();
 
   const { error, loading, isAuthenticated } = useSelector((s) => s.user);
-  const backendUrl = API_ORIGIN;
+  const backendUrl = API_V1_BASE_URL;
 
   const redirect = location.search ? location.search.split("=")[1] : "/";
 
