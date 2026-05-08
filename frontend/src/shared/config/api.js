@@ -1,9 +1,28 @@
 const trimTrailingSlash = (value) => value?.trim().replace(/\/$/, "") || "";
 
-const normalizeApiOrigin = (value) => {
-  const trimmed = trimTrailingSlash(value);
+const stripEnvAssignment = (value) => {
+  const trimmed = value?.trim() || "";
   if (!trimmed) return "";
-  return trimmed.endsWith("/api/v1") ? trimmed.slice(0, -7) : trimmed;
+
+  const match = trimmed.match(/^VITE_API_URL\s*=\s*(.+)$/);
+  return match ? match[1].trim() : trimmed;
+};
+
+const normalizeProtocol = (value) => value.replace(/^(https?):\/(?!\/)/i, "$1://");
+
+const normalizeApiOrigin = (value) => {
+  const rawValue = stripEnvAssignment(value).replace(/^['"]|['"]$/g, "");
+  const normalizedValue = normalizeProtocol(trimTrailingSlash(rawValue));
+
+  if (!normalizedValue) return "";
+
+  try {
+    const url = new URL(normalizedValue);
+    return url.pathname === "/api/v1" ? url.origin : normalizedValue;
+  } catch {
+    console.warn(`Invalid VITE_API_URL value: ${normalizedValue}`);
+    return "";
+  }
 };
 
 const envApiOrigin = normalizeApiOrigin(import.meta.env.VITE_API_URL);
