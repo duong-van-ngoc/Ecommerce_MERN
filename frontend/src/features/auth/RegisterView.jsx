@@ -15,7 +15,7 @@ import {
 import { SocialLogin } from "@/features/auth/components/SocialLogin";
 import { useRegister } from "@/features/auth/hooks/useRegister";
 import BrandLogo from "@/shared/components/BrandLogo";
-import { API_ORIGIN } from "@/shared/config/api";
+import { API_V1_BASE_URL } from "@/shared/config/api";
 
 const inputClass =
   "h-12 w-full rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm text-[#111827] outline-none transition-all placeholder:text-[#9CA3AF] focus:border-[#E85D75] focus:ring-4 focus:ring-[#E85D75]/10";
@@ -28,7 +28,7 @@ function RegisterView() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const backendUrl = API_ORIGIN;
+  const backendUrl = API_V1_BASE_URL;
 
   const handleGoogleRegister = () => window.open(`${backendUrl}/auth/google`, "_self");
   const handleFacebookRegister = () => window.open(`${backendUrl}/auth/facebook`, "_self");
