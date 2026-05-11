@@ -3,8 +3,11 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { logout } from '@/features/user/userSlice';
+import { fetchNotifications } from '@/features/notifications/notificationSlice';
 import { toast } from 'react-toastify';
 import BrandLogo from '@/shared/components/BrandLogo';
+import { formatVND } from '@/shared/utils/formatCurrency';
+import '@/shared/components/NavbarHoverPopups.css';
 
 // MUI Icons
 import SearchIcon from '@mui/icons-material/Search';
@@ -20,6 +23,28 @@ import Inventory2Icon from '@mui/icons-material/Inventory2';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 
+const POPUP_PREVIEW_LIMIT = 5;
+
+const getCartProductId = (item) => {
+  const product = item?.product || item?.product_id;
+
+  if (!product) return "";
+
+  return typeof product === "object" ? product._id : product;
+};
+
+const getCartItemKey = (item, index) => {
+  return `${getCartProductId(item) || item?._id || index}-${item?.size || ""}-${item?.color || ""}`;
+};
+
+const getNotificationImage = (item) => {
+  return item?.image || item?.thumbnail || item?.imageUrl || item?.productImage || "/placeholder.png";
+};
+
+const getNotificationDescription = (item) => {
+  return item?.message || item?.description || "Bạn có cập nhật mới từ ToBi Shop.";
+};
+
 function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,9 +54,16 @@ function Navbar() {
   const dispatch = useDispatch();
 
   const { isAuthenticated, user } = useSelector((state) => state.user);
-  const { cartItems } = useSelector((state) => state.cart);
-  const { unreadCount = 0 } = useSelector((state) => state.notification);
+  const { cartItems = [] } = useSelector((state) => state.cart);
+  const {
+    notifications = [],
+    unreadCount = 0,
+    loading: notificationsLoading,
+  } = useSelector((state) => state.notification);
   const navigate = useNavigate();
+
+  const notificationPreviewItems = notifications.slice(0, POPUP_PREVIEW_LIMIT);
+  const cartPreviewItems = cartItems.slice(0, POPUP_PREVIEW_LIMIT);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -44,6 +76,12 @@ function Navbar() {
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(fetchNotifications());
+    }
+  }, [dispatch, isAuthenticated]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -135,28 +173,128 @@ function Navbar() {
               </div>
 
               <div className="flex items-center gap-3">
-                <Link 
-                  to="/notifications" 
-                  className="relative p-2.5 bg-slate-100 hover:bg-accent/10 rounded-full transition-all group text-primary"
-                >
-                  <NotificationsIcon className="group-hover:text-accent transition-colors !text-[24px]" />
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-accent text-white text-[10px] font-bold min-w-[20px] h-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm">
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </span>
-                  )}
-                </Link>
-                <Link 
-                  to="/cart" 
-                  className="relative p-2.5 bg-slate-100 hover:bg-accent/10 rounded-full transition-all group text-primary"
-                >
-                  <ShoppingBagIcon className="group-hover:text-accent transition-colors !text-[24px]" />
-                  {cartItems.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-accent text-white text-[10px] font-bold min-w-[20px] h-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm">
-                      {cartItems.length}
-                    </span>
-                  )}
-                </Link>
+                <div className="navbar-hover-popup">
+                  <Link
+                    to="/notifications"
+                    className="relative p-2.5 bg-slate-100 hover:bg-accent/10 rounded-full transition-all group text-primary"
+                    aria-label="Thông báo"
+                  >
+                    <NotificationsIcon className="group-hover:text-accent transition-colors !text-[24px]" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-accent text-white text-[10px] font-bold min-w-[20px] h-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </Link>
+
+                  <div className="navbar-hover-popup__panel navbar-hover-popup__panel--notifications" aria-label="Danh sách thông báo">
+                    <div className="navbar-hover-popup__header">
+                      <span>Thông báo mới nhận</span>
+                      {unreadCount > 0 && <strong>{unreadCount} chưa đọc</strong>}
+                    </div>
+
+                    <div className="navbar-hover-popup__list">
+                      {notificationsLoading ? (
+                        <div className="navbar-hover-popup__empty">Đang tải thông báo...</div>
+                      ) : notificationPreviewItems.length > 0 ? (
+                        notificationPreviewItems.map((item, index) => (
+                          <Link
+                            key={item._id || index}
+                            to={item.link || "/notifications"}
+                            className={`navbar-hover-popup__item navbar-hover-popup__item--notification ${!item.isRead ? "is-unread" : ""}`}
+                          >
+                            <img
+                              src={getNotificationImage(item)}
+                              alt=""
+                              className="navbar-hover-popup__thumb"
+                            />
+                            <span className="navbar-hover-popup__item-body">
+                              <span className="navbar-hover-popup__item-title">
+                                {item.title || "Thông báo mới"}
+                              </span>
+                              <span className="navbar-hover-popup__item-desc">
+                                {getNotificationDescription(item)}
+                              </span>
+                            </span>
+                          </Link>
+                        ))
+                      ) : (
+                        <div className="navbar-hover-popup__empty">
+                          {isAuthenticated ? "Bạn chưa có thông báo nào." : "Đăng nhập để xem thông báo."}
+                        </div>
+                      )}
+                    </div>
+
+                    <Link to="/notifications" className="navbar-hover-popup__view-all">
+                      Xem tất cả thông báo
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="navbar-hover-popup">
+                  <Link
+                    to="/cart"
+                    className="relative p-2.5 bg-slate-100 hover:bg-accent/10 rounded-full transition-all group text-primary"
+                    aria-label="Giỏ hàng"
+                  >
+                    <ShoppingBagIcon className="group-hover:text-accent transition-colors !text-[24px]" />
+                    {cartItems.length > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-accent text-white text-[10px] font-bold min-w-[20px] h-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm">
+                        {cartItems.length}
+                      </span>
+                    )}
+                  </Link>
+
+                  <div className="navbar-hover-popup__panel navbar-hover-popup__panel--cart" aria-label="Danh sách sản phẩm trong giỏ">
+                    <div className="navbar-hover-popup__header">
+                      <span>Sản phẩm mới thêm</span>
+                    </div>
+
+                    <div className="navbar-hover-popup__list">
+                      {cartPreviewItems.length > 0 ? (
+                        cartPreviewItems.map((item, index) => {
+                          const productId = getCartProductId(item);
+
+                          return (
+                            <Link
+                              key={getCartItemKey(item, index)}
+                              to={productId ? `/product/${productId}` : "/cart"}
+                              className="navbar-hover-popup__item navbar-hover-popup__item--cart"
+                            >
+                              <img
+                                src={item.image || "/placeholder.png"}
+                                alt={item.name || "Sản phẩm"}
+                                className="navbar-hover-popup__thumb"
+                              />
+                              <span className="navbar-hover-popup__item-body">
+                                <span className="navbar-hover-popup__item-title navbar-hover-popup__item-title--truncate">
+                                  {item.name || "Sản phẩm trong giỏ"}
+                                </span>
+                                {(item.size || item.color) && (
+                                  <span className="navbar-hover-popup__variant">
+                                    {[item.color, item.size].filter(Boolean).join(" / ")}
+                                  </span>
+                                )}
+                              </span>
+                              <span className="navbar-hover-popup__price">
+                                {formatVND(item.price)}
+                              </span>
+                            </Link>
+                          );
+                        })
+                      ) : (
+                        <div className="navbar-hover-popup__empty">Giỏ hàng của bạn đang trống.</div>
+                      )}
+                    </div>
+
+                    <div className="navbar-hover-popup__footer">
+                      <span>{cartItems.length} Thêm Hàng Vào Giỏ</span>
+                      <Link to="/cart" className="navbar-hover-popup__cart-button">
+                        Xem Giỏ Hàng
+                      </Link>
+                    </div>
+                  </div>
+                </div>
 
                 {isAuthenticated ? (
                   <div className="relative">
