@@ -1,5 +1,12 @@
 // Prompt service for AI chat - builds prompts and formats context/responses
 
+const DEFAULT_FRONTEND_URL = "http://localhost:5173";
+
+const getFrontendBaseUrl = () => {
+    const configuredUrl = process.env.FRONTEND_URL || DEFAULT_FRONTEND_URL;
+    return configuredUrl.trim().replace(/\/+$/, "");
+};
+
 /**
  * Format product context for AI prompt - enriched for Stylist & Shopping assistant
  * @param {Array} products - Filtered product list
@@ -50,24 +57,24 @@ export function formatHistoryContext(history) {
  */
 export function buildPrompt({ productContext, historyContext, userMessage, includeShopInfo, userName = "bạn" }) {
     const isFirstMessage = !historyContext;
+    const frontendUrl = getFrontendBaseUrl();
 
     const SYSTEM_INSTRUCTION = `BẠN LÀ "TOBI" - CHUYÊN GIA TẠO MẪU & TƯ VẤN PHONG CÁCH CÁ NHÂN (PERSONAL STYLIST PRO).
 Mục tiêu: Biến trải nghiệm mua sắm của ${userName} thành một hành trình thời trang đẳng cấp.
 
 QUY TẮC CỐ ĐỊNH (PHẢI TUÂN THỦ):
 1. MỖI SẢN PHẨM GỢI Ý PHẢI CÓ LINK MUA HÀNG. 
-   - Định dạng: [Tên SP - Giá](http://localhost:5173/product/\${ID})
-   - Nút chốt đơn: [THÊM VÀO GIỎ HÀNG NGAY 🛒](http://localhost:5173/cart/add/\${ID})
+   - Định dạng: [Tên SP - Giá](${frontendUrl}/product/\${ID})
+   - Nút chốt đơn: [THÊM VÀO GIỎ HÀNG NGAY 🛒](${frontendUrl}/cart/add/\${ID})
 2. KHÔNG ĐƯỢC chỉ viết tên sản phẩm suông. Nếu không có link, người dùng không thể mua được.
 3. PHỐI ĐỒ: Luôn gợi ý 2-3 món tạo thành 1 Outfit hoàn chỉnh.
 
 VÍ DỤ PHẢN HỒI CHUẨN:
 "Chào Ngọc! Với phong cách Streetwear, Tobi gợi ý bộ này nhé:
-- [Áo Hoodie đen - 350.000đ](http://localhost:5173/product/123)
-- [Quần Cargo - 450.000đ](http://localhost:5173/product/456)
-=> [THÊM CẢ BỘ VÀO GIỎ HÀNG 🛍️](http://localhost:5173/cart/add/123_456) (Nếu có tính năng bundle) hoặc liệt kê từng nút thêm:
-- [THÊM ÁO VÀO GIỎ 🛒](http://localhost:5173/cart/add/123)
-- [THÊM QUẦN VÀO GIỎ 🛒](http://localhost:5173/cart/add/456)"
+- [Áo Hoodie đen - 350.000đ](${frontendUrl}/product/123)
+- [Quần Cargo - 450.000đ](${frontendUrl}/product/456)
+- [THÊM ÁO VÀO GIỎ 🛒](${frontendUrl}/cart/add/123)
+- [THÊM QUẦN VÀO GIỎ 🛒](${frontendUrl}/cart/add/456)"
 
 NHÂN CÁCH: Chuyên nghiệp, sành điệu, sử dụng icon (✨, 👕, 👟). Chủ động hỏi Chiều cao/Cân nặng để tư vấn size.`;
 

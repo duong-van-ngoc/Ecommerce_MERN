@@ -57,7 +57,7 @@ import Footer from "@/shared/components/Footer";
 import CheckoutPath from "@/features/checkout/components/CheckoutPath";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import axios from "axios";
+import axios from "@/shared/api/http.js";
 import { formatVND } from "@/shared/utils/formatCurrency";
 
 function Payment() {
@@ -70,6 +70,7 @@ function Payment() {
     address: shippingInfo?.address || "",
     city: shippingInfo?.city || shippingInfo?.provinceName || "",
     state: shippingInfo?.state || shippingInfo?.districtName || "",
+    ward: shippingInfo?.ward || shippingInfo?.wardName || "",
     country: shippingInfo?.country || "Việt Nam",
     pinCode: Number(shippingInfo?.pinCode || 0),
     phoneNo: Number(shippingInfo?.phoneNo || shippingInfo?.phoneNumber || 0),
@@ -123,6 +124,10 @@ function Payment() {
           quantity: item.quantity,
           image: getItemImage(item),
           product: item.product || item._id,
+          product_id: item.product_id || item.product || item._id,
+          pricingType: item.pricingType,
+          flashSaleId: item.flashSaleId,
+          flashSaleItemId: item.flashSaleItemId,
         })),
         itemPrice: totals.itemPrice,
         taxPrice: totals.taxPrice,
@@ -190,6 +195,10 @@ function Payment() {
           quantity: item.quantity,
           image: getItemImage(item),
           product: item.product || item._id,
+          product_id: item.product_id || item.product || item._id,
+          pricingType: item.pricingType,
+          flashSaleId: item.flashSaleId,
+          flashSaleItemId: item.flashSaleItemId,
         })),
         itemPrice: totals.itemPrice,
         taxPrice: totals.taxPrice,

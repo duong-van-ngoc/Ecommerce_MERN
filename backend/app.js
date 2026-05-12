@@ -71,6 +71,7 @@ import aiAssistant from './routes/aiRoute.js';
 import vouchers from './routes/promoRoutes.js';
 import notifications from './routes/notificationRoutes.js';
 import userVouchers from './routes/userVoucherRoutes.js';
+import flashSales from './routes/flashSaleRoutes.js';
 
 import errorHandleMiddleware from './middleware/error.js';
 import cookieParser from 'cookie-parser';
@@ -145,6 +146,7 @@ app.use("/api/v1/ai", aiAssistant);
 app.use("/api/v1/vouchers", vouchers);
 app.use("/api/v1/user-vouchers", userVouchers);
 app.use("/api/v1/notifications", notifications);
+app.use("/api/v1", flashSales);
 
 app.use(errorHandleMiddleware);
 

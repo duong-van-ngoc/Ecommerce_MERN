@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { getProductDetails, removeErrors } from '@/features/products/productSlice';
 import { addItemsToCart, removeMessage } from '@/features/cart/cartSlice';
+import axios from '@/shared/api/http.js';
 
 /** Color name → hex map. Can be moved to a config file later. */
 export const COLOR_MAP = {
@@ -36,6 +37,7 @@ export function useProductDetail() {
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectionError, setSelectionError] = useState(false);
+  const [flashSale, setFlashSale] = useState(null);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -71,6 +73,7 @@ export function useProductDetail() {
     : 0;
 
   const soldCount = product?.sold || 0;
+  const maxAvailableQuantity = flashSale?.availableStock ?? product?.stock ?? 0;
   const totalReviews = product?.numOfReviews || 0;
   const ratingDistribution = [
     { stars: 5, count: Math.round(totalReviews * 0.85) },
@@ -95,6 +98,19 @@ export function useProductDetail() {
   }, [dispatch, id]);
 
   useEffect(() => {
+    if (!id) return;
+    let mounted = true;
+    axios.get(`/api/v1/products/${id}/flash-sale`)
+      .then(({ data }) => {
+        if (mounted) setFlashSale(data.flashSale || null);
+      })
+      .catch(() => {
+        if (mounted) setFlashSale(null);
+      });
+    return () => { mounted = false; };
+  }, [id]);
+
+  useEffect(() => {
     if (error) { toast.error(error, { position: 'top-center', autoClose: 3000 }); dispatch(removeErrors()); }
     if (cartError) { toast.error(cartError, { position: 'top-center', autoClose: 3000 }); }
   }, [dispatch, error, cartError]);
@@ -105,8 +121,8 @@ export function useProductDetail() {
 
   // ─── Handlers ────────────────────────────────────────────────────────────────
   const increaseQuantity = () => {
-    if (product.stock <= quantity) {
-      toast.error(`Số lượng không thể vượt quá ${product.stock}`, { position: 'top-center', autoClose: 3000 });
+    if (maxAvailableQuantity <= quantity) {
+      toast.error(`Số lượng không thể vượt quá ${maxAvailableQuantity}`, { position: 'top-center', autoClose: 3000 });
       return;
     }
     setQuantity(prev => prev + 1);
@@ -146,9 +162,14 @@ export function useProductDetail() {
     const buyNowItem = {
       product: product._id,
       name: product.name,
-      price: product.price,
+      price: flashSale?.salePrice ?? product.price,
+      priceSnapshot: flashSale?.salePrice ?? product.price,
+      originalPriceSnapshot: flashSale?.originalPriceSnapshot ?? product.originalPrice ?? product.price,
       image: product.images?.[0]?.url,
-      stock: product.stock,
+      stock: maxAvailableQuantity,
+      pricingType: flashSale ? 'flash_sale' : 'normal',
+      flashSaleId: flashSale?.flashSaleId,
+      flashSaleItemId: flashSale?._id,
       quantity,
       size: selectedSize !== null ? productSizes[selectedSize]?.name : '',
       color: selectedColor !== null ? productColors[selectedColor]?.name : '',
@@ -180,7 +201,7 @@ export function useProductDetail() {
     loading, error, product, cartLoading,
     // derived
     productImages, productColors, productSizes,
-    originalPrice, discountPercent, soldCount,
+    originalPrice, discountPercent, soldCount, flashSale, maxAvailableQuantity,
     totalReviews, ratingDistribution, mockRelatedProducts,
     // handlers
     increaseQuantity, decreaseQuantity,

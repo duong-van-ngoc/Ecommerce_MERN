@@ -1,8 +1,8 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import axios from "@/shared/api/http.js";
 import { getProduct, removeErrors } from "@/features/products/productSlice";
-import { HOME_FLASH_SALE_END_TIME } from "@/features/home/constants/home.constants";
 
 function getErrorMessage(error) {
   if (!error) return "";
@@ -10,36 +10,77 @@ function getErrorMessage(error) {
   return error.message || "Unable to load homepage products";
 }
 
-function hasDiscount(product) {
-  return Number(product?.originalPrice || 0) > Number(product?.price || 0);
-}
-
-function getDiscountPercent(product) {
-  const originalPrice = Number(product?.originalPrice || 0);
-  const price = Number(product?.price || 0);
-
-  if (!originalPrice || originalPrice <= price) return 0;
-  return Math.round((1 - price / originalPrice) * 100);
-}
-
-function getSaleEndDate() {
-  const endDate = new Date();
-  endDate.setHours(HOME_FLASH_SALE_END_TIME.hour, HOME_FLASH_SALE_END_TIME.minute, 59, 999);
-
-  if (endDate.getTime() <= Date.now()) {
-    endDate.setDate(endDate.getDate() + 1);
-  }
-
-  return endDate;
+function normalizeFlashSaleProduct(item) {
+  const product = item.product || {};
+  return {
+    ...product,
+    _id: product._id || item.productId,
+    price: item.salePrice,
+    originalPrice: item.originalPriceSnapshot,
+    flashSale: item,
+  };
 }
 
 export function useHomeData() {
   const dispatch = useDispatch();
-  const { loading, error, products } = useSelector((state) => state.product);
+  const { loading: productsLoading, error, products } = useSelector((state) => state.product);
+  const [flashSale, setFlashSale] = useState(null);
+  const [flashSaleLoading, setFlashSaleLoading] = useState(false);
+  const [bestSellerProducts, setBestSellerProducts] = useState([]);
+  const [bestSellerLoading, setBestSellerLoading] = useState(false);
 
   useEffect(() => {
     dispatch(getProduct({ keyword: "", page: 1, sort: "newest" }));
   }, [dispatch]);
+
+  useEffect(() => {
+    let mounted = true;
+    setFlashSaleLoading(true);
+
+    axios
+      .get("/api/v1/flash-sales/active")
+      .then(({ data }) => {
+        if (mounted) setFlashSale(data.flashSale || null);
+      })
+      .catch(() => {
+        if (mounted) setFlashSale(null);
+      })
+      .finally(() => {
+        if (mounted) setFlashSaleLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    setBestSellerLoading(true);
+
+    axios
+      .get("/api/v1/products", {
+        params: {
+          page: 1,
+          sort: "-sold,-ratings,-createdAt",
+          stock: true,
+          status: "available",
+        },
+      })
+      .then(({ data }) => {
+        if (mounted) setBestSellerProducts(Array.isArray(data.products) ? data.products : []);
+      })
+      .catch(() => {
+        if (mounted) setBestSellerProducts([]);
+      })
+      .finally(() => {
+        if (mounted) setBestSellerLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!error) return;
@@ -56,31 +97,35 @@ export function useHomeData() {
   }, [products]);
 
   const flashSaleProducts = useMemo(() => {
-    const discountedProducts = productList
-      .filter(hasDiscount)
-      .sort((a, b) => getDiscountPercent(b) - getDiscountPercent(a));
+    return (flashSale?.items || [])
+      .filter((item) => item.availableStock > 0 && item.product)
+      .map(normalizeFlashSaleProduct)
+      .slice(0, 4);
+  }, [flashSale]);
 
-    return (discountedProducts.length > 0 ? discountedProducts : productList).slice(0, 4);
+  const newArrivalProducts = useMemo(() => {
+    return productList.slice(0, 8);
   }, [productList]);
 
-  const featuredProducts = useMemo(() => {
+  const fallbackBestSellers = useMemo(() => {
     return [...productList]
       .sort((a, b) => {
         const soldDelta = Number(b?.sold || 0) - Number(a?.sold || 0);
         if (soldDelta) return soldDelta;
-
-        return Number(b?.ratings || 0) - Number(a?.ratings || 0);
+        const ratingDelta = Number(b?.ratings || 0) - Number(a?.ratings || 0);
+        if (ratingDelta) return ratingDelta;
+        return new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0);
       })
-      .slice(0, 8);
+      .slice(0, 6);
   }, [productList]);
 
-  const saleEndsAt = useMemo(() => getSaleEndDate(), []);
-
   return {
-    loading,
+    loading: productsLoading || flashSaleLoading || bestSellerLoading,
+    flashSale,
     flashSaleProducts,
-    featuredProducts,
-    saleEndsAt,
+    newArrivalProducts,
+    bestSellerProducts: bestSellerProducts.length ? bestSellerProducts : fallbackBestSellers,
+    saleEndsAt: flashSale?.endAt ? new Date(flashSale.endAt) : null,
   };
 }
 

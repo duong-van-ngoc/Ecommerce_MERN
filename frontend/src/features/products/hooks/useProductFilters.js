@@ -17,7 +17,9 @@ function useProductFilters({
   categoryFromURL,
   clearProductQuery,
   setCurrentPage,
+  sortFromURL = "newest",
   updateCategoryParam,
+  updateSortParam,
 }) {
   const [selectedCategories, setSelectedCategories] = useState(
     getCategoriesFromURL(categoryFromURL),
@@ -30,7 +32,7 @@ function useProductFilters({
   const [priceError, setPriceError] = useState("");
   const [selectedRating, setSelectedRating] = useState(null);
   const [inStockOnly, setInStockOnly] = useState(false);
-  const [sortBy, setSortBy] = useState("newest");
+  const [sortBy, setSortBy] = useState(sortFromURL || "newest");
 
   useEffect(() => {
     const nextCategories = getCategoriesFromURL(categoryFromURL);
@@ -41,6 +43,11 @@ function useProductFilters({
         : nextCategories,
     );
   }, [categoryFromURL]);
+
+  useEffect(() => {
+    const nextSort = sortFromURL || "newest";
+    setSortBy((currentSort) => (currentSort === nextSort ? currentSort : nextSort));
+  }, [sortFromURL]);
 
   const handleCategoryToggle = (category) => {
     const isRemoving = selectedCategories.includes(category);
@@ -93,8 +100,10 @@ function useProductFilters({
   };
 
   const handleSortChange = (event) => {
-    setSortBy(event.target.value);
+    const nextSort = event.target.value;
+    setSortBy(nextSort);
     setCurrentPage(1);
+    updateSortParam(nextSort);
   };
 
   const handleClearAll = () => {

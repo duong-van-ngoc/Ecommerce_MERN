@@ -11,6 +11,8 @@ import ProductsManagement from "@/features/admin/products/ProductsManagementView
 import Settings from "@/features/admin/settings/SettingsView";
 import UsersManagement from "@/features/admin/users/UsersManagementView";
 import VouchersManagement from "@/features/admin/vouchers/VouchersManagementView";
+import FlashSalesManagement from "@/features/admin/flash-sales/FlashSalesManagementView";
+import FlashSalePage from "@/features/flash-sale/FlashSalePageView";
 import Home from "@/features/home/HomeView";
 import Products from "@/features/products/ProductListView";
 import Addresses from "@/features/address/AddressesView";
@@ -42,6 +44,7 @@ function AppRoutes() {
       <Route path="/product/:id" element={<ProductDetails />} />
       <Route path="/products" element={<Products />} />
       <Route path="/products/:keyword" element={<Products />} />
+      <Route path="/flash-sale" element={<FlashSalePage />} />
 
       {/* Legacy auth routes remain on Pages/* for now. */}
       <Route path="/register" element={<Register />} />
@@ -217,6 +220,7 @@ function AppRoutes() {
         <Route path="orders" element={<OrdersManagement />} />
         <Route path="users" element={<UsersManagement />} />
         <Route path="vouchers" element={<VouchersManagement />} />
+        <Route path="flash-sales" element={<FlashSalesManagement />} />
         <Route path="settings" element={<Settings />} />
       </Route>
     </Routes>

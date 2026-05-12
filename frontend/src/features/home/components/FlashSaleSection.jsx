@@ -15,33 +15,26 @@ function CountdownItem({ value }) {
 function getDiscountPercent(product) {
   const originalPrice = Number(product?.originalPrice || 0);
   const price = Number(product?.price || 0);
-
   if (!originalPrice || originalPrice <= price) return 0;
   return Math.round((1 - price / originalPrice) * 100);
 }
 
 function getCategoryLabel(category) {
-  if (!category) return "Bộ sưu tập";
+  if (!category) return "Bo suu tap";
   if (typeof category === "string") return category;
-  return category.level3 || category.level2 || category.level1 || category.name || "Bộ sưu tập";
+  return category.level3 || category.level2 || category.level1 || category.name || "Bo suu tap";
 }
 
 function getSaleProgress(product) {
-  const sold = Number(product?.sold || 0);
-  const stock = Number(product?.stock || 0);
-  const total = sold + stock;
+  const flashSale = product.flashSale;
+  if (!flashSale) return { label: "Dang mo ban", percent: 0 };
 
-  if (total <= 0) {
-    return {
-      label: "Đang mở bán",
-      percent: 36,
-    };
-  }
-
-  const percent = Math.min(Math.round((sold / total) * 100), 100);
+  const saleStock = Number(flashSale.saleStock || 0);
+  const soldCount = Number(flashSale.soldCount || 0);
+  const percent = saleStock > 0 ? Math.min(Math.round((soldCount / saleStock) * 100), 100) : 0;
 
   return {
-    label: percent >= 90 ? "Sắp hết hàng" : `Đã bán ${percent}%`,
+    label: flashSale.availableStock <= 5 ? `Con ${flashSale.availableStock} suat` : `Da ban ${percent}%`,
     percent,
   };
 }
@@ -50,7 +43,6 @@ function FlashSaleProductCard({ product }) {
   const discountPercent = getDiscountPercent(product);
   const image = product.images?.[0]?.url || product.image || "/images/placeholder-product.jpg";
   const progress = getSaleProgress(product);
-  const hasOriginalPrice = Number(product.originalPrice) > Number(product.price);
 
   return (
     <Link
@@ -67,7 +59,7 @@ function FlashSaleProductCard({ product }) {
 
         <div className="absolute left-4 top-4 flex items-center gap-2">
           <span className="rounded-full bg-[#FF4D5D] px-2.5 py-1 text-[10px] font-bold text-white">
-            {discountPercent > 0 ? `-${discountPercent}%` : "ƯU ĐÃI"}
+            -{discountPercent}%
           </span>
         </div>
       </div>
@@ -81,22 +73,15 @@ function FlashSaleProductCard({ product }) {
         </h3>
 
         <div className="mt-3 flex flex-wrap items-baseline gap-2">
-          <span className="text-sm font-bold text-[#FF7A2F] sm:text-base">
-            {formatVND(product.price)}
+          <span className="text-sm font-bold text-[#FF7A2F] sm:text-base">{formatVND(product.price)}</span>
+          <span className="text-[11px] font-medium text-[#9CA3AF] line-through">
+            {formatVND(product.originalPrice)}
           </span>
-          {hasOriginalPrice && (
-            <span className="text-[11px] font-medium text-[#9CA3AF] line-through">
-              {formatVND(product.originalPrice)}
-            </span>
-          )}
         </div>
 
         <div className="mt-5">
           <div className="h-1.5 overflow-hidden rounded-full bg-[#EEF0F3]">
-            <div
-              className="h-full rounded-full bg-[#FF7A2F]"
-              style={{ width: `${progress.percent}%` }}
-            />
+            <div className="h-full rounded-full bg-[#FF7A2F]" style={{ width: `${progress.percent}%` }} />
           </div>
           <p className="mt-2 text-[10px] font-medium uppercase tracking-[0.12em] text-[#6B7280]">
             {progress.label}
@@ -133,39 +118,33 @@ function FlashSaleSection({ products = [], loading, saleEndsAt }) {
           <div>
             <div className="mb-4 flex items-center gap-2 text-[#111827]">
               <Zap size={14} fill="#FF7A2F" className="text-[#FF7A2F]" />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.16em]">
-                Flash sale
-              </span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.16em]">Flash sale</span>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="mr-1 text-xs font-medium text-[#6B7280]">
-                Kết thúc trong:
-              </span>
-              <CountdownItem value={countdown.hours} />
-              <span className="text-xs font-semibold text-[#FF7A2F]">:</span>
-              <CountdownItem value={countdown.minutes} />
-              <span className="text-xs font-semibold text-[#FF7A2F]">:</span>
-              <CountdownItem value={countdown.seconds} />
-            </div>
+            {saleEndsAt && (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="mr-1 text-xs font-medium text-[#6B7280]">Ket thuc trong:</span>
+                <CountdownItem value={countdown.hours} />
+                <span className="text-xs font-semibold text-[#FF7A2F]">:</span>
+                <CountdownItem value={countdown.minutes} />
+                <span className="text-xs font-semibold text-[#FF7A2F]">:</span>
+                <CountdownItem value={countdown.seconds} />
+              </div>
+            )}
           </div>
 
           <Link
-            to="/products"
+            to="/flash-sale"
             className="inline-flex h-10 w-fit items-center justify-center rounded-lg bg-[#FF7A2F] px-5 text-xs font-semibold text-white transition hover:bg-[#f16920]"
           >
-            Xem tất cả khuyến mãi
+            Xem tat ca Flash Sale
           </Link>
         </div>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
           {loading
-            ? Array.from({ length: 4 }).map((_, index) => (
-                <FlashSaleSkeleton key={index} />
-              ))
-            : products.slice(0, 4).map((product) => (
-                <FlashSaleProductCard key={product._id} product={product} />
-              ))}
+            ? Array.from({ length: 4 }).map((_, index) => <FlashSaleSkeleton key={index} />)
+            : products.slice(0, 4).map((product) => <FlashSaleProductCard key={product._id} product={product} />)}
         </div>
       </div>
     </section>
