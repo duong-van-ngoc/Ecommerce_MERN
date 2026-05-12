@@ -11,6 +11,7 @@ function ProductActions({
   selectedColor,
   selectedSize,
   quantity,
+  maxAvailableQuantity,
   selectionError,
   cartLoading,
   onColorSelect,
@@ -20,6 +21,9 @@ function ProductActions({
   onAddToCart,
   onBuyNow,
 }) {
+  const availableQuantity = maxAvailableQuantity ?? product.stock ?? 0;
+  const isPurchasable = availableQuantity > 0;
+
   return (
     <>
       {/* Variant selection wrapper with error highlight */}
@@ -78,9 +82,9 @@ function ProductActions({
           <div className="quantity-controls">
             <button className="qty-btn" onClick={onDecrease} disabled={quantity <= 1}>−</button>
             <input type="text" className="qty-input" value={quantity} readOnly />
-            <button className="qty-btn" onClick={onIncrease} disabled={quantity >= product.stock}>+</button>
+            <button className="qty-btn" onClick={onIncrease} disabled={quantity >= availableQuantity}>+</button>
           </div>
-          <span className="stock-info">Còn {product.stock} sản phẩm</span>
+          <span className="stock-info">Còn {availableQuantity} sản phẩm</span>
         </div>
 
         {selectionError && (
@@ -91,7 +95,7 @@ function ProductActions({
       </div>
 
       {/* CTA buttons */}
-      {product.stock > 0 && (
+      {isPurchasable && (
         <div className="cta-section">
           <button className="add-to-cart-btn" onClick={onAddToCart} disabled={cartLoading}>
             🛒 {cartLoading ? 'Đang thêm...' : 'THÊM VÀO GIỎ HÀNG'}
@@ -101,7 +105,7 @@ function ProductActions({
       )}
 
       {/* Mobile sticky CTA */}
-      {product.stock > 0 && (
+      {isPurchasable && (
         <div className="mobile-sticky-cta">
           <button className="add-to-cart-btn" onClick={onAddToCart} disabled={cartLoading}>
             🛒 THÊM VÀO GIỎ

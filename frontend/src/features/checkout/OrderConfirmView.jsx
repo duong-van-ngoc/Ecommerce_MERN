@@ -61,7 +61,7 @@ import { useNavigate } from 'react-router-dom'
 import { createOrder, removeSuccess } from '@/features/orders/orderSlice' // Import createOrder thunk và removeSuccess
 import OrderSuccessPopup from '@/features/checkout/OrderSuccessView' // Import popup component
 import { toast } from 'react-toastify' // Import toast
-import { removeOrderedItems } from '@/features/cart/cartSlice'
+import { removeOrderedItems, revalidateCart } from '@/features/cart/cartSlice'
 import { formatVND } from '@/shared/utils/formatCurrency'
 import axios from '@/shared/api/http.js'
 
@@ -148,6 +148,17 @@ function OrderConfirm() {
     }
 
     // Mapping: Chuẩn hóa dữ liệu địa chỉ cho Backend Model
+    let checkoutItems = cartItems;
+    if (!directBuyItem && !selectedOrderItems) {
+      try {
+        checkoutItems = await dispatch(revalidateCart()).unwrap();
+      } catch (error) {
+        const message = error?.message || error?.errors?.[0]?.message || "Gio hang can duoc cap nhat truoc khi dat hang";
+        toast.error(message, { position: 'top-center', autoClose: 3000 });
+        return;
+      }
+    }
+
     const mappedShippingInfo = {
       fullName: user?.name || "",
       phone: String(shippingInfo.phoneNumber || shippingInfo.phoneNo || ""),
@@ -163,13 +174,16 @@ function OrderConfirm() {
     // Prepare Order Data
     const orderData = {
       shippingInfo: mappedShippingInfo,
-      orderItems: Array.isArray(cartItems) ? cartItems.map(item => ({
+      orderItems: Array.isArray(checkoutItems) ? checkoutItems.map(item => ({
         name: item.name,
         price: item.price,
         quantity: item.quantity,
         image: item.image || item.images?.[0]?.url || item.images?.[0],
         size: item.size,
         color: item.color,
+        pricingType: item.pricingType,
+        flashSaleId: item.flashSaleId,
+        flashSaleItemId: item.flashSaleItemId,
         product_id: item.product_id || item.product, // Support both new (product_id) and old (product) field
         product: item.product_id || item.product     // Keep for backward compat
       })) : [],
@@ -213,7 +227,7 @@ function OrderConfirm() {
         if (data.success && data.paymentUrl) {
           // Lưu danh sách sản phẩm đang đặt vào sessionStorage để xóa sau khi thanh toán thành công
           // Tránh việc xóa nhầm các sản phẩm khác vẫn còn trong giỏ hàng
-          sessionStorage.setItem('vnpayOrderedItems', JSON.stringify(cartItems));
+          sessionStorage.setItem('vnpayOrderedItems', JSON.stringify(checkoutItems));
           
           window.location.href = data.paymentUrl;
           return; // Kết thúc tại đây, logic xóa giỏ sẽ nằm ở trang Result
@@ -227,7 +241,12 @@ function OrderConfirm() {
        * LUỒNG COD (Thanh toán khi nhận hàng):
        * Lưu thông tin vào session, hiển thị popup và dọn dẹp giỏ hàng ngay lập tức.
        */
-      const data = { subtotal, shippingCharges, tax, total }
+      const data = {
+        subtotal: result.order.itemsPrice,
+        shippingCharges: result.order.shippingPrice,
+        tax: result.order.taxPrice,
+        total: result.order.totalPrice
+      }
       sessionStorage.setItem('orderInfo', JSON.stringify(data))
       sessionStorage.setItem('paymentMethod', JSON.stringify(paymentMethod))
 
@@ -238,7 +257,7 @@ function OrderConfirm() {
       sessionStorage.removeItem("appliedVoucher"); 
 
       // Xóa sản phẩm khỏi Redux Store và LocalStorage
-      dispatch(removeOrderedItems(cartItems));
+      dispatch(removeOrderedItems(checkoutItems));
 
       toast.success('Đặt hàng thành công!', {
         position: 'top-center',

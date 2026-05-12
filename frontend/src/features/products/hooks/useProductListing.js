@@ -17,8 +17,10 @@ function useProductListing() {
     clearProductQuery,
     keyword,
     pageFromURL,
+    sortFromURL,
     updateCategoryParam,
     updatePageParam,
+    updateSortParam,
   } = useProductQueryParams();
   const [currentPage, setCurrentPage] = useState(pageFromURL);
 
@@ -47,7 +49,9 @@ function useProductListing() {
     categoryFromURL,
     clearProductQuery,
     setCurrentPage,
+    sortFromURL,
     updateCategoryParam,
+    updateSortParam,
   });
   const {
     error,

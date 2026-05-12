@@ -56,6 +56,7 @@ import CartItem from '../models/cartItemModel.js';
 import Voucher from '../models/voucherModel.js';
 import HandleError from '../utils/handleError.js';
 import sendEmail from '../utils/sendEmail.js';
+import { commitReservedFlashSaleOrder, releaseFlashSaleOrder } from '../services/flashSaleService.js';
 
 // Khởi tạo VNPay instance (lazy loading để tránh lỗi hoisting env)
 let vnpayInstance;
@@ -165,6 +166,8 @@ const updateOrderPaymentStatus = async (query) => {
     }
 
     if (responseCode === '00') {
+        await commitReservedFlashSaleOrder(order);
+
         // Payment successful - update order status
         order.isPaid = true;
         order.paidAt = Date.now();
@@ -292,6 +295,8 @@ const updateOrderPaymentStatus = async (query) => {
             if (order.voucher_id) {
                 await Voucher.findByIdAndUpdate(order.voucher_id, { $inc: { usedCount: -1 } });
             }
+
+            await releaseFlashSaleOrder(order);
             
             await order.save();
         }

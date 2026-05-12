@@ -9,6 +9,7 @@ function useProductQueryParams() {
   const keyword = searchParams.get("keyword") || params.keyword || "";
   const categoryFromURL = searchParams.get("category");
   const pageFromURL = parseInt(searchParams.get("page"), 10) || 1;
+  const sortFromURL = searchParams.get("sort") || "newest";
 
   const updatePageParam = (page) => {
     const newSearchParams = new URLSearchParams(location.search);
@@ -35,6 +36,19 @@ function useProductQueryParams() {
     navigate(`?${newSearchParams.toString()}`);
   };
 
+  const updateSortParam = (sort) => {
+    const newSearchParams = new URLSearchParams(location.search);
+    newSearchParams.delete("page");
+
+    if (!sort || sort === "newest") {
+      newSearchParams.delete("sort");
+    } else {
+      newSearchParams.set("sort", sort);
+    }
+
+    navigate(`?${newSearchParams.toString()}`);
+  };
+
   const clearProductQuery = () => {
     navigate("/products");
   };
@@ -45,8 +59,10 @@ function useProductQueryParams() {
     keyword,
     locationSearch: location.search,
     pageFromURL,
+    sortFromURL,
     updateCategoryParam,
     updatePageParam,
+    updateSortParam,
   };
 }
 

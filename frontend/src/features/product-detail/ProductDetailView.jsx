@@ -26,7 +26,7 @@ function ProductDetailView() {
     loading, error, product, cartLoading,
     // derived
     productImages, productColors, productSizes,
-    originalPrice, discountPercent, soldCount,
+    originalPrice, discountPercent, soldCount, flashSale, maxAvailableQuantity,
     totalReviews, ratingDistribution, mockRelatedProducts,
     // handlers
     increaseQuantity, decreaseQuantity,
@@ -90,6 +90,7 @@ function ProductDetailView() {
                 originalPrice={originalPrice}
                 soldCount={soldCount}
                 quantity={quantity}
+                flashSale={flashSale}
               />
               <ProductActions
                 product={product}
@@ -98,6 +99,7 @@ function ProductDetailView() {
                 selectedColor={selectedColor}
                 selectedSize={selectedSize}
                 quantity={quantity}
+                maxAvailableQuantity={maxAvailableQuantity}
                 selectionError={selectionError}
                 cartLoading={cartLoading}
                 onColorSelect={handleColorSelect}

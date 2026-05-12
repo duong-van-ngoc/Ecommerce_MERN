@@ -16,7 +16,7 @@ import { motion } from "framer-motion";
 import "./styles/home.css";
 
 function HomeView() {
-  const { loading, featuredProducts, flashSaleProducts, saleEndsAt } = useHomeData();
+  const { loading, newArrivalProducts, bestSellerProducts, flashSaleProducts, saleEndsAt } = useHomeData();
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans text-[#111827] selection:bg-[#E85D75]/20 overflow-x-hidden">
@@ -42,14 +42,14 @@ function HomeView() {
         />
 
         <NewArrivalSection
-          products={featuredProducts}
+          products={newArrivalProducts}
           loading={loading}
         />
 
         <CollectionBanner />
 
         <BestSellerSection
-          products={featuredProducts}
+          products={bestSellerProducts}
           loading={loading}
         />
       </motion.main>
