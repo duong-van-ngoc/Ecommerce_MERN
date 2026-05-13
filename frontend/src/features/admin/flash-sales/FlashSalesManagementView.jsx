@@ -87,7 +87,7 @@ function FlashSalesManagementView() {
   const [saving, setSaving] = useState(false);
   const [searching, setSearching] = useState(false);
 
-  const campaignItems = selectedCampaign?.items || [];
+  const campaignItems = useMemo(() => selectedCampaign?.items || [], [selectedCampaign]);
   const stats = useMemo(
     () => selectedCampaign?.stats || calculateStats(campaignItems),
     [selectedCampaign, campaignItems]

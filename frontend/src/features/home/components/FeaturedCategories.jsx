@@ -13,6 +13,7 @@ const CATEGORY_IMAGES = {
 
 function FeaturedCategories({ categories = [] }) {
   const displayCategories = categories.slice(0, 6);
+  const MotionArticle = motion.article;
 
   if (displayCategories.length === 0) return null;
 
@@ -38,7 +39,7 @@ function FeaturedCategories({ categories = [] }) {
 
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
           {displayCategories.map((category, index) => (
-            <motion.article
+            <MotionArticle
               key={category.id || category.label}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -61,7 +62,7 @@ function FeaturedCategories({ categories = [] }) {
                   <p className="mt-1 text-xs text-[#6B7280]">Khám phá</p>
                 </div>
               </Link>
-            </motion.article>
+            </MotionArticle>
           ))}
         </div>
       </div>

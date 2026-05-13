@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { getFrontendBaseUrl } from '../config/runtimeConfig.js';
 
 /**
  * Tobi Shop Email Service (v2.0)
@@ -76,7 +77,7 @@ const emailLayout = (content, order) => `
                 </tfoot>
             </table>
             <center>
-                <a href="${process.env.FRONTEND_URL}/order/${order._id}" class="btn">Xem chi tiết đơn hàng</a>
+                <a href="${getFrontendBaseUrl()}/order/${order._id}" class="btn">Xem chi tiết đơn hàng</a>
             </center>
         </div>
         <div class="footer">

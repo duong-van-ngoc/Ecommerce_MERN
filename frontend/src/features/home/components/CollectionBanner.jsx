@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 function CollectionBanner() {
+  const MotionDiv = motion.div;
+
   return (
     <section className="relative h-[500px] md:h-[650px] flex items-center overflow-hidden">
       <div className="absolute inset-0 z-0 scale-110">
@@ -15,7 +17,7 @@ function CollectionBanner() {
       </div>
       
       <div className="relative z-10 max-w-[1440px] mx-auto px-8 w-full flex justify-end">
-        <motion.div 
+        <MotionDiv
           initial={{ opacity: 0, x: 50 }}
           whileInView={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8 }}
@@ -32,7 +34,7 @@ function CollectionBanner() {
           <Link to="/products" className="inline-block text-white font-black text-xs uppercase border-b-2 border-accent pb-1 hover:text-accent transition-all tracking-widest">
             Xem bộ sưu tập
           </Link>
-        </motion.div>
+        </MotionDiv>
       </div>
     </section>
   );

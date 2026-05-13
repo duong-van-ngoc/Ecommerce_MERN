@@ -93,7 +93,18 @@ function Navbar() {
     setSearchQuery("");
   };
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) => {
+    const [pathname, queryString] = path.split("?");
+    if (location.pathname !== pathname) return false;
+    if (!queryString) return !location.search;
+
+    const expectedParams = new URLSearchParams(queryString);
+    const currentParams = new URLSearchParams(location.search);
+
+    return Array.from(expectedParams.entries()).every(
+      ([key, value]) => currentParams.get(key) === value,
+    );
+  };
 
   const handleLogout = () => {
     dispatch(logout())
@@ -108,12 +119,13 @@ function Navbar() {
   };
 
   const navLinks = [
-    
     { name: 'SẢN PHẨM', path: '/products' },
-    { name: 'NAM', path: '/products?category=nam', hasDropdown: true },
+    { name: 'NAM', path: '/products?category=nam' },
     { name: 'NỮ', path: '/products?category=nu' },
     { name: 'PHỤ KIỆN', path: '/products?category=phu-kien' },
   ];
+  const MotionDiv = motion.div;
+  const MotionAside = motion.aside;
 
   return (
     <>
@@ -322,14 +334,14 @@ function Navbar() {
                     <AnimatePresence>
                       {isUserMenuOpen && (
                         <>
-                          <motion.div 
+                          <MotionDiv
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 z-10" 
-                            onClick={() => setIsUserMenuOpen(false)} 
+                            className="fixed inset-0 z-10"
+                            onClick={() => setIsUserMenuOpen(false)}
                           />
-                          <motion.div
+                          <MotionDiv
                             initial={{ opacity: 0, y: 10, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -396,7 +408,7 @@ function Navbar() {
                               <LogoutIcon className="!text-[20px]" />
                               <span>Đăng xuất</span>
                             </button>
-                          </motion.div>
+                          </MotionDiv>
                         </>
                       )}
                     </AnimatePresence>
@@ -426,14 +438,14 @@ function Navbar() {
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
-            <motion.div 
+            <MotionDiv
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsMobileMenuOpen(false)}
               className="fixed inset-0 bg-primary/40 backdrop-blur-md z-[60]"
             />
-            <motion.aside
+            <MotionAside
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
@@ -562,7 +574,7 @@ function Navbar() {
                   </Link>
                 )}
               </div>
-            </motion.aside>
+            </MotionAside>
           </>
         )}
       </AnimatePresence>

@@ -11,6 +11,7 @@ const LoginSuccessView = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const location = useLocation();
+  const MotionSection = motion.section;
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -41,7 +42,7 @@ const LoginSuccessView = () => {
       </header>
 
       <main className="flex flex-1 items-center justify-center px-5 py-12">
-        <motion.section
+        <MotionSection
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, ease: "easeOut" }}
@@ -70,7 +71,7 @@ const LoginSuccessView = () => {
             Về trang chủ
             <ArrowRight size={17} />
           </Link>
-        </motion.section>
+        </MotionSection>
       </main>
 
       <footer className="border-t border-[#E5E7EB] bg-white/70">

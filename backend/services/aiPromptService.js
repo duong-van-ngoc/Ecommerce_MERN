@@ -1,11 +1,5 @@
 // Prompt service for AI chat - builds prompts and formats context/responses
-
-const DEFAULT_FRONTEND_URL = "http://localhost:5173";
-
-const getFrontendBaseUrl = () => {
-    const configuredUrl = process.env.FRONTEND_URL || DEFAULT_FRONTEND_URL;
-    return configuredUrl.trim().replace(/\/+$/, "");
-};
+import { getFrontendBaseUrl } from "../config/runtimeConfig.js";
 
 /**
  * Format product context for AI prompt - enriched for Stylist & Shopping assistant

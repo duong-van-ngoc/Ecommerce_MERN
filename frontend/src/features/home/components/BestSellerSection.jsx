@@ -5,6 +5,7 @@ import { formatVND } from "@/shared/utils/formatCurrency";
 
 function BestSellerSection({ products = [], loading }) {
   const bestSellers = products.filter(Boolean).slice(0, 3);
+  const MotionDiv = motion.div;
 
   if (!loading && bestSellers.length === 0) return null;
 
@@ -41,7 +42,7 @@ function BestSellerSection({ products = [], loading }) {
               const sold = Number(product.sold || 0);
 
               return (
-                <motion.div
+                <MotionDiv
                   key={product._id}
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -89,7 +90,7 @@ function BestSellerSection({ products = [], loading }) {
                       </div>
                     </div>
                   </Link>
-                </motion.div>
+                </MotionDiv>
               );
             })
           )}

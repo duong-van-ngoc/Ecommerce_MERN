@@ -78,6 +78,7 @@ import cookieParser from 'cookie-parser';
 import fileUpload from 'express-fileupload';
 import passport from 'passport';
 import { configurePassport } from './config/passportConfig.js';
+import { getAllowedFrontendOrigins } from './config/runtimeConfig.js';
 const app = express();
 
 configurePassport();
@@ -86,12 +87,7 @@ app.use(passport.initialize());
 app.set('trust proxy', 1);
 app.set('query parser', 'extended');
 
-const allowedOrigins = [
-    process.env.FRONTEND_URL,
-    'http://localhost:5173',
-    'http://localhost:5174',
-    'http://localhost:3000'
-].filter(Boolean);
+const allowedOrigins = getAllowedFrontendOrigins();
 
 // Allow any localhost port in development
 const isAllowedOrigin = (origin) => {

@@ -3,26 +3,30 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 function NewArrivalSection({ products = [], loading }) {
+  const MotionH2 = motion.h2;
+  const MotionP = motion.p;
+  const MotionDiv = motion.div;
+
   return (
     <section className="section-spacing bg-white">
       <div className="max-w-[1440px] mx-auto px-8">
         <div className="text-center mb-20">
-          <motion.h2 
+          <MotionH2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-[40px] md:text-[56px] font-black text-primary tracking-tighter mb-6"
           >
             HÀNG MỚI VỀ
-          </motion.h2>
-          <motion.p 
+          </MotionH2>
+          <MotionP
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             viewport={{ once: true }}
             className="text-slate-500 max-w-2xl mx-auto font-medium text-lg leading-relaxed"
           >
-          </motion.p>
+          </MotionP>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-16">
@@ -32,7 +36,7 @@ function NewArrivalSection({ products = [], loading }) {
              ))
           ) : (
             products.slice(0, 8).map((product, idx) => (
-              <motion.div
+              <MotionDiv
                 key={product._id}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -73,7 +77,7 @@ function NewArrivalSection({ products = [], loading }) {
                     {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}
                   </p>
                 </div>
-              </motion.div>
+              </MotionDiv>
             ))
           )}
         </div>

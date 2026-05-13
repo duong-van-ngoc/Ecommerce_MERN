@@ -3,7 +3,7 @@ import SortIcon from "@mui/icons-material/Sort";
 import FilterListIcon from "@mui/icons-material/FilterList";
 
 function ProductToolbar({
-  productCount,
+  productCount = 0,
   keyword,
   sortBy,
   onSortChange,
@@ -18,24 +18,17 @@ function ProductToolbar({
   return (
     <header className="mb-8 space-y-6">
       <div className="space-y-3">
-     
-
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          {/* <div>
+          <div>
             <h1 className="text-3xl font-semibold tracking-tight text-[#111827] sm:text-4xl">
               {pageTitle}
             </h1>
-            <p className="mt-2 text-sm text-[#6B7280]">
-              Khám phá những thiết kế tối giản, hiện đại và dễ mặc mỗi ngày.
-            </p>
-          </div> */}
-
+            <p className="mt-2 text-sm text-[#6B7280]">{resultLabel}</p>
+          </div>
         </div>
       </div>
 
       <div className="flex flex-col gap-3 border-y border-[#E5E7EB] bg-white/70 px-4 py-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:rounded-xl sm:border">
-       
-
         <div className="flex items-center gap-3">
           <div className="relative min-w-[190px] flex-1 sm:flex-none">
             <select

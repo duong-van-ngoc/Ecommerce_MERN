@@ -48,6 +48,18 @@ class APIFunctionality {
     // Bảng mapping: giá trị filter sidebar → query 3 cấp danh mục MongoDB
     // Key = giá trị gửi từ frontend, Value = query filter chính xác
     static CATEGORY_MAP = {
+        // === TOP-LEVEL NAV SLUGS ===
+        'nam': { 'category.level1': 'NAM' },
+        'men': { 'category.level1': 'NAM' },
+        'nu': { 'category.level1': 'NỮ' },
+        'nữ': { 'category.level1': 'NỮ' },
+        'women': { 'category.level1': 'NỮ' },
+        'unisex': { 'category.level1': 'UNISEX' },
+        'phu-kien': { 'category.level1': 'PHỤ KIỆN & GIÀY DÉP' },
+        'phụ kiện': { 'category.level1': 'PHỤ KIỆN & GIÀY DÉP' },
+        'giay-dep': { 'category.level1': 'PHỤ KIỆN & GIÀY DÉP' },
+        'giày dép': { 'category.level1': 'PHỤ KIỆN & GIÀY DÉP' },
+
         // === NAM ===
         'Áo thun nam':    { 'category.level1': 'NAM', 'category.level2': 'Áo', 'category.level3': 'Thun' },
         'Áo sơ mi nam':   { 'category.level1': 'NAM', 'category.level2': 'Áo', 'category.level3': 'Sơ mi' },
@@ -100,13 +112,15 @@ class APIFunctionality {
         // DB lưu: category: { level1: "NAM", level2: "Áo", level3: "Thun" } (object)
         let categoryQuery = {};
         if (queryCopy.category) {
-            const mapped = APIFunctionality.CATEGORY_MAP[queryCopy.category];
+            const rawCategory = String(queryCopy.category).trim();
+            const normalizedCategory = rawCategory.toLowerCase();
+            const mapped = APIFunctionality.CATEGORY_MAP[rawCategory] || APIFunctionality.CATEGORY_MAP[normalizedCategory];
             if (mapped) {
                 categoryQuery = { ...mapped };
             } else {
                 // Fallback: tìm kiếm gần đúng trên level3
                 categoryQuery = {
-                    'category.level3': { $regex: queryCopy.category, $options: 'i' }
+                    'category.level3': { $regex: rawCategory, $options: 'i' }
                 };
             }
             delete queryCopy.category;

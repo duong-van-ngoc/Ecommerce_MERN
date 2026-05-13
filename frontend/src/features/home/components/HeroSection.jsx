@@ -36,6 +36,7 @@ const BANNERS = [
 
 function HeroSection() {
   const [current, setCurrent] = useState(0);
+  const MotionDiv = motion.div;
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -50,7 +51,7 @@ function HeroSection() {
   return (
     <section className="relative h-[560px] overflow-hidden bg-[#111827] md:h-[640px] lg:h-[680px]">
       <AnimatePresence mode="wait">
-        <motion.div
+        <MotionDiv
           key={activeBanner.id}
           initial={{ opacity: 0, scale: 1.04 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -65,12 +66,12 @@ function HeroSection() {
           />
           <div className="absolute inset-0 bg-black/35" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/25 to-transparent" />
-        </motion.div>
+        </MotionDiv>
       </AnimatePresence>
 
       <div className="relative z-10 mx-auto flex h-full max-w-[1280px] items-center px-5 md:px-8">
         <AnimatePresence mode="wait">
-          <motion.div
+          <MotionDiv
             key={`content-${activeBanner.id}`}
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
@@ -101,7 +102,7 @@ function HeroSection() {
                 Xem bộ sưu tập
               </Link>
             </div>
-          </motion.div>
+          </MotionDiv>
         </AnimatePresence>
       </div>
 

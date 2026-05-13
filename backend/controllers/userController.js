@@ -4,14 +4,15 @@ import Role from "../models/roleModel.js"
 import HandleError from "../utils/handleError.js"
 import { sendToken } from "../utils/jwtToken.js"
 import { sendEmail } from "../utils/sendEmail.js"
+import { getFrontendBaseUrl } from "../config/runtimeConfig.js"
 import crypto from "crypto";
 import { v2 as cloudinary } from "cloudinary";
 
 const getDefaultAvatar = () => {
-    const frontendUrl = process.env.FRONTEND_URL?.replace(/\/$/, "");
+    const frontendUrl = getFrontendBaseUrl();
     return {
         public_id: "default-avatar",
-        url: frontendUrl ? `${frontendUrl}/images/profile.png` : "/images/profile.png"
+        url: `${frontendUrl}/images/profile.png`
     };
 };
 
@@ -111,7 +112,7 @@ export const requestPasswordReset = handleAsyncError(async (req, res, next) => {
         return next(new HandleError("không thể lưu mã thông báo đặt lại, vui lòng thử lại sau"), 500)
     }
 
-    const resetPasswordURL = `${process.env.FRONTEND_URL}/password/reset/${resetToken}`;
+    const resetPasswordURL = `${getFrontendBaseUrl()}/password/reset/${resetToken}`;
     const message = `Sử dụng liên kết sau để đặt lại mật khẩu của bạn: ${resetPasswordURL}.\n\nLinên kết sẽ hết hạn sau 30 phút.\n\nNếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua tin nhắn này.`
 
     try {
