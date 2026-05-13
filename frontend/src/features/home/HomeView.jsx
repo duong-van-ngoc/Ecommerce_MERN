@@ -17,13 +17,14 @@ import "./styles/home.css";
 
 function HomeView() {
   const { loading, newArrivalProducts, bestSellerProducts, flashSaleProducts, saleEndsAt } = useHomeData();
+  const MotionMain = motion.main;
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans text-[#111827] selection:bg-[#E85D75]/20 overflow-x-hidden">
       <PageTitle title="TOBI SHOP | Thời trang hiện đại" />
       <Navbar />
 
-      <motion.main
+      <MotionMain
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.45 }}
@@ -52,7 +53,7 @@ function HomeView() {
           products={bestSellerProducts}
           loading={loading}
         />
-      </motion.main>
+      </MotionMain>
 
       <Footer />
       <HomeMobileBottomNav />

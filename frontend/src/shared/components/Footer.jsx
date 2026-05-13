@@ -77,8 +77,6 @@ function Footer() {
             </ul>
           </div>
         </div>
-
-        {/* Bottom */}
         <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-6">
           <p className="text-xs font-light text-slate-500 tracking-wider">
             &copy; {currentYear} TOBI SHOP. Phong cách hiện đại mỗi ngày.

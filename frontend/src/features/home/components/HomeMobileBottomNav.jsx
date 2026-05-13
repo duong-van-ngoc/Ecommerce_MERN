@@ -7,6 +7,7 @@ function HomeMobileBottomNav() {
   const location = useLocation();
   const { isAuthenticated } = useSelector((state) => state.user);
   const { cartItems = [] } = useSelector((state) => state.cart);
+  const MotionDiv = motion.div;
 
   const items = useMemo(
     () => [
@@ -49,7 +50,7 @@ function HomeMobileBottomNav() {
               </span>
 
               {isActive && (
-                <motion.div 
+                <MotionDiv
                   layoutId="mobile-nav-indicator-premium"
                   className="absolute -top-3 w-8 h-0.5 bg-primary rounded-full"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}

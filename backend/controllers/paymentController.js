@@ -48,7 +48,7 @@
  *    - Tại sao cần cả Return và IPN? Vì khách hàng có thể tắt trình duyệt ngay sau khi trả tiền (Return không chạy), lúc này IPN là "cứu cánh" duy nhất để hệ thống biết tiền đã về.
  *    - Logic dọn dẹp giỏ hàng: Chỉ xóa các món hàng có trong đơn hàng vừa thanh toán, giữ lại các món khác nếu khách chưa mua.
  */
-import { VNPay, ProductCode, VnpCurrCode, VnpLocale } from 'vnpay';
+import { VNPay, VnpCurrCode, VnpLocale } from 'vnpay';
 import handleAsyncError from '../middleware/handleAsyncError.js';
 import Order from '../models/orderModel.js';
 import Cart from '../models/cartModel.js';
@@ -57,6 +57,7 @@ import Voucher from '../models/voucherModel.js';
 import HandleError from '../utils/handleError.js';
 import sendEmail from '../utils/sendEmail.js';
 import { commitReservedFlashSaleOrder, releaseFlashSaleOrder } from '../services/flashSaleService.js';
+import { getFrontendBaseUrl, requireVnpayRuntimeConfig } from '../config/runtimeConfig.js';
 
 // Khởi tạo VNPay instance (lazy loading để tránh lỗi hoisting env)
 let vnpayInstance;
@@ -66,11 +67,12 @@ const getVnpayInstance = () => {
             console.error("[VNPay] Thiếu cấu hình: VNP_TMN_CODE hoặc VNP_HASH_SECRET");
             throw new Error("Hệ thống chưa được cấu hình VNPay. Vui lòng kiểm tra file .env");
         }
+        const vnpayConfig = requireVnpayRuntimeConfig();
         vnpayInstance = new VNPay({
-            tmnCode: process.env.VNP_TMN_CODE,
-            secureSecret: process.env.VNP_HASH_SECRET,
-            vnpayHost: 'https://sandbox.vnpayment.vn',
-            testMode: true, // Sandbox
+            tmnCode: vnpayConfig.tmnCode,
+            secureSecret: vnpayConfig.secureSecret,
+            vnpayHost: vnpayConfig.vnpayHost,
+            testMode: vnpayConfig.testMode,
         });
     }
     return vnpayInstance;
@@ -111,13 +113,16 @@ export const createVnpayPayment = handleAsyncError(async (req, res, next) => {
         const vnp_Amount = Math.round(Number(order.totalPrice));
         const vnp_OrderInfo = orderDescription || `Thanh toan don hang ${orderId}`;
         const vnp_TxnRef = orderId.toString();
+        const vnpayConfig = requireVnpayRuntimeConfig();
 
         console.log("----- [VNPay DEBUG PARAMS] -----");
         console.log("- vnp_Amount (from DB):", vnp_Amount);
         console.log("- vnp_TxnRef:", vnp_TxnRef);
         console.log("- vnp_OrderInfo:", vnp_OrderInfo);
         console.log("- vnp_IpAddr:", ipAddr);
-        console.log("- vnp_ReturnUrl:", process.env.VNP_RETURN_URL);
+        console.log("- vnp_ReturnUrl:", vnpayConfig.returnUrl);
+        console.log("- vnpayHost:", vnpayConfig.vnpayHost);
+        console.log("- testMode:", vnpayConfig.testMode);
         console.log("---------------------------------");
 
         const vnpay = getVnpayInstance();
@@ -127,7 +132,7 @@ export const createVnpayPayment = handleAsyncError(async (req, res, next) => {
             vnp_TxnRef,
             vnp_OrderInfo,
             vnp_OrderType: '100000',
-            vnp_ReturnUrl: process.env.VNP_RETURN_URL,
+            vnp_ReturnUrl: vnpayConfig.returnUrl,
             vnp_Locale: VnpLocale.VN,
             vnp_CurrCode: VnpCurrCode.VND,
             vnp_CreateDate: new Date(),
@@ -198,6 +203,7 @@ const updateOrderPaymentStatus = async (query) => {
                     </tr>
                 `).join('');
 
+                const frontendUrl = getFrontendBaseUrl();
                 const htmlContent = `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
                         <h2 style="color: #2e7d32; text-align: center;">Thanh toán thành công!</h2>
@@ -227,7 +233,7 @@ const updateOrderPaymentStatus = async (query) => {
                         </table>
 
                         <p style="text-align: center; margin-top: 30px;">
-                            <a href="${process.env.FRONTEND_URL}/order/${order._id}" 
+                            <a href="${frontendUrl}/order/${order._id}"
                                style="background: #2e7d32; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
                                Xem chi tiết đơn hàng
                             </a>
@@ -311,6 +317,7 @@ export const vnpayReturn = handleAsyncError(async (req, res, next) => {
     const query = req.query;
     const vnpay = getVnpayInstance();
     const verify = vnpay.verifyReturnUrl(query);
+    const frontendUrl = getFrontendBaseUrl();
 
     if (verify.isVerified) {
         // Cập nhật database VÀ kiểm tra kết quả trước khi redirect
@@ -319,15 +326,15 @@ export const vnpayReturn = handleAsyncError(async (req, res, next) => {
         // Chú ý: result.code === '02' nghĩa là IPN đã cập nhật đơn hàng thành công trước khi Return URL được gọi
         if (query.vnp_ResponseCode === '00' && result.success && (result.code === '00' || result.code === '02')) {
             // Chữ ký hợp lệ + VNPay báo thành công + DB update thành công + amount khớp
-            res.redirect(`${process.env.FRONTEND_URL}/payment/success?orderId=${query.vnp_TxnRef}&vnp_ResponseCode=${query.vnp_ResponseCode}`);
+            res.redirect(`${frontendUrl}/payment/success?orderId=${query.vnp_TxnRef}&vnp_ResponseCode=${query.vnp_ResponseCode}`);
         } else {
             // Thất bại: amount sai (code 04), DB update fail, hoặc VNPay báo lỗi
             const failCode = result.code || query.vnp_ResponseCode || 'unknown';
-            res.redirect(`${process.env.FRONTEND_URL}/payment/failed?orderId=${query.vnp_TxnRef}&vnp_ResponseCode=${failCode}`);
+            res.redirect(`${frontendUrl}/payment/failed?orderId=${query.vnp_TxnRef}&vnp_ResponseCode=${failCode}`);
         }
     } else {
         // Chữ ký không hợp lệ
-        res.redirect(`${process.env.FRONTEND_URL}/payment/failed?orderId=${query.vnp_TxnRef}&vnp_ResponseCode=97`);
+        res.redirect(`${frontendUrl}/payment/failed?orderId=${query.vnp_TxnRef}&vnp_ResponseCode=97`);
     }
 });
 

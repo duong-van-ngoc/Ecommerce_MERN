@@ -123,7 +123,7 @@ function FlashSaleSection({ products = [], loading, saleEndsAt }) {
 
             {saleEndsAt && (
               <div className="flex flex-wrap items-center gap-2">
-                <span className="mr-1 text-xs font-medium text-[#6B7280]">Ket thuc trong:</span>
+                <span className="mr-1 text-xs font-medium text-[#6B7280]">Kết thúc trong:</span>
                 <CountdownItem value={countdown.hours} />
                 <span className="text-xs font-semibold text-[#FF7A2F]">:</span>
                 <CountdownItem value={countdown.minutes} />
@@ -137,7 +137,7 @@ function FlashSaleSection({ products = [], loading, saleEndsAt }) {
             to="/flash-sale"
             className="inline-flex h-10 w-fit items-center justify-center rounded-lg bg-[#FF7A2F] px-5 text-xs font-semibold text-white transition hover:bg-[#f16920]"
           >
-            Xem tat ca Flash Sale
+            Xem tất cả 
           </Link>
         </div>
 
