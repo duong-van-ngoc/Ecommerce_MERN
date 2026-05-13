@@ -1,6 +1,16 @@
 import Notification from '../models/notificationModel.js';
 import asyncErrorHandler from "../middleware/handleAsyncError.js";
 
+const LEGACY_NOTIFICATION_LINKS = {
+    "/orders/my": "/orders/user"
+};
+
+const normalizeNotificationLink = (link) => {
+    if (!link) return link;
+
+    return LEGACY_NOTIFICATION_LINKS[link] || link;
+};
+
 // 1. Lấy tất cả thông báo của User (Bao gồm thông báo cá nhân và thông báo chung)
 export const getMyNotifications = asyncErrorHandler(async (req, res, next) => {
     const notifications = await Notification.find({
@@ -9,6 +19,11 @@ export const getMyNotifications = asyncErrorHandler(async (req, res, next) => {
             { userId: null }
         ]
     }).sort({ createdAt: -1 }).limit(20);
+    const normalizedNotifications = notifications.map((notification) => {
+        const data = notification.toObject();
+        data.link = normalizeNotificationLink(data.link);
+        return data;
+    });
 
     const unreadCount = await Notification.countDocuments({
         $or: [
@@ -20,7 +35,7 @@ export const getMyNotifications = asyncErrorHandler(async (req, res, next) => {
 
     res.status(200).json({
         success: true,
-        notifications,
+        notifications: normalizedNotifications,
         unreadCount
     });
 });

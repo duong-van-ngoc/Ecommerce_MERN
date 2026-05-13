@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { logout } from '@/features/user/userSlice';
 import { fetchNotifications } from '@/features/notifications/notificationSlice';
+import { normalizeNotificationLink } from '@/features/notifications/notificationLinks';
 import { toast } from 'react-toastify';
 import BrandLogo from '@/shared/components/BrandLogo';
 import { formatVND } from '@/shared/utils/formatCurrency';
@@ -212,7 +213,7 @@ function Navbar() {
                         notificationPreviewItems.map((item, index) => (
                           <Link
                             key={item._id || index}
-                            to={item.link || "/notifications"}
+                            to={normalizeNotificationLink(item.link, "/notifications")}
                             className={`navbar-hover-popup__item navbar-hover-popup__item--notification ${!item.isRead ? "is-unread" : ""}`}
                           >
                             <img

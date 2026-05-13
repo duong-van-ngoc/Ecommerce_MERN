@@ -191,12 +191,14 @@ const productSlice = createSlice({
     builder.addCase(getProductDetails.pending, (state) => {
       state.loading = true;
       state.error = null
+      state.relatedProducts = []
     })
       .addCase(getProductDetails.fulfilled, (state, action) => {
         console.log('product details', action.payload);
         state.loading = false;
         state.error = null;
         state.product = action.payload.product;
+        state.relatedProducts = action.payload.relatedProducts || [];
       })
       .addCase(getProductDetails.rejected, (state, action) => {
         state.loading = false;

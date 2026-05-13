@@ -12,6 +12,7 @@ import {
     readLocal,
     readAllLocal
 } from "@/features/notifications/notificationSlice";
+import { normalizeNotificationLink } from "@/features/notifications/notificationLinks";
 import AccountSidebar from "@/features/user/components/AccountSidebar";
 import "@/features/notifications/styles/Notifications.css";
 import "@/features/user/styles/AccountShared.css";
@@ -210,7 +211,7 @@ const NotificationsView = () => {
 
                                         return (
                                             <Link
-                                                to={item.link || "#"}
+                                                to={normalizeNotificationLink(item.link, "#")}
                                                 key={item._id}
                                                 className={`notification-item ${!item.isRead ? "unread" : "read"}`}
                                                 onClick={() => handleMarkRead(item._id)}
