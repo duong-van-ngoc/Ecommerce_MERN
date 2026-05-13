@@ -291,9 +291,16 @@ export const getSingleProduct = handleAsyncError(async (req, res, next) => {
     if (!product) {
         return next(new HandleError("Sản phẩm không tồn tại", 404))
     }
+    const relatedProducts = await getRelatedProductsLevel1({
+        brand: product.brand,
+        category: product.category,
+        limit: 4,
+        excludeProductId: product._id
+    });
     res.status(200).json({
         success: true,
-        product
+        product,
+        relatedProducts
     })
 })
 

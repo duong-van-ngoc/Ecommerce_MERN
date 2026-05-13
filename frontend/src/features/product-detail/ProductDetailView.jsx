@@ -27,7 +27,7 @@ function ProductDetailView() {
     // derived
     productImages, productColors, productSizes,
     originalPrice, discountPercent, soldCount, flashSale, maxAvailableQuantity,
-    totalReviews, ratingDistribution, mockRelatedProducts,
+    totalReviews, ratingDistribution, relatedProducts,
     // handlers
     increaseQuantity, decreaseQuantity,
     addToCart, handleBuyNow,
@@ -187,7 +187,7 @@ function ProductDetailView() {
           </div>
 
           {/* ── Related products ─────────────────────────────────────────── */}
-          <RelatedProducts items={mockRelatedProducts} />
+          <RelatedProducts items={relatedProducts} />
 
         </div>
       </main>

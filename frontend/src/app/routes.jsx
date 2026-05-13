@@ -123,6 +123,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/orders/my"
+        element={
+          <RequireAuth>
+            <MyOrders />
+          </RequireAuth>
+        }
+      />
+      <Route
         path="/order/:id"
         element={
           <RequireAuth>
