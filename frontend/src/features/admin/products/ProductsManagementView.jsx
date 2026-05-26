@@ -365,6 +365,7 @@ function ProductsManagementView() {
                     onClose={() => {
                         setShowModal(false);
                         setInitialFormData(null);
+                        setSelectedProduct(null);
                     }}
                 />
             )}

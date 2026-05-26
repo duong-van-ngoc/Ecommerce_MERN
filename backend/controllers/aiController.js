@@ -1,59 +1,63 @@
-/**
- * 1. FILE NÀY LÀ GÌ: 
- *    Đây là file Bộ điều khiển Trợ lý ảo AI (AI Chatbot Controller).
- * 
- * 2. VAI TRÒ TRONG DỰ ÁN:
- *    - Là "bộ não" điều phối cuộc hội thoại giữa người dùng và Trợ lý ảo Tobi (sử dụng Gemini AI).
- *    - Quản lý lịch sử trò chuyện (Conversation Context) để AI có thể hiểu và trả lời dựa trên các câu hỏi trước đó.
- *    - Đảm bảo tính nhất quán của cấu hình hệ thống (như API Keys) trước khi thực hiện các yêu cầu AI tốn phí.
- * 
- * 3. FILE NÀY THUỘC LUỒNG NÀO:
- *    - Luồng Trợ lý AI (AI Assistant Flow) & Trải nghiệm khách hàng thông minh.
- * 
- * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
- *    - In-memory Caching (Map): Lưu trữ lịch sử chat trực tiếp trong RAM của server để truy xuất cực nhanh theo `sessionId`.
- *    - Session Management: Phân biệt các cuộc hội thoại khác nhau của nhiều người dùng cùng lúc.
- *    - Environmental Fingerprinting: Kỹ thuật so sánh mã băm (hash) của file cấu hình để phát hiện lỗi "Stale Config" (Backend chưa nhận API Key mới).
- *    - Memory Management: Tự động cắt giảm lịch sử quá dài (`MAX_MESSAGES`) và dọn dẹp session cũ (`setInterval`) để tránh tràn RAM.
- * 
- * 5. INPUT / OUTPUT CỦA FILE:
- *    - Input: Tin nhắn văn bản từ Client và `sessionId` định danh.
- *    - Output: Câu trả lời từ AI (JSON) kèm theo các thông tin về trạng thái hệ thống.
- * 
- * 6. STATE / PROPS / PARAMS / ... : 
- *    - Sử dụng biến toàn cục `conversationHistory` (Map) để lưu trạng thái tạm thời của các cuộc chat.
- * 
- * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
- *    - `chat`: Hàm xử lý chính, kiểm tra điều kiện, gọi AI Service và quản lý bộ nhớ đệm lịch sử.
- *    - `clearHistory`: Cho phép xóa dữ liệu hội thoại khi khách muốn "làm lại từ đầu".
- *    - `getStats`: Cung cấp số liệu thống kê về lượng người đang chat và tình trạng cấu hình cho Developer.
- * 
- * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
- *    - Bước 1: Tiếp nhận tin nhắn và `sessionId`.
- *    - Bước 2: Kiểm tra xem file `.env` có bị thay đổi không (`stale check`).
- *    - Bước 3: Lấy lịch sử chat cũ từ `Map` (nếu có).
- *    - Bước 4: Gửi tin nhắn kèm lịch sử sang `chatService` để gọi Gemini AI.
- *    - Bước 5: Cập nhật câu trả lời mới vào lịch sử và trả về cho Client.
- * 
- * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
- *    - User -> Route -> Controller -> chatService -> Google Gemini API -> Controller -> User. (Lưu ý: Không dùng Database, dùng RAM để tối ưu tốc độ phản hồi).
- * 
- * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
- *    - Giới hạn tối đa 20 tin nhắn gần nhất (`MAX_MESSAGES`) để tiết kiệm Token và giữ context tập trung.
- *    - Cơ chế dọn dẹp session sau mỗi 1 giờ để giải phóng tài nguyên server.
- * 
- * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
- *    - Hàm `chat` là bất đồng bộ (`async`) vì phải chờ đợi phản hồi từ trí tuệ nhân tạo (có thể mất vài giây).
- * 
- * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
- *    - Lịch sử chat được lưu trong RAM: Nếu bạn restart Server, toàn bộ lịch sử hội thoại hiện tại sẽ bị xóa sạch.
- *    - `sessionId`: Frontend cần quản lý và gửi ID này một cách nhất quán (thường lưu ở sessionStorage hoặc UUID) để AI không bị "mất trí nhớ" giữa các câu hỏi.
- */
 import { getEnvironmentStatus } from "../config/loadEnv.js";
 import { askChatbot } from "../services/chatService.js";
 
+/**
+ * Mục đích:
+ * - Đây là controller chính của AI chat.
+ * - Nó nhận request từ route, kiểm tra điều kiện, quản lý session chat trong RAM,
+ *   gọi `chatService`, rồi trả JSON response về cho frontend.
+ *
+ * File này dùng để làm gì?
+ * - Điều phối request/response của module AI chat.
+ * - Gắn sessionId với lịch sử chat tương ứng.
+ * - Kiểm tra xem config môi trường có bị "stale" hay không.
+ *
+ * Dữ liệu trong file này lấy từ đâu?
+ * - `req.body.message`: tin nhắn user gửi từ frontend
+ * - `req.body.sessionId`: ID session do frontend quản lý và gửi lên
+ * - `getEnvironmentStatus()`: lấy trạng thái config backend hiện tại
+ * - `askChatbot()`: service xử lý logic chatbot thật sự
+ *
+ * Props / Component / use client / Server Component:
+ * - Không áp dụng.
+ * - Đây là file backend controller, không phải component React/Next.js.
+ */
+
+/**
+ * `conversationHistory` là bộ nhớ tạm trong RAM của server.
+ *
+ * Cấu trúc:
+ * - key: `sessionId`
+ * - value: mảng history của session đó
+ *
+ * Ví dụ:
+ * Map {
+ *   "session-abc" => [
+ *     { role: "user", content: "áo hoodie đen" },
+ *     { role: "assistant", content: "..." }
+ *   ]
+ * }
+ *
+ * Lưu ý:
+ * - Restart server là mất toàn bộ dữ liệu này.
+ */
 const conversationHistory = new Map();
 
+/**
+ * Mục đích:
+ * - Chuẩn hóa payload debug khi có lỗi xảy ra.
+ * - Giúp controller trả về lỗi dễ đọc hơn cho developer.
+ *
+ * Input:
+ * - `error`: lỗi vừa bắt được
+ * - `envStatus`: trạng thái môi trường hiện tại
+ *
+ * Output:
+ * - Trả về object debug có đủ thông tin: code, message, status, env...
+ *
+ * Khi nào được gọi:
+ * - Trong `catch` của `chat()`
+ */
 const buildDebugPayload = (error = {}, envStatus = getEnvironmentStatus()) => ({
     name: error?.name || "Error",
     code: error?.code || "UNKNOWN_ERROR",
@@ -71,6 +75,21 @@ const buildDebugPayload = (error = {}, envStatus = getEnvironmentStatus()) => ({
     }
 });
 
+/**
+ * Mục đích:
+ * - Trả response riêng khi backend đang chạy config cũ
+ *   và cần restart để nạp config.env mới.
+ *
+ * Input:
+ * - `res`: Express response
+ * - `envStatus`: trạng thái môi trường
+ *
+ * Output:
+ * - Trả về HTTP 503 với message rõ ràng cho frontend/developer
+ *
+ * Khi nào được gọi:
+ * - Trong `chat()` nếu `envStatus.stale === true`
+ */
 const respondConfigReloadRequired = (res, envStatus) => {
     const debug = {
         reason: "config.env changed after the current server process started",
@@ -87,20 +106,46 @@ const respondConfigReloadRequired = (res, envStatus) => {
     return res.status(503).json({
         success: false,
         error: "CONFIG_RELOAD_REQUIRED",
-        userMessage: "Backend dang chay cau hinh cu. Hay restart server de nap config.env moi.",
+        userMessage: "Backend đang chạy cấu hình cũ. Hãy restart server để nạp config.env mới.",
         debug
     });
 };
 
+/**
+ * Mục đích:
+ * - Đây là endpoint chính của AI chat.
+ * - Nhận message + sessionId, lấy history, gọi `askChatbot()`,
+ *   cập nhật lại history, rồi trả câu trả lời về cho frontend.
+ *
+ * Input:
+ * - `req.body.message`
+ * - `req.body.sessionId`
+ *
+ * Output:
+ * - JSON response gồm:
+ *   + `success`
+ *   + `data` (reply của AI)
+ *   + `sessionId`
+ *   + `historyLength`
+ *   + thông tin env cơ bản
+ *
+ * Khi nào được gọi:
+ * - Khi frontend gọi POST `/chat`
+ */
 export const chat = async (req, res) => {
     try {
         const { message, sessionId } = req.body;
         const envStatus = getEnvironmentStatus();
 
+        // Bước 1:
+        // Nếu backend đang chạy config cũ sau khi file env đã đổi,
+        // chặn luôn để tránh gọi AI bằng cấu hình sai.
         if (envStatus.stale) {
             return respondConfigReloadRequired(res, envStatus);
         }
 
+        // Bước 2:
+        // Validate tối thiểu ở tầng controller.
         if (!message) {
             return res.status(400).json({
                 success: false,
@@ -115,8 +160,11 @@ export const chat = async (req, res) => {
             });
         }
 
+        // Bước 3:
+        // Lấy history cũ theo sessionId.
         let history = conversationHistory.get(sessionId);
 
+        // Nếu chưa có session này thì khởi tạo session mới.
         if (!history) {
             history = [];
             conversationHistory.set(sessionId, history);
@@ -125,11 +173,20 @@ export const chat = async (req, res) => {
 
         console.log(`[AI Chat] session=${sessionId}, history=${history.length}`);
 
+        // Bước 4:
+        // Gọi service chatbot để lấy reply từ AI.
         const reply = await askChatbot(message, history);
 
+        // Bước 5:
+        // Cập nhật lại history trong RAM để các câu sau AI còn nhớ ngữ cảnh.
         history.push({ role: "user", content: message });
         history.push({ role: "assistant", content: reply });
 
+        // Bước 6:
+        // Chỉ giữ tối đa 20 message gần nhất.
+        // Mục tiêu:
+        // - tránh history quá dài
+        // - giảm token cho các prompt sau
         const MAX_MESSAGES = 20;
         if (history.length > MAX_MESSAGES) {
             history.splice(0, history.length - MAX_MESSAGES);
@@ -137,6 +194,8 @@ export const chat = async (req, res) => {
 
         conversationHistory.set(sessionId, history);
 
+        // Bước 7:
+        // Trả response thành công về frontend.
         return res.json({
             success: true,
             data: reply,
@@ -152,7 +211,7 @@ export const chat = async (req, res) => {
         const debug = buildDebugPayload(error, envStatus);
         const userMessage =
             error?.userMessage ||
-            "Xin loi, minh dang gap loi khi xu ly. Ban thu lai sau vai giay nhe!";
+            "Xin lỗi, mình đang gặp lỗi khi xử lý. Bạn thử lại sau vài giây nhé!";
 
         console.error("[AI Chat] request failed", debug);
 
@@ -165,6 +224,19 @@ export const chat = async (req, res) => {
     }
 };
 
+/**
+ * Mục đích:
+ * - Xóa lịch sử chat của một session cụ thể.
+ *
+ * Input:
+ * - `req.body.sessionId`
+ *
+ * Output:
+ * - JSON báo đã xóa thành công hoặc session đã rỗng sẵn
+ *
+ * Khi nào được gọi:
+ * - Khi frontend gọi POST `/chat/clear`
+ */
 export const clearHistory = (req, res) => {
     try {
         const { sessionId } = req.body;
@@ -182,6 +254,7 @@ export const clearHistory = (req, res) => {
             return res.json({ success: true, message: "History cleared successfully" });
         }
 
+        // Nếu session không còn tồn tại thì coi như đã clear rồi.
         console.log(`[AI Chat] clear requested for missing session ${sessionId}`);
         return res.json({
             success: true,
@@ -194,6 +267,18 @@ export const clearHistory = (req, res) => {
     }
 };
 
+/**
+ * Mục đích:
+ * - Trả về thống kê/debug của module AI chat.
+ *
+ * Output:
+ * - Tổng số session hiện tại
+ * - Trạng thái config env
+ * - Danh sách session + số lượng message
+ *
+ * Khi nào được gọi:
+ * - Khi frontend/dev gọi GET `/chat/stats`
+ */
 export const getStats = (req, res) => {
     const envStatus = getEnvironmentStatus();
 
@@ -214,6 +299,19 @@ export const getStats = (req, res) => {
     });
 };
 
+/**
+ * Mục đích:
+ * - Dọn bớt session cũ nếu số session trong RAM quá nhiều.
+ *
+ * Logic:
+ * - Mỗi 1 giờ kiểm tra một lần
+ * - Nếu số session vượt 1000
+ * - Xóa bớt 100 session đầu tiên trong Map
+ *
+ * Lưu ý:
+ * - Đây là cleanup khá đơn giản, chưa phải LRU cache thực thụ.
+ * - Nhưng đủ tốt cho phase hiện tại để tránh RAM tăng mãi.
+ */
 setInterval(() => {
     const MAX_SESSIONS = 1000;
 
@@ -223,3 +321,39 @@ setInterval(() => {
         console.log(`[AI Chat] cleaned ${oldestSessions.length} old sessions`);
     }
 }, 60 * 60 * 1000);
+
+/**
+ * ========================= TỔNG KẾT FILE =========================
+ *
+ * 1. Code chạy từ đâu trước?
+ * - Frontend gọi route `/chat`
+ * - Route chuyển vào `chat()`
+ * - `chat()` validate request, lấy history, gọi `askChatbot()`
+ * - Sau đó update history và trả JSON về
+ *
+ * 2. Khi user bấm gửi chat thì chuyện gì xảy ra?
+ * - User click gửi
+ * - Frontend gửi `message` + `sessionId`
+ * - Controller lấy history theo `sessionId`
+ * - Gọi service AI
+ * - Nhận reply
+ * - Lưu reply vào history
+ * - Trả reply cho frontend
+ *
+ * 3. Nếu dữ liệu bị rỗng thì sao?
+ * - Không có `message` -> trả 400
+ * - Không có `sessionId` -> trả 400
+ * - Session chưa tồn tại -> tạo session mới
+ *
+ * 4. Chỗ intern cần học kỹ:
+ * - Controller khác gì Service
+ * - Session in-memory hoạt động như thế nào
+ * - Tại sao phải giới hạn history
+ * - Tại sao config stale phải chặn sớm
+ * - Error response JSON ở backend
+ *
+ * 5. Lưu ý quan trọng:
+ * - History chỉ nằm trong RAM
+ * - Restart backend là mất hết
+ * - Nếu cần production-ready hơn, nên chuyển sang Redis / DB
+ */

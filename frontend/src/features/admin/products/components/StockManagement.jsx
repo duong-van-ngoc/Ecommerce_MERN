@@ -52,7 +52,7 @@
  *    - Khái niệm "Cộng dồn" (Accumulate): Khác với ghi đè, logic ở đây là `Tồn mới = Tồn cũ + Số lượng nhập`. Đây là logic nghiệp vụ thực tế của việc nhập hàng về kho.
  *    - Nút "Thêm mới" trong danh sách "Không tìm thấy": Đây là điểm nhấn UX, giúp Admin xử lý các mã hàng mới phát sinh ngay trong quá trình kiểm kho mà không cần chuyển đổi màn hình phức tạp.
  */
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { importStock, updateSingleStock } from '@/features/admin/state/adminSlice';
 import { selectAdminProducts } from '@/features/admin/state/adminSelectors';
@@ -95,6 +95,22 @@ function StockManagement({ onAddNew }) {
     // Manual update states
     const [searchQuery, setSearchQuery] = useState('');
     const [stockInputs, setStockInputs] = useState({}); // { productId: quantity }
+
+    useEffect(() => {
+        if (!importResult?.notFound?.length || products.length === 0) return;
+
+        const existingProductNames = new Set(products.map((product) => normalizeSearchText(product.name)));
+        const remainingNotFound = importResult.notFound.filter(
+            (item) => !existingProductNames.has(normalizeSearchText(item.name))
+        );
+
+        if (remainingNotFound.length !== importResult.notFound.length) {
+            setImportResult((prev) => ({
+                ...prev,
+                notFound: remainingNotFound,
+            }));
+        }
+    }, [importResult, products]);
 
     // ===== IMPORT STOCK FROM FILE =====
     const handleStockFileChange = (e) => {

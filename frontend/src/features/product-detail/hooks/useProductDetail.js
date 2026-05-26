@@ -52,6 +52,7 @@ export function useProductDetail() {
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectionError, setSelectionError] = useState(false);
   const [flashSale, setFlashSale] = useState(null);
+  const [reviews, setReviews] = useState([]);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -112,13 +113,13 @@ export function useProductDetail() {
 
   const soldCount = product?.sold || 0;
   const maxAvailableQuantity = flashSale?.availableStock ?? product?.stock ?? 0;
-  const totalReviews = product?.numOfReviews || 0;
+  const totalReviews = reviews.length || product?.numOfReviews || 0;
   const ratingDistribution = [
-    { stars: 5, count: Math.round(totalReviews * 0.85) },
-    { stars: 4, count: Math.round(totalReviews * 0.1) },
-    { stars: 3, count: Math.round(totalReviews * 0.03) },
-    { stars: 2, count: Math.round(totalReviews * 0.01) },
-    { stars: 1, count: Math.round(totalReviews * 0.01) },
+    { stars: 5, count: reviews.filter((review) => Number(review.rating) === 5).length },
+    { stars: 4, count: reviews.filter((review) => Number(review.rating) === 4).length },
+    { stars: 3, count: reviews.filter((review) => Number(review.rating) === 3).length },
+    { stars: 2, count: reviews.filter((review) => Number(review.rating) === 2).length },
+    { stars: 1, count: reviews.filter((review) => Number(review.rating) === 1).length },
   ];
 
   useEffect(() => {
@@ -126,6 +127,25 @@ export function useProductDetail() {
 
     return () => dispatch(removeErrors());
   }, [dispatch, id]);
+
+  useEffect(() => {
+    if (!id) return undefined;
+
+    let mounted = true;
+
+    axios
+      .get(`/api/v1/reviews?id=${id}`)
+      .then(({ data }) => {
+        if (mounted) setReviews(data.reviews || []);
+      })
+      .catch(() => {
+        if (mounted) setReviews([]);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
 
   useEffect(() => {
     if (!id) return undefined;
@@ -282,6 +302,7 @@ export function useProductDetail() {
     maxAvailableQuantity,
     totalReviews,
     ratingDistribution,
+    reviews,
     relatedProducts,
     increaseQuantity,
     decreaseQuantity,

@@ -27,7 +27,7 @@ function ProductDetailView() {
     // derived
     productImages, productColors, productSizes,
     originalPrice, discountPercent, soldCount, flashSale, maxAvailableQuantity,
-    totalReviews, ratingDistribution, relatedProducts,
+    totalReviews, ratingDistribution, reviews, relatedProducts,
     // handlers
     increaseQuantity, decreaseQuantity,
     addToCart, handleBuyNow,
@@ -62,7 +62,7 @@ function ProductDetailView() {
   }
 
   // ─── Tab labels ─────────────────────────────────────────────────────────────
-  const TABS = ['Mô tả', 'Chi tiết', `Đánh giá (${product.numOfReviews || 0})`];
+  const TABS = ['Mô tả', 'Chi tiết', `Đánh giá (${totalReviews || 0})`];
 
   return (
     <>
@@ -179,6 +179,7 @@ function ProductDetailView() {
               <div className={`tab-panel ${activeTab === 2 ? 'active' : ''}`} role="tabpanel">
                 <ProductReviews
                   product={product}
+                  reviews={reviews}
                   totalReviews={totalReviews}
                   ratingDistribution={ratingDistribution}
                 />

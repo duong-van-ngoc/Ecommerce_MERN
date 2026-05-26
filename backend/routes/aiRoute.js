@@ -1,63 +1,88 @@
-/**
- * 1. FILE NÀY LÀ GÌ: 
- *    Đây là file Định tuyến cho Trợ lý ảo AI (AI Chatbot Router).
- * 
- * 2. VAI TRÒ TRONG DỰ ÁN:
- *    - Cung cấp các "cánh cổng" (Endpoints) để Frontend kết nối với bộ não AI của hệ thống (Trợ lý Tobi).
- *    - Quản lý việc gửi nhận tin nhắn, xóa lịch sử trò chuyện và theo dõi hiệu năng của chatbot.
- * 
- * 3. FILE NÀY THUỘC LUỒNG NÀO:
- *    - Luồng Trợ lý AI (AI Assistant Flow) & Chăm sóc khách hàng tự động.
- * 
- * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
- *    - Express Router: Định nghĩa các đường dẫn cho tính năng Chat.
- *    - AI Integration: Kết nối với Google Gemini API (thông qua Controller) để xử lý ngôn ngữ tự nhiên.
- *    - RESTful API: Sử dụng các phương thức POST để bảo mật dữ liệu và nội dung tin nhắn dài.
- * 
- * 5. INPUT / OUTPUT CỦA FILE:
- *    - Input: Tin nhắn văn bản từ người dùng gửi qua ứng dụng React.
- *    - Output: Điều hướng yêu cầu đến `aiController.js` để xử lý và trả về phản hồi thông minh từ AI.
- * 
- * 6. STATE / PROPS / PARAMS / ... : 
- *    - Không áp dụng.
- * 
- * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
- *    - `/chat`: Đầu nhận tin nhắn chính của người dùng.
- *    - `/chat/clear`: Xóa sạch lịch sử hội thoại hiện tại (thường dùng khi người dùng muốn bắt đầu chủ đề mới).
- *    - `/chat/stats`: Endpoint dành cho môi trường phát triển để kiểm tra tình trạng kết nối và số lượng token/tin nhắn.
- * 
- * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
- *    - Bước 1: Người dùng gõ tin nhắn vào khung chat trên trang web.
- *    - Bước 2: Request POST gửi đến URL `/ai/chat`.
- *    - Bước 3: Router chuyển yêu cầu vào Controller.
- *    - Bước 4: Controller gọi sang API của Google Gemini, nhận kết quả và trả về cho người dùng.
- * 
- * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
- *    - User -> API Server -> aiController -> Google Gemini Cloud -> API Server -> User.
- * 
- * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
- *    - Hiện tại các route này là Public (Công khai) để khách vãng lai cũng có thể hỏi đáp về sản phẩm.
- * 
- * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
- *    - File chỉ chứa cấu hình.
- * 
- * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
- *    - Chatbot Tobi được huấn luyện dựa trên dữ liệu sản phẩm thực tế của cửa hàng (RAG logic), do đó các endpoint này là cầu nối sống còn để tăng tỷ lệ chuyển đổi đơn hàng.
- *    - Nếu bạn muốn lưu lịch sử chat vào Database thay vì chỉ dùng trong Session, hãy cân nhắc thêm Middleware `verifyUserAuth` vào các route này.
- */
 // AI Chat routes
 import express from "express";
 import { chat, clearHistory, getStats } from "../controllers/aiController.js";
 
+/**
+ * Mục đích:
+ * - Đây là file định tuyến cho cụm AI chat.
+ * - Nó khai báo các endpoint mà frontend có thể gọi để làm việc với chatbot.
+ *
+ * File này dùng để làm gì?
+ * - Kết nối URL request với đúng controller xử lý.
+ * - Có thể hiểu đơn giản:
+ *   + Route là "cửa vào"
+ *   + Controller là "người xử lý việc phía sau cánh cửa"
+ *
+ * Dữ liệu trong file này lấy từ đâu?
+ * - File này không tự lấy data.
+ * - Nó chỉ nhận request từ frontend/client rồi chuyển cho controller tương ứng.
+ *
+ * Props / Component / use client / Server Component:
+ * - Không áp dụng.
+ * - Đây là file backend Express Router, không phải component React/Next.js.
+ *
+ * Khi user click thì chuyện gì xảy ra?
+ * - User bấm gửi tin nhắn ở frontend
+ * - Frontend gọi API như `/chat`
+ * - Route này nhận request
+ * - Route chuyển request sang controller phù hợp
+ */
+
 const router = express.Router();
 
-// Main chat endpoint
+/**
+ * Endpoint chính để chat với AI
+ *
+ * Luồng:
+ * - Frontend gửi POST `/chat`
+ * - Route gọi `chat` trong `aiController`
+ * - Controller sẽ xử lý session, gọi `chatService`, rồi trả response về
+ */
 router.post("/chat", chat);
 
-// Clear session history
+/**
+ * Endpoint xóa lịch sử chat của một session
+ *
+ * Luồng:
+ * - Frontend gửi POST `/chat/clear`
+ * - Route gọi `clearHistory` trong `aiController`
+ * - Controller xóa dữ liệu lịch sử tương ứng trong RAM
+ */
 router.post("/chat/clear", clearHistory);
 
-// Get stats (debug)
+/**
+ * Endpoint lấy thống kê/debug của module AI chat
+ *
+ * Luồng:
+ * - Frontend hoặc developer gọi GET `/chat/stats`
+ * - Route gọi `getStats`
+ * - Controller trả về số session hiện tại và trạng thái config môi trường
+ */
 router.get("/chat/stats", getStats);
 
 export default router;
+
+/**
+ * ========================= TỔNG KẾT FILE =========================
+ *
+ * 1. Code chạy từ đâu trước?
+ * - Request từ frontend đi vào đây trước
+ * - Sau đó route quyết định controller nào sẽ xử lý
+ *
+ * 2. Nếu user click gửi chat thì sao?
+ * - Frontend gọi POST `/chat`
+ * - Route này chuyển sang `chat`
+ *
+ * 3. Nếu user bấm "xóa lịch sử" thì sao?
+ * - Frontend gọi POST `/chat/clear`
+ * - Route này chuyển sang `clearHistory`
+ *
+ * 4. Nếu muốn xem thống kê chat thì sao?
+ * - Gọi GET `/chat/stats`
+ * - Route này chuyển sang `getStats`
+ *
+ * 5. Chỗ intern cần học kỹ:
+ * - Express Router là gì
+ * - Khác nhau giữa Route và Controller
+ * - Vì sao route nên mỏng, chỉ làm nhiệm vụ điều hướng
+ */
