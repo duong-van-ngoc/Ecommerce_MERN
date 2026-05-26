@@ -16,7 +16,7 @@ import { motion } from "framer-motion";
 import "./styles/home.css";
 
 function HomeView() {
-  const { loading, newArrivalProducts, bestSellerProducts, flashSaleProducts, saleEndsAt } = useHomeData();
+  const { loading, newArrivalProducts, bestSellerProducts, flashSaleProducts, saleEndsAt, flashSalePhase } = useHomeData();
   const MotionMain = motion.main;
 
   return (
@@ -40,6 +40,7 @@ function HomeView() {
           products={flashSaleProducts}
           loading={loading}
           saleEndsAt={saleEndsAt}
+          phase={flashSalePhase}
         />
 
         <NewArrivalSection

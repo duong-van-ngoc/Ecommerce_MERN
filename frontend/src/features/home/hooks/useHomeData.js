@@ -21,6 +21,20 @@ function normalizeFlashSaleProduct(item) {
   };
 }
 
+function getFlashSalePhase(flashSale) {
+  if (!flashSale) return null;
+
+  if (flashSale.computedStatus) return flashSale.computedStatus;
+
+  const now = new Date();
+  const startAt = flashSale.startAt ? new Date(flashSale.startAt) : null;
+  const endAt = flashSale.endAt ? new Date(flashSale.endAt) : null;
+
+  if (startAt && now < startAt) return "scheduled";
+  if (endAt && now <= endAt) return "active";
+  return "ended";
+}
+
 export function useHomeData() {
   const dispatch = useDispatch();
   const { loading: productsLoading, error, products } = useSelector((state) => state.product);
@@ -40,7 +54,21 @@ export function useHomeData() {
     axios
       .get("/api/v1/flash-sales/active")
       .then(({ data }) => {
-        if (mounted) setFlashSale(data.flashSale || null);
+        if (!mounted) return;
+
+        if (data.flashSale) {
+          setFlashSale(data.flashSale);
+          return;
+        }
+
+        axios
+          .get("/api/v1/flash-sales/upcoming")
+          .then(({ data: upcomingData }) => {
+            if (mounted) setFlashSale(upcomingData.flashSales?.[0] || null);
+          })
+          .catch(() => {
+            if (mounted) setFlashSale(null);
+          });
       })
       .catch(() => {
         if (mounted) setFlashSale(null);
@@ -119,13 +147,20 @@ export function useHomeData() {
       .slice(0, 6);
   }, [productList]);
 
+  const flashSalePhase = getFlashSalePhase(flashSale);
+  const countdownTarget =
+    flashSalePhase === "scheduled"
+      ? flashSale?.startAt
+      : flashSale?.endAt;
+
   return {
     loading: productsLoading || flashSaleLoading || bestSellerLoading,
     flashSale,
+    flashSalePhase,
     flashSaleProducts,
     newArrivalProducts,
     bestSellerProducts: bestSellerProducts.length ? bestSellerProducts : fallbackBestSellers,
-    saleEndsAt: flashSale?.endAt ? new Date(flashSale.endAt) : null,
+    saleEndsAt: countdownTarget ? new Date(countdownTarget) : null,
   };
 }
 
