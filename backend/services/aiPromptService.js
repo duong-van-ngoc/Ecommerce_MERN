@@ -1,266 +1,218 @@
-// Prompt service for AI chat - builds prompts and formats context/responses
-import { getFrontendBaseUrl } from "../config/runtimeConfig.js";
+const NO_MATCH_SENTINEL = "KHÔNG_CÓ_SẢN_PHẨM_PHÙ_HỢP";
 
-/**
- * Mục đích:
- * - Chuyển danh sách sản phẩm thành một đoạn text có cấu trúc để AI đọc.
- * - AI model không "hiểu" object JS như con người, nên cần đổi product data thành text.
- *
- * Input:
- * @param {Array} products - Filtered product list
- * - Đây là danh sách sản phẩm đã được lọc trước ở service khác.
- *
- * Output:
- * @returns {string}
- * - Trả về một chuỗi text dài, mỗi sản phẩm là một block thông tin riêng.
- *
- * Khi nào được gọi:
- * - `chatService` gọi hàm này trước khi build prompt gửi sang Gemini.
- */
-export function formatProductContext(products) {
-    return products.map((p, i) => {
-        // Cho AI biết tình trạng tồn kho hiện tại để ưu tiên gợi ý đúng sản phẩm.
-        const stockStatus = p.stock > 0
-            ? (p.stock <= 5 ? `Sắp hết (Chỉ còn ${p.stock})` : "Còn hàng")
-            : "Hết hàng";
+const formatCurrency = (value = 0) =>
+  `${Number(value || 0).toLocaleString("vi-VN")}đ`;
 
-        // Ghép category thành một đường dẫn để AI hiểu sản phẩm thuộc nhóm nào.
-        const category = p.category
-            ? `${p.category.level1} > ${p.category.level2} > ${p.category.level3}`
-            : "N/A";
+const escapeRegExp = (value = "") =>
+  String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-        // Nếu có giá gốc lớn hơn giá bán, thêm thông tin giảm giá vào context.
-        const saleInfo = p.originalPrice > p.price
-            ? ` | GIẢM GIÁ: -${Math.round((1 - p.price / p.originalPrice) * 100)}% (Giá gốc: ${p.originalPrice.toLocaleString("vi-VN")}đ)`
-            : "";
+export function formatProductContext(products = []) {
+  if (!Array.isArray(products) || products.length === 0) {
+    return NO_MATCH_SENTINEL;
+  }
 
-        // Lấy ảnh đầu tiên để AI có thêm ngữ cảnh mô tả.
-        const imageUrl = p.images?.[0]?.url || "";
+  return products
+    .map((product, index) => {
+      const productUrl = `/product/${product._id}`;
+      const cartUrl = `/cart/add/${product._id}`;
+      const category = product.category
+        ? [product.category.level1, product.category.level2, product.category.level3]
+            .filter(Boolean)
+            .join(" > ")
+        : "N/A";
 
-        // Nếu sản phẩm đang "hot", gắn thêm nhãn để AI có thể ưu tiên nhắc đến.
-        const trendingTag = p.trending ? " [HOT 🔥 - XU HƯỚNG]" : "";
+      const stockStatus =
+        Number(product.stock || 0) > 0 ? `còn ${product.stock}` : "hết hàng";
 
-        // Mỗi sản phẩm được biến thành 1 block text rõ ràng:
-        // ID, tên, giá, category, vibe, style, stock, rating, mô tả...
-        return `[SẢN PHẨM ${i + 1}]
-ID: ${p._id}
-Tên: ${p.name}${trendingTag}
-Giá bán: ${p.price.toLocaleString("vi-VN")}đ${saleInfo}
-Hạng mục: ${category}
-Vibe: ${p.vibe || "Chưa xác định"} | Style: ${p.style || "Chưa xác định"}
-Thương hiệu: ${p.brand || "N/A"} | Chất liệu: ${p.material || "N/A"}
-Đặc điểm: ${p.sizes?.length > 0 ? `Size: ${p.sizes.join("/")}` : ""} | ${p.colors?.length > 0 ? `Màu: ${p.colors.join("/")}` : ""}
-Tình trạng: ${stockStatus} | Đã bán: ${p.sold} | Đánh giá: ${p.ratings}/5
-Ảnh: ${imageUrl}
-Mô tả: ${(p.description || "").substring(0, 150)}...`;
-    }).join("\n\n---\n\n");
+      const saleInfo =
+        product.originalPrice > product.price
+          ? `, đang giảm ${Math.round(
+              (1 - product.price / product.originalPrice) * 100
+            )}%`
+          : "";
+
+      return `${index + 1}. ID nội bộ: ${product._id}
+Tên: ${product.name}
+Giá: ${formatCurrency(product.price)}${saleInfo}
+Link mua: ${productUrl}
+Link thêm giỏ: ${cartUrl}
+Nhóm: ${category}
+Thương hiệu: ${product.brand || "N/A"}
+Chất liệu: ${product.material || "N/A"}
+Phong cách: ${product.style || "N/A"}
+Vibe: ${product.vibe || "N/A"}
+Size: ${(product.sizes || []).slice(0, 5).join(", ") || "N/A"}
+Màu: ${(product.colors || []).slice(0, 5).join(", ") || "N/A"}
+Tồn kho: ${stockStatus}
+Đã bán: ${product.sold || 0}
+Đánh giá: ${product.ratings || 0}/5`;
+    })
+    .join("\n---\n");
 }
 
-/**
- * Mục đích:
- * - Chuyển lịch sử chat thành một chuỗi text để AI nhớ được ngữ cảnh hội thoại.
- * - Nếu gửi cả lịch sử quá dài thì prompt sẽ tốn token, nên chỉ lấy phần gần đây.
- *
- * Input:
- * @param {Array} history - [{role, content}, ...]
- * - `history` là các tin nhắn cũ giữa user và chatbot.
- *
- * Output:
- * @returns {string|null}
- * - Trả về chuỗi lịch sử nếu có.
- * - Trả về `null` nếu chưa có hội thoại trước đó.
- *
- * Khi nào được gọi:
- * - `chatService` gọi trước khi build prompt.
- */
-export function formatHistoryContext(history) {
-    if (!history || history.length === 0) return null;
+export function formatHistoryContext(history = []) {
+  if (!Array.isArray(history) || history.length === 0) return null;
 
-    // Chỉ lấy 6 tin nhắn gần nhất để giữ prompt gọn.
-    const recent = history.slice(-6);
-
-    // Đổi role "user/assistant" thành tên để prompt tự nhiên hơn.
-    return recent.map((msg) => {
-        const role = msg.role === "user" ? "Khách" : "Tobi";
-        return `${role}: ${msg.content}`;
-    }).join("\n");
+  return history
+    .slice(-4)
+    .map((message) => {
+      const role = message.role === "user" ? "Khách" : "Tobi";
+      return `${role}: ${String(message.content || "").slice(0, 220)}`;
+    })
+    .join("\n");
 }
 
-/**
- * Mục đích:
- * - Ghép tất cả context thành một prompt hoàn chỉnh gửi cho Gemini.
- * - Đây là hàm "định hình" chatbot: vai trò, quy tắc, phong cách trả lời.
- *
- * Input:
- * - `productContext`: chuỗi thông tin sản phẩm đã được format.
- * - `historyContext`: chuỗi lịch sử chat đã được format.
- * - `userMessage`: câu hỏi hiện tại của user.
- * - `includeShopInfo`: có truyền vào nhưng hiện tại chưa được dùng trong logic.
- * - `userName`: tên để AI xưng hô cho tự nhiên.
- *
- * Output:
- * - Trả về một string prompt đầy đủ.
- *
- * Khi nào được gọi:
- * - `chatService` gọi ngay trước lúc gửi prompt sang Gemini API.
- */
-export function buildPrompt({ productContext, historyContext, userMessage, includeShopInfo, userName = "bạn" }) {
-    // Biến này hiện tại chưa được dùng bên dưới.
-    // Có khả năng team dự định mở rộng logic cho first message trong tương lai.
-    const isFirstMessage = !historyContext;
-    const frontendUrl = getFrontendBaseUrl();
+export function buildPrompt({
+  productContext,
+  historyContext,
+  userMessage,
+  includeShopInfo,
+  userName = "bạn",
+}) {
+  void includeShopInfo;
 
-    // Tránh warning "declared but never used" trong trường hợp rule lint chặt hơn sau này.
-    void includeShopInfo;
-    void isFirstMessage;
+  const historySection = historyContext
+    ? `\nLỊCH SỬ CHAT:\n${historyContext}\n`
+    : "";
 
-    // SYSTEM_INSTRUCTION là phần quan trọng nhất của prompt:
-    // nó bắt AI đóng vai stylist, phải chèn link, phải gợi ý outfit, phải giữ tone giao tiếp.
-    const SYSTEM_INSTRUCTION = `Bạn là "TOBI" - CHUYÊN GIA TẠO MẪU & TƯ VẤN PHONG CÁCH CÁ NHÂN (PERSONAL STYLIST PRO).
-Mục tiêu: Biến trải nghiệm mua sắm của ${userName} thành một hành trình thời trang đẳng cấp.
+  return `Bạn là TOBI, chatbot tư vấn thời trang thông minh của website TOBI SHOP.
 
-QUY TẮC CỐ ĐỊNH (PHẢI TUÂN THỦ):
-1. MỖI SẢN PHẨM GỢI Ý PHẢI CÓ LINK MUA HÀNG.
-   - Định dạng: [Tên SP - Giá](${frontendUrl}/product/\${ID})
-   - Nút chốt đơn: [THÊM VÀO GIỎ HÀNG NGAY 🛒](${frontendUrl}/cart/add/\${ID})
-2. KHÔNG ĐƯỢC chỉ viết tên sản phẩm suông. Nếu không có link, người dùng không thể mua được.
-3. PHỐI ĐỒ: Luôn gợi ý 2-3 món tạo thành 1 outfit hoàn chỉnh.
+VAI TRÒ:
+- Bạn là trợ lý tư vấn mua sắm thời trang.
+- Chuyên hỗ trợ khách tìm kiếm sản phẩm, tư vấn outfit và hỗ trợ mua hàng.
+- Luôn nói chuyện tự nhiên, thân thiện, giống nhân viên tư vấn thật.
+- Trả lời hoàn toàn bằng tiếng Việt.
 
-VÍ DỤ PHẢN HỒI CHUẨN:
-"Chào Ngọc! Với phong cách Streetwear, Tobi gợi ý bộ này nhé:
-- [Áo Hoodie đen - 350.000đ](${frontendUrl}/product/123)
-- [Quần Cargo - 450.000đ](${frontendUrl}/product/456)
-- [THÊM ÁO VÀO GIỎ 🛒](${frontendUrl}/cart/add/123)
-- [THÊM QUẦN VÀO GIỎ 🛒](${frontendUrl}/cart/add/456)"
+QUY TẮC BẮT BUỘC:
+1. Chỉ được sử dụng sản phẩm có trong DANH SÁCH SẢN PHẨM được cung cấp.
+2. Không được tự bịa sản phẩm, giá, size, màu sắc, khuyến mãi hoặc tồn kho.
+3. Không nói rằng bạn là AI, Gemini hoặc chatbot của Google.
+4. Trả lời ngắn gọn, tự nhiên, tối đa khoảng 120 từ.
+5. Ưu tiên sản phẩm còn hàng, phù hợp nhu cầu khách, bán chạy hoặc đang giảm giá.
+6. Không hiển thị ID nội bộ cho khách.
+7. Khi gợi ý sản phẩm, bắt buộc dùng Markdown link theo format: [Tên sản phẩm - Giá](Link mua)
+8. Link mua phải lấy đúng từ dòng "Link mua" của sản phẩm. Không tự tạo link khác.
+9. Link mua là đường dẫn nội bộ dạng /product/ID, vẫn phải đặt trong Markdown link.
+10. Nếu muốn gợi ý thêm vào giỏ hàng, dùng Markdown link: [Thêm vào giỏ hàng](Link thêm giỏ)
+11. Không trả lời các câu hỏi ngoài phạm vi thời trang hoặc mua sắm.
 
-NHÂN CÁCH: Chuyên nghiệp, sành điệu, sử dụng icon (✨, 👕, 👟). Chủ động hỏi chiều cao/cân nặng để tư vấn size.`;
+CHÀO HỎI:
+- Nếu khách chỉ chào hỏi như hello, hi, xin chào, chào shop, alo thì chào lại thân thiện.
+- Không cần gợi ý sản phẩm nếu khách chưa nói nhu cầu.
 
-    // Nếu có lịch sử thì chèn vào prompt.
-    // Nếu không có thì bỏ qua để prompt ngắn hơn.
-    const historySection = historyContext ? `
-HISTORY CONTEXT:
-${historyContext}
-` : "";
+TƯ VẤN OUTFIT:
+- Nếu khách muốn phối đồ, tư vấn outfit, mix đồ, mặc đi chơi, đi học, đi làm, đi biển hoặc đi date, hãy gợi ý outfit phù hợp.
+- Có thể kết hợp nhiều sản phẩm, ưu tiên cùng phong cách hoặc màu sắc.
+- Chỉ dùng sản phẩm có trong danh sách.
 
-    // Prompt cuối cùng gửi cho Gemini theo thứ tự:
-    // 1. System instruction
-    // 2. Danh sách sản phẩm
-    // 3. Lịch sử chat
-    // 4. Câu hỏi hiện tại của user
-    return `${SYSTEM_INSTRUCTION}
+NGÂN SÁCH:
+- Nếu khách hỏi khoảng 200k, dưới 500k, giá rẻ hoặc budget thấp, chỉ gợi ý tối đa 3 sản phẩm phù hợp nhất.
 
-AVAILABLE PRODUCTS (CONTEXT):
+MÀU SẮC / SIZE / SALE:
+- Nếu khách hỏi theo màu hoặc size, chỉ gợi ý sản phẩm phù hợp với dữ liệu có sẵn.
+- Nếu khách hỏi sale, bán chạy hoặc hot trend, ưu tiên sản phẩm sold cao và sản phẩm có giảm giá.
+
+KHÁCH HỎI QUÁ CHUNG CHUNG:
+- Nếu khách nói "tư vấn cho tôi", "chọn giúp tôi", "tôi không biết mua gì", hãy hỏi thêm nam hay nữ, phong cách gì, ngân sách bao nhiêu và dùng cho dịp nào.
+
+NGOÀI PHẠM VI:
+- Nếu khách hỏi toán học, code, chính trị, hack, tin tức hoặc kiến thức không liên quan thời trang, trả lời:
+"Tobi hiện chuyên hỗ trợ tư vấn thời trang và mua sắm tại TOBI SHOP. Bạn muốn tìm outfit hoặc sản phẩm nào hôm nay không?"
+
+LỊCH SỬ CHAT:
+- Nếu đã có lịch sử trò chuyện, tận dụng thông tin cũ.
+- Không hỏi lại điều khách đã nói.
+- Không chào lại ở mỗi phản hồi nếu cuộc trò chuyện đã bắt đầu.
+- Trả lời tự nhiên như đang trò chuyện thật với ${userName}.
+
+KHI KHÔNG CÓ SẢN PHẨM:
+- Nếu dữ liệu sản phẩm là ${NO_MATCH_SENTINEL}, trả lời:
+"Tobi chưa tìm thấy sản phẩm phù hợp với nhu cầu của bạn. Bạn có thể thử mô tả thêm về phong cách, màu sắc, ngân sách hoặc loại sản phẩm để Tobi hỗ trợ tốt hơn nhé."
+
+QUAN TRỌNG:
+- Mỗi câu trả lời phải hoàn chỉnh, không được kết thúc giữa câu.
+- Không dùng Markdown quá nhiều, chỉ dùng Markdown cho link sản phẩm.
+- Không liệt kê quá dài, không spam sản phẩm.
+- Chỉ tập trung hỗ trợ mua sắm thời trang.
+
+DANH SÁCH SẢN PHẨM:
 ${productContext}
-
 ${historySection}
 
-USER QUESTION: "${userMessage}"
-💬 TOBI PERSONAL STYLIST RESPONSE:`;
+CÂU HỎI CỦA KHÁCH:
+"${userMessage}"
+
+TOBI TRẢ LỜI:`;
 }
 
-/**
- * Mục đích:
- * - Dọn dẹp response AI trước khi trả về frontend.
- * - Model đôi lúc thêm prefix hoặc ký tự trang trí không cần thiết.
- *
- * Input:
- * @param {string} rawResponse
- * - `rawResponse` là kết quả gốc trả về từ Gemini.
- *
- * Output:
- * @returns {string}
- * - Chuỗi đã được làm sạch để UI hiển thị gọn hơn.
- *
- * Khi nào được gọi:
- * - `chatService` gọi sau khi nhận kết quả từ Gemini.
- */
-export function formatResponse(rawResponse) {
-    return rawResponse
-        .trim()
-        // Bỏ các đầu nhãn không cần thiết nếu model tự thêm vào.
-        .replace(/^(Trả lời:|Phản hồi:|Bot:|ChatBot:)/i, "")
-        // Rút gọn số dòng trống quá nhiều.
-        .replace(/\n{3,}/g, "\n\n")
-        // Bỏ một số khung ký tự unicode nếu model tự vẽ.
-        .replace(/╔═.*═╗/g, "")
-        .replace(/╚═.*═╝/g, "")
-        .trim();
+export function formatResponse(rawResponse = "") {
+  return rawResponse
+    .trim()
+    .replace(/^(Trả lời:|Phản hồi:|Bot:|ChatBot:|Tobi:|TOBI TRẢ LỜI:)/i, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
-/**
- * Mục đích:
- * - Lọc ra các sản phẩm còn hàng.
- *
- * Input:
- * - `products`: danh sách sản phẩm.
- *
- * Output:
- * - Mảng mới chỉ gồm các sản phẩm có `stock > 0`.
- *
- * Khi nào được gọi:
- * - Hiện tại đã export để tái sử dụng, nhưng `chatService` chưa dùng trực tiếp.
- */
-export function filterAvailableProducts(products) {
-    return products.filter((p) => p.stock > 0);
+export function ensureProductLinks(rawResponse = "", products = []) {
+  if (!rawResponse || !Array.isArray(products) || products.length === 0) {
+    return rawResponse;
+  }
+
+  const markdownLinkPattern = /(\[[^\]]+\]\([^)]+\))/g;
+  const segments = String(rawResponse).split(markdownLinkPattern);
+  const sortedProducts = [...products]
+    .filter((product) => product?._id && product?.name)
+    .sort((a, b) => String(b.name).length - String(a.name).length);
+
+  return segments
+    .map((segment) => {
+      if (markdownLinkPattern.test(segment)) {
+        markdownLinkPattern.lastIndex = 0;
+        return segment;
+      }
+      markdownLinkPattern.lastIndex = 0;
+
+      let linkedSegment = segment;
+
+      for (const product of sortedProducts) {
+        const name = String(product.name);
+        const price = formatCurrency(product.price);
+        const linkText = `${name} - ${price}`;
+        const productUrl = `/product/${product._id}`;
+        const escapedName = escapeRegExp(name);
+        const escapedPrice = escapeRegExp(price);
+
+        const nameWithPricePattern = new RegExp(`${escapedName}\\s*-\\s*${escapedPrice}`, "gu");
+        linkedSegment = linkedSegment.replace(
+          nameWithPricePattern,
+          `[${linkText}](${productUrl})`
+        );
+
+        const plainNamePattern = new RegExp(escapedName, "gu");
+        linkedSegment = linkedSegment.replace((plainNamePattern), (match, offset, fullText) => {
+          const before = fullText.slice(Math.max(0, offset - 2), offset);
+          const after = fullText.slice(offset + match.length, offset + match.length + 2);
+
+          if (before.includes("[") || after.includes("]")) {
+            return match;
+          }
+
+          return `[${linkText}](${productUrl})`;
+        });
+      }
+
+      return linkedSegment;
+    })
+    .join("");
 }
 
-/**
- * Mục đích:
- * - Lấy ra nhóm sản phẩm bán chạy nhất.
- *
- * Input:
- * - `products`: danh sách sản phẩm.
- * - `limit`: số lượng sản phẩm tối đa cần lấy.
- *
- * Output:
- * - Mảng sản phẩm còn hàng, được sort theo `sold` giảm dần, sau đó cắt theo `limit`.
- *
- * Khi nào được gọi:
- * - Hiện tại đã export để tái sử dụng, nhưng `chatService` chưa gọi trực tiếp.
- */
-export function getBestSellers(products, limit = 3) {
-    return products
-        .filter((p) => p.stock > 0)
-        .sort((a, b) => b.sold - a.sold)
-        .slice(0, limit);
+export function filterAvailableProducts(products = []) {
+  return products.filter((product) => Number(product.stock || 0) > 0);
 }
 
-/**
- * ========================= TỔNG KẾT FILE =========================
- *
- * File này để làm gì?
- * - Đây là file chuyên lo "viết prompt" cho AI.
- * - Nó KHÔNG query DB.
- * - Nó KHÔNG gọi Gemini trực tiếp.
- * - Nó KHÔNG xử lý route/controller.
- *
- * Luồng hoạt động để intern hiểu nhanh:
- * - User gửi câu hỏi
- *   -> chatService lấy products từ cache/database
- *   -> filterService lọc product liên quan
- *   -> formatProductContext() biến products thành text
- *   -> formatHistoryContext() biến lịch sử chat thành text
- *   -> buildPrompt() ghép thành prompt hoàn chỉnh
- *   -> chatService gửi prompt sang Gemini
- *   -> Gemini trả về raw text
- *   -> formatResponse() dọn output
- *   -> controller trả về frontend
- *
- * Logic từng hàm:
- * - formatProductContext(): biến data sản phẩm thành context để AI đọc.
- * - formatHistoryContext(): giữ ngữ cảnh hội thoại.
- * - buildPrompt(): quy định role, style, quy tắc bắt buộc cho AI.
- * - formatResponse(): làm sạch kết quả AI.
- * - filterAvailableProducts(): lọc sản phẩm còn hàng.
- * - getBestSellers(): lấy sản phẩm bán chạy.
- *
- * Điểm dễ nhầm:
- * - includeShopInfo đang được truyền vào nhưng chưa được sử dụng trong prompt.
- * - isFirstMessage được khai báo nhưng hiện tại chưa tham gia logic.
- * - File này phụ trách "prompt engineering", không phải "business logic sản phẩm".
- *
- * Gợi ý cải thiện:
- * - Có thể tách SYSTEM_INSTRUCTION ra file config riêng.
- * - Có thể xóa param/biến chưa dùng nếu team chưa cần.
- * - Có thể thêm fallback prompt khi không có productContext.
- */
+export function getBestSellers(products = [], limit = 3) {
+  return products
+    .filter((product) => Number(product.stock || 0) > 0)
+    .sort((a, b) => Number(b.sold || 0) - Number(a.sold || 0))
+    .slice(0, limit);
+}

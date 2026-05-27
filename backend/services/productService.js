@@ -36,7 +36,7 @@ import Product from "../models/productModel.js";
  */
 export async function getAllProducts() {
     return await Product.find()
-        .select("name description price originalPrice stock sold category brand material sizes colors ratings numOfReviews images")
+        .select("name price originalPrice stock sold category brand material sizes colors ratings style vibe trending")
         .lean();
 }
 

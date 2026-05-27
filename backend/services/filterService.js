@@ -1,105 +1,192 @@
-// Filter service for AI chat - validates input and filters relevant products
+const MAX_PRODUCTS = 6;
 
-/**
- * Mục đích:
- * - Lọc ra những sản phẩm liên quan nhất tới câu hỏi của user.
- * - Đây là bước rất quan trọng trước khi build prompt cho AI.
- * - Nếu lọc tốt, AI sẽ được xem đúng sản phẩm và trả lời sát nhu cầu hơn.
- *
- * File này dùng để làm gì?
- * - Gồm 2 việc chính:
- *   + `filterRelevantProducts()`: lọc sản phẩm liên quan
- *   + `validateInput()`: kiểm tra câu hỏi user có hợp lệ không
- *
- * Dữ liệu trong file này lấy từ đâu?
- * - `products`: được `chatService` truyền vào sau khi lấy từ cache/database
- * - `userMessage`: là câu hỏi user gửi lên từ frontend qua controller -> chatService
- *
- * Props / Component / use client / Server Component:
- * - Không áp dụng.
- * - Đây là file backend service, không phải component React/Next.js.
- */
+const STYLE_ALIASES = {
+    streetwear: ["streetwear", "street wear", "street", "đường phố", "duong pho"],
+    minimalism: ["minimalism", "minimalist", "tối giản", "toi gian"],
+    vintage: ["vintage", "retro", "cổ điển", "co dien"],
+    office: ["office", "office chic", "công sở", "cong so", "đi làm", "di lam"],
+    y2k: ["y2k"],
+    "old money": ["old money", "sang trọng", "sang trong"],
+    sporty: ["sporty", "thể thao", "the thao", "năng động", "nang dong"]
+};
 
-/**
- * Mục đích:
- * - Lọc danh sách sản phẩm dựa trên nội dung câu hỏi của user.
- * - Logic lọc hiện tại đi theo nhiều tầng:
- *   1. Giới tính / category level1
- *   2. Loại sản phẩm / category level2
- *   3. Thương hiệu
- *   4. Ngân sách
- *   5. Chất liệu
- *   6. Style / vibe
- *   7. Ưu tiên còn hàng
- *   8. Giới hạn số lượng product để prompt không quá dài
- *
- * Input:
- * @param {Array} products - All products from DB
- * @param {string} userMessage - User's message
- *
- * Output:
- * @returns {Array} - Filtered products
- *
- * Khi nào được gọi:
- * - Được `chatService` gọi sau khi lấy products từ cache
- *   và trước khi build prompt cho AI.
- */
-export function filterRelevantProducts(products, userMessage) {
-    // Chuẩn hóa câu hỏi về chữ thường để so khớp keyword dễ hơn.
-    const msg = userMessage.toLowerCase();
+const normalizeText = (value = "") =>
+    String(value)
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .trim();
 
-    // Bắt đầu từ toàn bộ sản phẩm, sau đó lọc dần từng lớp.
+const includesAny = (text, keywords) =>
+    keywords.some((keyword) => text.includes(normalizeText(keyword)));
+
+const productText = (product) =>
+    normalizeText([
+        product.name,
+        product.brand,
+        product.material,
+        product.style,
+        product.vibe,
+        product.category?.level1,
+        product.category?.level2,
+        product.category?.level3,
+        ...(product.colors || []),
+        ...(product.sizes || [])
+    ].filter(Boolean).join(" "));
+
+const applyStrictFilter = (current, predicate, state) => {
+    state.hasSpecificIntent = true;
+    return current.filter(predicate);
+};
+
+const styleTokensFor = (styleName) => {
+    const normalizedStyle = normalizeText(styleName);
+    return STYLE_ALIASES[normalizedStyle] || [styleName];
+};
+
+const detectRequestedStyle = (message) => {
+    const normalizedMessage = normalizeText(message);
+
+    for (const [style, aliases] of Object.entries(STYLE_ALIASES)) {
+        if (includesAny(normalizedMessage, aliases)) {
+            return style;
+        }
+    }
+
+    const explicitStyleMatch = normalizedMessage.match(/(?:phong cach|style|kieu)\s+([a-z0-9\s-]{2,30})/i);
+    return explicitStyleMatch?.[1]?.trim() || null;
+};
+
+const parseBudget = (message) => {
+    const raw = String(message || "").toLowerCase();
+    const normalized = normalizeText(raw);
+
+    const kMatch =
+        raw.match(/(dưới|duoi|tối đa|toi da|<=|<)?\s*(\d+)\s*(k|nghìn|ngàn|nghin|ngan)/i) ||
+        normalized.match(/(duoi|toi da|<=|<)?\s*(\d+)\s*(k|nghin|ngan)/i);
+
+    if (kMatch) {
+        return {
+            value: Number.parseInt(kMatch[2], 10) * 1000,
+            mode: kMatch[1] ? "lte" : "around"
+        };
+    }
+
+    const millionMatch =
+        raw.match(/(dưới|duoi|tối đa|toi da|<=|<)?\s*(\d+)\s*(triệu|tr|trieu)/i) ||
+        normalized.match(/(duoi|toi da|<=|<)?\s*(\d+)\s*(trieu|tr)/i);
+
+    if (millionMatch) {
+        return {
+            value: Number.parseInt(millionMatch[2], 10) * 1000000,
+            mode: millionMatch[1] ? "lte" : "around"
+        };
+    }
+
+    const vaguePriceMatch = normalized.match(/(duoi|khoang|tam|toi da)\s*(\d+)/i);
+    if (vaguePriceMatch) {
+        return {
+            value: Number.parseInt(vaguePriceMatch[2], 10) * 1000000,
+            mode: vaguePriceMatch[1] === "duoi" || vaguePriceMatch[1] === "toi da" ? "lte" : "around"
+        };
+    }
+
+    return null;
+};
+
+const sortByPriority = (products) =>
+    [...products].sort((a, b) => {
+        const aSale = a.originalPrice > a.price ? 1 : 0;
+        const bSale = b.originalPrice > b.price ? 1 : 0;
+        const aStock = Number(a.stock || 0) > 0 ? 1 : 0;
+        const bStock = Number(b.stock || 0) > 0 ? 1 : 0;
+
+        return (
+            bStock - aStock ||
+            bSale - aSale ||
+            Number(b.sold || 0) - Number(a.sold || 0) ||
+            Number(b.ratings || 0) - Number(a.ratings || 0)
+        );
+    });
+
+const filterByRequestedStyle = (products, requestedStyle) => {
+    if (!requestedStyle) return products;
+
+    const tokens = styleTokensFor(requestedStyle).map(normalizeText);
+
+    const strictStyleMatches = products.filter((product) => {
+        const style = normalizeText(product.style);
+        return tokens.some((token) => style === token || style.includes(token));
+    });
+
+    if (strictStyleMatches.length > 0) {
+        return strictStyleMatches;
+    }
+
+    return products.filter((product) =>
+        tokens.some((token) => productText(product).includes(token))
+    );
+};
+
+export function filterRelevantProducts(products = [], userMessage = "") {
+    if (!Array.isArray(products) || products.length === 0) {
+        return [];
+    }
+
+    const msg = normalizeText(userMessage);
     let filtered = [...products];
+    const state = { hasSpecificIntent: false };
 
-    // 1. Lọc theo GIỚI TÍNH / NHÓM CHÍNH (category.level1)
-    // Ví dụ:
-    // - "nam", "con trai", "đàn ông"
-    // - "nữ", "con gái", "phụ nữ"
-    // - "unisex"
+    const requestedStyle = detectRequestedStyle(userMessage);
+    if (requestedStyle) {
+        state.hasSpecificIntent = true;
+        filtered = filterByRequestedStyle(filtered, requestedStyle);
+
+        const styleInStock = filtered.filter((product) => Number(product.stock || 0) > 0);
+        const styleResults = styleInStock.length > 0 ? styleInStock : filtered;
+
+        if (styleResults.length > 0) {
+            return sortByPriority(styleResults).slice(0, MAX_PRODUCTS);
+        }
+    }
+
     const genderKeywords = {
         nam: ["nam", "con trai", "đàn ông", "men"],
-        nữ: ["nữ", "con gái", "phụ nữ", "women"],
+        nu: ["nữ", "con gái", "phụ nữ", "women"],
         unisex: ["unisex"]
     };
 
     for (const [gender, keywords] of Object.entries(genderKeywords)) {
-        if (keywords.some((k) => msg.includes(k))) {
-            const genderFiltered = filtered.filter((p) =>
-                p.category?.level1?.toLowerCase().includes(gender)
+        if (includesAny(msg, keywords)) {
+            filtered = applyStrictFilter(
+                filtered,
+                (product) => normalizeText(product.category?.level1).includes(gender),
+                state
             );
+            break;
+        }
+    }
 
-            // Chỉ áp dụng bộ lọc nếu thật sự còn kết quả,
-            // tránh trường hợp lọc quá tay làm mất hết sản phẩm.
-            if (genderFiltered.length > 0) {
-                filtered = genderFiltered;
+    if (!requestedStyle) {
+        const typeKeywords = [
+            "áo", "quần", "giày", "dép", "túi", "balo", "mũ", "nón", "phụ kiện",
+            "váy", "hoodie", "polo", "sơ mi", "jean", "kaki", "shirt", "pants", "shoes", "bag"
+        ];
+
+        for (const type of typeKeywords) {
+            const normalizedType = normalizeText(type);
+            if (msg.includes(normalizedType)) {
+                filtered = applyStrictFilter(
+                    filtered,
+                    (product) => productText(product).includes(normalizedType),
+                    state
+                );
                 break;
             }
         }
     }
 
-    // 2. Lọc theo LOẠI SẢN PHẨM (category.level2 hoặc tên sản phẩm)
-    // Ví dụ:
-    // - áo, quần, giày, dép, túi...
-    const typeKeywords = [
-        "áo", "quần", "giày", "dép", "túi", "balo", "mũ", "nón", "phụ kiện",
-        "shirt", "pants", "shoes", "bag"
-    ];
-
-    for (const type of typeKeywords) {
-        if (msg.includes(type)) {
-            const typeFiltered = filtered.filter((p) =>
-                (p.category?.level2 || "").toLowerCase().includes(type) ||
-                (p.name || "").toLowerCase().includes(type)
-            );
-
-            if (typeFiltered.length > 0) {
-                filtered = typeFiltered;
-                break;
-            }
-        }
-    }
-
-    // 3. Lọc theo THƯƠNG HIỆU
     const brands = [
         "nike", "adidas", "uniqlo", "zara", "h&m", "gucci", "puma", "converse",
         "vans", "louis vuitton", "balenciaga", "new balance"
@@ -107,231 +194,142 @@ export function filterRelevantProducts(products, userMessage) {
 
     for (const brand of brands) {
         if (msg.includes(brand)) {
-            const brandFiltered = filtered.filter((p) =>
-                (p.brand || "").toLowerCase().includes(brand) ||
-                (p.name || "").toLowerCase().includes(brand)
-            );
-
-            if (brandFiltered.length > 0) {
-                filtered = brandFiltered;
-                break;
-            }
-        }
-    }
-
-    // 4. Lọc theo NGÂN SÁCH ở đơn vị triệu
-    // Ví dụ:
-    // - "2 triệu"
-    // - "2tr"
-    // - "dưới 2"
-    // - "khoảng 2"
-    const pricePatterns = [
-        /(\d+)\s*(triệu|tr|trieu)/i,
-        /(\d+)tr/i,
-        /dưới\s*(\d+)/i,
-        /khoảng\s*(\d+)/i,
-        /tầm\s*(\d+)/i
-    ];
-
-    for (const pattern of pricePatterns) {
-        const match = msg.match(pattern);
-        if (match) {
-            const budget = parseInt(match[1], 10) * 1000000;
-
-            // Cho phép khoảng dao động 70% -> 130% để tránh lọc quá cứng.
-            filtered = filtered.filter((p) =>
-                p.price >= budget * 0.7 && p.price <= budget * 1.3
+            filtered = applyStrictFilter(
+                filtered,
+                (product) => productText(product).includes(brand),
+                state
             );
             break;
         }
     }
 
-    // 5. Lọc theo NGÂN SÁCH ở đơn vị nghìn / k
-    // Ví dụ:
-    // - "500k"
-    // - "200 nghìn"
-    // - "dưới 300k"
-    const kPatterns = [
-        /(\d+)\s*(k|nghìn|ngàn|nghin)/i,
-        /dưới\s*(\d+)\s*(k|nghìn|ngàn)/i
+    const colorKeywords = [
+        "đen", "trắng", "xanh", "đỏ", "hồng", "vàng", "cam", "tím", "nâu",
+        "be", "xám", "ghi", "navy", "kem", "bạc"
     ];
 
-    for (const pattern of kPatterns) {
-        const match = msg.match(pattern);
-        if (match) {
-            const budget = parseInt(match[1], 10) * 1000;
-
-            // Với tầm giá nhỏ hơn, nới rộng biên hơn một chút.
-            filtered = filtered.filter((p) =>
-                p.price >= budget * 0.5 && p.price <= budget * 1.5
+    for (const color of colorKeywords) {
+        const normalizedColor = normalizeText(color);
+        if (msg.includes(normalizedColor)) {
+            filtered = applyStrictFilter(
+                filtered,
+                (product) => (product.colors || []).some((item) => normalizeText(item).includes(normalizedColor)),
+                state
             );
             break;
         }
     }
 
-    // 6. Lọc theo CHẤT LIỆU
-    const materials = ["cotton", "len", "lụa", "vải", "da", "jean", "denim", "kaki", "linen", "polyester"];
-
-    for (const mat of materials) {
-        if (msg.includes(mat)) {
-            const matFiltered = filtered.filter((p) =>
-                (p.material || "").toLowerCase().includes(mat) ||
-                (p.description || "").toLowerCase().includes(mat)
-            );
-
-            if (matFiltered.length > 0) {
-                filtered = matFiltered;
-                break;
-            }
-        }
-    }
-
-    // 7. Lọc theo STYLE và VIBE
-    // Đây là phần giúp chatbot giống "personal stylist" hơn.
-    const styleKeywords = [
-        "streetwear", "minimalism", "vintage", "office", "y2k",
-        "old money", "sporty", "thời trang", "phong cách"
-    ];
-    const vibeKeywords = [
-        "bí ẩn", "năng động", "quyến rũ", "phóng khoáng",
-        "thanh lịch", "trẻ trung", "chill", "sang trọng"
-    ];
-
-    const styleMatch = styleKeywords.find((s) => msg.includes(s));
-    const vibeMatch = vibeKeywords.find((v) => msg.includes(v));
-
-    if (styleMatch || vibeMatch) {
-        const personalityFiltered = filtered.filter((p) =>
-            (styleMatch && (p.style || "").toLowerCase().includes(styleMatch)) ||
-            (vibeMatch && (p.vibe || "").toLowerCase().includes(vibeMatch))
+    const sizeMatch = msg.match(/\b(xs|s|m|l|xl|xxl|xxxl|[2-4]\d)\b/i);
+    if (sizeMatch && /(size|co|cỡ|sz|mặc|mac)/i.test(msg)) {
+        const wantedSize = normalizeText(sizeMatch[1]);
+        filtered = applyStrictFilter(
+            filtered,
+            (product) => (product.sizes || []).some((size) => normalizeText(size) === wantedSize),
+            state
         );
+    }
 
-        if (personalityFiltered.length > 0) {
-            filtered = personalityFiltered;
+    const budget = parseBudget(userMessage);
+    if (budget) {
+        filtered = applyStrictFilter(
+            filtered,
+            (product) => {
+                const price = Number(product.price || 0);
+                if (budget.mode === "lte") return price <= budget.value;
+                return price >= budget.value * 0.6 && price <= budget.value * 1.4;
+            },
+            state
+        );
+    }
+
+    const materials = ["cotton", "len", "lụa", "vải", "da", "jean", "denim", "kaki", "linen", "polyester"];
+    for (const material of materials) {
+        const normalizedMaterial = normalizeText(material);
+        if (msg.includes(normalizedMaterial)) {
+            filtered = applyStrictFilter(
+                filtered,
+                (product) => productText(product).includes(normalizedMaterial),
+                state
+            );
+            break;
         }
     }
 
-    // 8. Ưu tiên các sản phẩm còn hàng.
-    // Nếu còn ít nhất 1 sản phẩm có stock > 0 thì bỏ các sản phẩm hết hàng ra.
-    const inStock = filtered.filter((p) => p.stock > 0);
+    if (!requestedStyle) {
+        const styleKeywords = Object.values(STYLE_ALIASES).flat();
+        for (const style of styleKeywords) {
+            const normalizedStyle = normalizeText(style);
+            if (msg.includes(normalizedStyle)) {
+                filtered = applyStrictFilter(
+                    filtered,
+                    (product) => productText(product).includes(normalizedStyle),
+                    state
+                );
+                break;
+            }
+        }
+    }
+
+    if (includesAny(msg, ["sale", "giảm giá", "giam gia", "khuyến mãi", "khuyen mai"])) {
+        state.hasSpecificIntent = true;
+        filtered = filtered.filter((product) => product.originalPrice > product.price);
+    }
+
+    if (includesAny(msg, ["bán chạy", "ban chay", "hot trend", "hot", "trending"])) {
+        state.hasSpecificIntent = true;
+        filtered = sortByPriority(filtered);
+    }
+
+    const inStock = filtered.filter((product) => Number(product.stock || 0) > 0);
     if (inStock.length > 0) {
         filtered = inStock;
     }
 
-    // 9. Giới hạn số lượng sản phẩm tối đa để tránh prompt quá dài.
-    const MAX_PRODUCTS = 15;
-    if (filtered.length > MAX_PRODUCTS) {
-        // Sort theo giá để có phân bố đều hơn,
-        // sau đó lấy cách quãng thay vì chỉ cắt top đầu tiên.
-        filtered.sort((a, b) => a.price - b.price);
-        const step = Math.max(1, Math.floor(filtered.length / MAX_PRODUCTS));
-        filtered = filtered.filter((_, index) => index % step === 0).slice(0, MAX_PRODUCTS);
-    }
-
-    // 10. Fallback:
-    // Nếu lọc quá mạnh làm rỗng kết quả, quay về lấy một phần danh sách gốc.
     if (filtered.length === 0) {
-        console.log("⚠️ Không lọc được sản phẩm phù hợp, dùng danh sách mặc định.");
-        return products.slice(0, MAX_PRODUCTS);
+        console.log("Không tìm thấy sản phẩm phù hợp với bộ lọc chat.", {
+            requestedStyle,
+            userMessage
+        });
+        return [];
     }
 
-    console.log(`✅ Đã lọc: ${filtered.length}/${products.length} sản phẩm`);
-    return filtered;
+    return sortByPriority(filtered).slice(0, MAX_PRODUCTS);
 }
 
-/**
- * Mục đích:
- * - Kiểm tra câu hỏi đầu vào của user có hợp lệ không trước khi gọi AI.
- * - Đây là lớp chặn sớm để:
- *   + tránh gọi AI khi input rỗng
- *   + tránh tốn chi phí API không cần thiết
- *   + giảm spam / input vô nghĩa
- *
- * Input:
- * @param {string} userMessage
- *
- * Output:
- * @returns {{valid: boolean, message?: string}}
- * - Nếu hợp lệ: `{ valid: true }`
- * - Nếu không hợp lệ: `{ valid: false, message: "..." }`
- *
- * Khi nào được gọi:
- * - `chatService` gọi ở bước đầu tiên của luồng chat.
- */
 export function validateInput(userMessage) {
-    // Trường hợp không có input hoặc input không phải string.
     if (!userMessage || typeof userMessage !== "string") {
         return {
             valid: false,
-            message: "Bạn muốn hỏi gì ạ? 😊"
+            message: "Bạn muốn hỏi gì ạ?"
         };
     }
 
-    // Xóa khoảng trắng đầu/cuối trước khi kiểm tra tiếp.
     const trimmed = userMessage.trim();
 
-    // Trường hợp user chỉ nhập khoảng trắng.
     if (trimmed.length === 0) {
         return {
             valid: false,
-            message: "Bạn muốn hỏi gì ạ? 😊"
+            message: "Bạn muốn hỏi gì ạ?"
         };
     }
 
-    // Không cho câu hỏi quá dài để tránh prompt quá nặng.
     if (trimmed.length > 500) {
         return {
             valid: false,
-            message: "Câu hỏi hơi dài quá bạn ơi 😅 Bạn có thể nói ngắn gọn hơn được không?"
+            message: "Câu hỏi hơi dài quá bạn ơi. Bạn có thể nói ngắn gọn hơn được không?"
         };
     }
 
-    // Chặn một số dạng spam cơ bản:
-    // - 1 ký tự lặp lại quá nhiều lần: aaaaaaaaaaaa
-    // - Chuỗi chỉ toàn ký hiệu, không có chữ/số hợp lệ
-    const spamPatterns = /(.)\1{10,}|^[^a-zA-Z0-9\sàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]+$/;
-    if (spamPatterns.test(trimmed)) {
+    const normalized = normalizeText(trimmed);
+    const spamPatterns = /(.)\1{10,}|^[^a-z0-9\s]+$/i;
+
+    if (spamPatterns.test(normalized)) {
         return {
             valid: false,
-            message: "Mình không hiểu lắm, bạn có thể hỏi rõ hơn được không? 🤔"
+            message: "Mình không hiểu lắm, bạn có thể hỏi rõ hơn được không?"
         };
     }
 
     return { valid: true };
 }
-
-/**
- * ========================= TỔNG KẾT FILE =========================
- *
- * 1. Code chạy từ đâu trước?
- * - `chatService` gọi `validateInput(userMessage)` trước
- * - Nếu input hợp lệ, `chatService` gọi `filterRelevantProducts(products, userMessage)`
- * - Kết quả lọc sẽ được gửi qua `aiPromptService` để build prompt
- *
- * 2. Khi user bấm gửi chat thì chuyện gì xảy ra?
- * - Frontend gửi `message`
- * - Backend đi vào `aiController` -> `chatService`
- * - `validateInput()` kiểm tra câu hỏi
- * - `filterRelevantProducts()` quyết định AI sẽ được xem những sản phẩm nào
- * - Sau đó prompt mới được build và gửi sang Gemini
- *
- * 3. Nếu dữ liệu bị rỗng thì sao?
- * - Nếu `userMessage` rỗng:
- *   + `validateInput()` trả `valid: false`
- *   + chatbot không gọi AI
- * - Nếu lọc xong không còn sản phẩm:
- *   + hàm fallback về `products.slice(0, MAX_PRODUCTS)`
- *   + tức là vẫn đưa một danh sách mặc định cho AI
- *
- * 4. Chỗ intern cần học kỹ:
- * - Tư duy lọc dữ liệu nhiều lớp
- * - Fallback khi lọc quá tay
- * - Validate input sớm để tiết kiệm tài nguyên
- * - Khác nhau giữa "business filter" và "AI prompt"
- * - Tại sao prompt quá dài lại có hại
- *
- * 5. Lưu ý:
- * - Đây là rule-based filtering, chưa phải AI semantic search thật sự
- * - Kết quả phụ thuộc mạnh vào keyword
- * - Nếu muốn thông minh hơn sau này, có thể thay bằng embeddings / vector search
- */
