@@ -96,6 +96,13 @@ const normalizeStatus = (status) => {
   return "pending";
 };
 
+const getOrderItemProductId = (item) => {
+  const product = item?.product_id || item?.productId || item?.product;
+
+  if (!product) return "";
+  return typeof product === "object" ? product._id : product;
+};
+
 function MyOrders() {
   const dispatch = useDispatch();
   const [currentTab, setCurrentTab] = useState("all");
@@ -361,9 +368,10 @@ function MyOrders() {
                                     className="btn-review"
                                     onClick={() => {
                                       const firstItem = order.orderItems?.[0];
+                                      const productId = getOrderItemProductId(firstItem);
                                       if (firstItem) {
                                         setReviewProduct({
-                                          _id: firstItem.productId || firstItem.product || firstItem._id,
+                                          _id: productId,
                                           name: firstItem.name,
                                           images: firstItem.images || (firstItem.image ? [{ url: firstItem.image }] : []),
                                           category: firstItem.category || "",

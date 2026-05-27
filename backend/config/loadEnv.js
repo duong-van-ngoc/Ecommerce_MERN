@@ -1,62 +1,32 @@
-/**
- * 1. FILE NÀY LÀ GÌ: 
- *    Đây là file Bộ tải cấu hình biến môi trường (Environment Configuration Loader).
- * 
- * 2. VAI TRÒ TRONG DỰ ÁN:
- *    - Đảm bảo các thông tin nhạy cảm và cấu hình (DB URI, Secret Keys, Port...) từ file `config.env` được nạp vào `process.env`.
- *    - Giúp ứng dụng "hiểu" được các thông số môi trường trước khi thực hiện bất kỳ logic nào khác.
- *    - Cung cấp các công cụ kiểm tra xem file cấu hình có bị thay đổi (stale) trong quá trình ứng dụng đang chạy hay không.
- * 
- * 3. FILE NÀY THUỘC LUỒNG NÀO:
- *    - Hệ thống Config / Khởi tạo (Setup).
- * 
- * 4. KIẾN THỨC / KỸ THUẬT ĐANG DÙNG:
- *    - Thư viện `dotenv`: Dùng để đọc file .env.
- *    - Node.js Built-in Modules: `fs` (xử lý file), `path` (đường dẫn), `crypto` (tạo mã hash).
- *    - Fingerprinting: Dùng thuật toán SHA1 để tạo mã định danh cho nội dung file, giúp so sánh sự thay đổi.
- * 
- * 5. INPUT / OUTPUT CỦA FILE:
- *    - Input: File vật lý `backend/config/config.env`.
- *    - Output: Đẩy các cặp Key-Value vào `process.env`. Cung cấp trạng thái thông qua `getEnvironmentStatus()`.
- * 
- * 6. STATE / PROPS / PARAMS / ... : 
- *    - `envLoaded`: Cờ hiệu (boolean) để tránh việc nạp file nhiều lần gây lãng phí tài nguyên.
- *    - `envMetadata`: Đối tượng lưu trữ thông tin về nguồn gốc và thời điểm nạp biến môi trường.
- * 
- * 7. CÁC HÀM / CHỨC NĂNG CHÍNH:
- *    - `loadEnvironment()`: Hàm thực hiện nạp file `config.env`. Phân biệt giữa môi trường Local và Vercel.
- *    - `buildFingerprint()`: Tạo mã định danh duy nhất cho nội dung file để theo dõi sự thay đổi.
- *    - `getEnvironmentStatus()`: Trả về trạng thái hiện tại của biến môi trường (đã nạp chưa, có bị cũ không...).
- * 
- * 8. LUỒNG HOẠT ĐỘNG TỪNG BƯỚC:
- *    - Bước 1: Kiểm tra xem đã nạp môi trường chưa (`envLoaded`).
- *    - Bước 2: Nếu không phải chạy trên Vercel, xác định đường dẫn tới file `config.env`.
- *    - Bước 3: Dùng `dotenv.config` để đẩy dữ liệu vào `process.env`.
- *    - Bước 4: Chụp ảnh metadata (fingerprint, thời gian cập nhật file).
- *    - Bước 5: Đánh dấu `envLoaded = true`.
- * 
- * 9. LUỒNG REQUEST / RESPONSE / DATABASE:
- *    - Không tương tác trực tiếp với Database hay Request khách hàng.
- *    - Nhưng nó là "nền móng" để các file Database (db.js) lấy được URI kết nối.
- * 
- * 10. RENDER / ĐIỀU KIỆN / VALIDATE / PHÂN QUYỀN: 
- *    - Có điều kiện kiểm tra `process.env.VERCEL` để tùy chỉnh cách nạp.
- * 
- * 11. PHẦN BẤT ĐỒNG BỘ TRONG FILE:
- *    - Các thao tác file dùng hàm đồng bộ (`Sync`) để đảm bảo cấu hình được nạp **ngay lập tức** và **chặn** các tiến trình sau cho đến khi nạp xong.
- * 
- * 12. ĐIỂM QUAN TRỌNG KHI ĐỌC HOẶC SỬA FILE:
- *    - File này sử dụng `import.meta.url`, yêu cầu môi trường Node.js hỗ trợ ES Modules.
- *    - Luôn đảm bảo file `config.env` tồn tại trong thư mục `backend/config` khi chạy ở máy cục bộ (Local).
- *    - Mọi thay đổi trong file `config.env` sẽ không tự động cập nhật vào `process.env` trừ khi server được khởi động lại (trừ khi có logic hot-reload khác).
- */
 import crypto from "crypto";
 import fs from "fs";
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import path from "path";
 
+/**
+ * Mục đích:
+ * - Đây là file nạp biến môi trường từ `config.env` vào `process.env`.
+ * - Ngoài việc load env, file này còn theo dõi xem env hiện tại có bị "stale" không.
+ *
+ * "Stale" ở đây nghĩa là gì?
+ * - File `config.env` ngoài ổ đĩa đã thay đổi
+ * - Nhưng process backend đang chạy vẫn giữ giá trị cũ trong RAM
+ * - Lúc đó phải restart backend để nạp lại
+ *
+ * File này dùng để làm gì trong cụm AI chat?
+ * - `geminiUtils` cần `process.env.GEMINI_API_KEY`
+ * - `aiController` dùng `getEnvironmentStatus()` để biết config có bị stale không
+ *
+ * Props / Component / use client / Server Component:
+ * - Không áp dụng.
+ * - Đây là file backend config utility.
+ */
+
+// Cờ để tránh load env nhiều lần không cần thiết
 let envLoaded = false;
+
+// Metadata về lần load env hiện tại
 let envMetadata = {
     source: "process",
     loadedAt: null,
@@ -65,9 +35,34 @@ let envMetadata = {
     loadedMtimeMs: null
 };
 
+/**
+ * Mục đích:
+ * - Tạo fingerprint ngắn cho nội dung file env.
+ * - Dùng để phát hiện file env có thay đổi hay không.
+ *
+ * Input:
+ * - `content`: nội dung file env
+ *
+ * Output:
+ * - Chuỗi hash ngắn độ dài 12 ký tự
+ */
 const buildFingerprint = (content = "") =>
     crypto.createHash("sha1").update(content).digest("hex").slice(0, 12);
 
+/**
+ * Mục đích:
+ * - Đọc metadata của file env hiện tại:
+ *   + đường dẫn
+ *   + fingerprint
+ *   + thời gian sửa cuối
+ *
+ * Input:
+ * - `envPath`: đường dẫn file env
+ *
+ * Output:
+ * - `null` nếu file không tồn tại
+ * - object metadata nếu file tồn tại
+ */
 const readEnvFileMetadata = (envPath) => {
     if (!envPath || !fs.existsSync(envPath)) {
         return null;
@@ -83,6 +78,22 @@ const readEnvFileMetadata = (envPath) => {
     };
 };
 
+/**
+ * Mục đích:
+ * - Load biến môi trường vào `process.env`.
+ *
+ * Logic:
+ * - Nếu đã load rồi thì bỏ qua
+ * - Nếu không chạy trên Vercel:
+ *   + tìm `config.env`
+ *   + dùng `dotenv.config()`
+ *   + lưu fingerprint + metadata
+ * - Nếu chạy trên Vercel:
+ *   + coi nguồn env là platform-env
+ *
+ * Khi nào được gọi:
+ * - Thường được gọi lúc app/server bootstrap
+ */
 export const loadEnvironment = () => {
     if (envLoaded) {
         return;
@@ -90,6 +101,8 @@ export const loadEnvironment = () => {
 
     const loadedAt = new Date().toISOString();
 
+    // Local / server tự host:
+    // load trực tiếp từ file `config.env`
     if (!process.env.VERCEL) {
         const __filename = fileURLToPath(import.meta.url);
         const __dirname = path.dirname(__filename);
@@ -97,10 +110,10 @@ export const loadEnvironment = () => {
         const result = dotenv.config({ path: envPath });
 
         if (result.error) {
-            console.error("Loi khi nap config.env:", result.error);
+            console.error("Lỗi khi nạp config.env:", result.error);
         } else {
             const count = Object.keys(result.parsed || {}).length;
-            console.log(`[loadEnv] Da nap ${count} bien tu ${envPath}`);
+            console.log(`[loadEnv] Đã nạp ${count} biến từ ${envPath}`);
         }
 
         const fileMetadata = readEnvFileMetadata(envPath);
@@ -112,6 +125,8 @@ export const loadEnvironment = () => {
             loadedMtimeMs: fileMetadata?.mtimeMs || null
         };
     } else {
+        // Vercel:
+        // biến env được platform inject sẵn, không cần đọc file local
         envMetadata = {
             source: "platform-env",
             loadedAt,
@@ -124,6 +139,24 @@ export const loadEnvironment = () => {
     envLoaded = true;
 };
 
+/**
+ * Mục đích:
+ * - Trả về trạng thái hiện tại của môi trường.
+ * - Đây là hàm giúp controller biết config đang ổn hay đã bị stale.
+ *
+ * Output:
+ * - object trạng thái gồm:
+ *   + source
+ *   + loadedAt
+ *   + envPath
+ *   + loadedFingerprint
+ *   + currentFingerprint
+ *   + stale
+ *   + missing
+ *
+ * Khi nào được gọi:
+ * - `aiController` gọi trước khi xử lý chat
+ */
 export const getEnvironmentStatus = () => {
     const baseStatus = {
         ...envMetadata,
@@ -134,12 +167,15 @@ export const getEnvironmentStatus = () => {
         missing: false
     };
 
+    // Nếu không có envPath thì không có file local để so sánh
+    // (ví dụ chạy trên Vercel)
     if (!envMetadata.envPath) {
         return baseStatus;
     }
 
     const currentMetadata = readEnvFileMetadata(envMetadata.envPath);
 
+    // Nếu file env đã biến mất sau khi app chạy
     if (!currentMetadata) {
         return {
             ...baseStatus,
@@ -150,6 +186,8 @@ export const getEnvironmentStatus = () => {
         };
     }
 
+    // So fingerprint hiện tại với fingerprint lúc load ban đầu.
+    // Nếu khác nhau => file env đã đổi => config stale.
     return {
         ...baseStatus,
         canCheckForChanges: true,
@@ -161,3 +199,35 @@ export const getEnvironmentStatus = () => {
         )
     };
 };
+
+/**
+ * ========================= TỔNG KẾT FILE =========================
+ *
+ * 1. Code chạy từ đâu trước?
+ * - `server.js` hoặc `app.js` gọi `loadEnvironment()`
+ * - File này nạp env vào `process.env`
+ * - Sau đó các file khác mới dùng được biến env
+ *
+ * 2. Khi user bấm gửi chat thì chuyện gì xảy ra?
+ * - `aiController` gọi `getEnvironmentStatus()`
+ * - Nếu env stale thì chặn request AI
+ * - Nếu env ổn thì tiếp tục gọi `chatService`
+ *
+ * 3. Nếu dữ liệu bị rỗng thì sao?
+ * - Nếu file env không tồn tại:
+ *   + metadata có thể là `null`
+ *   + `missing: true`
+ * - Nếu API key không có / sai:
+ *   + lỗi thật sẽ xảy ra ở `geminiUtils`
+ *
+ * 4. Chỗ intern cần học kỹ:
+ * - `dotenv.config()`
+ * - `process.env`
+ * - Fingerprint file là gì
+ * - Vì sao đổi env thường phải restart backend
+ *
+ * 5. Lưu ý:
+ * - File này không gọi AI
+ * - File này không query DB
+ * - Nó là nền tảng config cho cả hệ thống
+ */

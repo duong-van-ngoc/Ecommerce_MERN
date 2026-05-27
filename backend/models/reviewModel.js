@@ -21,6 +21,17 @@ const reviewSchema = new mongoose.Schema({
     type: String,
     required: [true, "Vui lòng nhập nội dung đánh giá"]
   },
+  images: [
+    {
+      public_id: { type: String, required: true },
+      url: { type: String, required: true },
+      resource_type: {
+        type: String,
+        enum: ["image", "video", "raw"],
+        default: "image"
+      }
+    }
+  ],
   status: { 
     type: String, 
     enum: ["approved", "pending", "rejected"],

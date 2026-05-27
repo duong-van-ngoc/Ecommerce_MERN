@@ -69,6 +69,35 @@ import { getRelatedProductsLevel1 } from '../services/productRecommendationServi
 
 import { v2 as cloudinary } from 'cloudinary';
 
+const uploadReviewMedia = async (files = []) => {
+    const mediaFiles = Array.isArray(files) ? files : [files];
+    const uploadedMedia = [];
+
+    for (const file of mediaFiles) {
+        const result = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                    folder: "reviews",
+                    resource_type: "auto"
+                },
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+            );
+            uploadStream.end(file.data);
+        });
+
+        uploadedMedia.push({
+            public_id: result.public_id,
+            url: result.secure_url,
+            resource_type: result.resource_type || "image"
+        });
+    }
+
+    return uploadedMedia;
+};
+
 // tao san pham 
 export const createProducts = handleAsyncError(async (req, res, next) => {
 
@@ -324,6 +353,10 @@ export const createReviewProduct = handleAsyncError(async (req, res, next) => {
         return next(new HandleError("Sản phẩm không tồn tại", 404));
     }
 
+    const uploadedMedia = req.files?.images
+        ? await uploadReviewMedia(req.files.images)
+        : [];
+
     // Check if review already exists for this user + product
     const existingReview = await Review.findOne({
         user_id: req.user._id,
@@ -335,6 +368,9 @@ export const createReviewProduct = handleAsyncError(async (req, res, next) => {
         // Update existing review
         existingReview.rating = Number(rating);
         existingReview.comment = comment;
+        if (uploadedMedia.length > 0) {
+            existingReview.images = uploadedMedia;
+        }
         await existingReview.save();
         isUpdate = true;
     } else {
@@ -344,6 +380,7 @@ export const createReviewProduct = handleAsyncError(async (req, res, next) => {
             product_id: productId,
             rating: Number(rating),
             comment,
+            images: uploadedMedia,
             status: "approved"
         });
     }

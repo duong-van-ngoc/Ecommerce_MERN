@@ -288,6 +288,13 @@ export const fetchAllAdminVouchers = createAsyncThunk(
             // Chuyển đổi object filter thành query string
             const params = new URLSearchParams();
             Object.entries(filters).forEach(([key, value]) => {
+                if (Array.isArray(value)) {
+                    if (value.length > 0) {
+                        params.append(key, value.join(','));
+                    }
+                    return;
+                }
+
                 if (value !== undefined && value !== null && value !== '') {
                     params.append(key, value);
                 }

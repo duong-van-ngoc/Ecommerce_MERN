@@ -1,121 +1,218 @@
-// Prompt service for AI chat - builds prompts and formats context/responses
-import { getFrontendBaseUrl } from "../config/runtimeConfig.js";
+const NO_MATCH_SENTINEL = "KHÔNG_CÓ_SẢN_PHẨM_PHÙ_HỢP";
 
-/**
- * Format product context for AI prompt - enriched for Stylist & Shopping assistant
- * @param {Array} products - Filtered product list
- * @returns {string}
- */
-export function formatProductContext(products) {
-    return products.map((p, i) => {
-        const stockStatus = p.stock > 0 ? (p.stock <= 5 ? `Sắp hết (Chỉ còn ${p.stock})` : 'Còn hàng') : 'Hết hàng';
-        const category = p.category
-            ? `${p.category.level1} > ${p.category.level2} > ${p.category.level3}`
-            : 'N/A';
-        const saleInfo = p.originalPrice > p.price 
-            ? ` | GIẢM GIÁ: -${Math.round((1 - p.price / p.originalPrice) * 100)}% (Giá gốc: ${p.originalPrice.toLocaleString('vi-VN')}đ)` 
-            : '';
-        const imageUrl = p.images?.[0]?.url || '';
-        const trendingTag = p.trending ? ' [HOT 🔥 - XU HƯỚNG]' : '';
+const formatCurrency = (value = 0) =>
+  `${Number(value || 0).toLocaleString("vi-VN")}đ`;
 
-        return `[SẢN PHẨM ${i + 1}]
-ID: ${p._id}
-Tên: ${p.name}${trendingTag}
-Giá bán: ${p.price.toLocaleString('vi-VN')}đ${saleInfo}
-Hạng mục: ${category}
-Vibe: ${p.vibe || 'Chưa xác định'} | Style: ${p.style || 'Chưa xác định'}
-Thương hiệu: ${p.brand || 'N/A'} | Chất liệu: ${p.material || 'N/A'}
-Đặc điểm: ${p.sizes?.length > 0 ? `Size: ${p.sizes.join('/')}` : ''} | ${p.colors?.length > 0 ? `Màu: ${p.colors.join('/')}` : ''}
-Tình trạng: ${stockStatus} | Đã bán: ${p.sold} | Đánh giá: ${p.ratings}/5
-Ảnh: ${imageUrl}
-Mô tả: ${(p.description || '').substring(0, 150)}...`;
-    }).join("\n\n---\n\n");
+const escapeRegExp = (value = "") =>
+  String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+export function formatProductContext(products = []) {
+  if (!Array.isArray(products) || products.length === 0) {
+    return NO_MATCH_SENTINEL;
+  }
+
+  return products
+    .map((product, index) => {
+      const productUrl = `/product/${product._id}`;
+      const cartUrl = `/cart/add/${product._id}`;
+      const category = product.category
+        ? [product.category.level1, product.category.level2, product.category.level3]
+            .filter(Boolean)
+            .join(" > ")
+        : "N/A";
+
+      const stockStatus =
+        Number(product.stock || 0) > 0 ? `còn ${product.stock}` : "hết hàng";
+
+      const saleInfo =
+        product.originalPrice > product.price
+          ? `, đang giảm ${Math.round(
+              (1 - product.price / product.originalPrice) * 100
+            )}%`
+          : "";
+
+      return `${index + 1}. ID nội bộ: ${product._id}
+Tên: ${product.name}
+Giá: ${formatCurrency(product.price)}${saleInfo}
+Link mua: ${productUrl}
+Link thêm giỏ: ${cartUrl}
+Nhóm: ${category}
+Thương hiệu: ${product.brand || "N/A"}
+Chất liệu: ${product.material || "N/A"}
+Phong cách: ${product.style || "N/A"}
+Vibe: ${product.vibe || "N/A"}
+Size: ${(product.sizes || []).slice(0, 5).join(", ") || "N/A"}
+Màu: ${(product.colors || []).slice(0, 5).join(", ") || "N/A"}
+Tồn kho: ${stockStatus}
+Đã bán: ${product.sold || 0}
+Đánh giá: ${product.ratings || 0}/5`;
+    })
+    .join("\n---\n");
 }
 
-/**
- * Format conversation history for AI context
- * @param {Array} history - [{role, content}, ...]
- * @returns {string|null}
- */
-export function formatHistoryContext(history) {
-    if (!history || history.length === 0) return null;
-    const recent = history.slice(-6);
-    return recent.map(msg => {
-        const role = msg.role === 'user' ? 'Khách' : 'Tobi';
-        return `${role}: ${msg.content}`;
-    }).join("\n");
+export function formatHistoryContext(history = []) {
+  if (!Array.isArray(history) || history.length === 0) return null;
+
+  return history
+    .slice(-4)
+    .map((message) => {
+      const role = message.role === "user" ? "Khách" : "Tobi";
+      return `${role}: ${String(message.content || "").slice(0, 220)}`;
+    })
+    .join("\n");
 }
 
-/**
- * Build the full prompt for Gemini - Personal Stylist Pro (Ver 2.0)
- */
-export function buildPrompt({ productContext, historyContext, userMessage, includeShopInfo, userName = "bạn" }) {
-    const isFirstMessage = !historyContext;
-    const frontendUrl = getFrontendBaseUrl();
+export function buildPrompt({
+  productContext,
+  historyContext,
+  userMessage,
+  includeShopInfo,
+  userName = "bạn",
+}) {
+  void includeShopInfo;
 
-    const SYSTEM_INSTRUCTION = `BẠN LÀ "TOBI" - CHUYÊN GIA TẠO MẪU & TƯ VẤN PHONG CÁCH CÁ NHÂN (PERSONAL STYLIST PRO).
-Mục tiêu: Biến trải nghiệm mua sắm của ${userName} thành một hành trình thời trang đẳng cấp.
+  const historySection = historyContext
+    ? `\nLỊCH SỬ CHAT:\n${historyContext}\n`
+    : "";
 
-QUY TẮC CỐ ĐỊNH (PHẢI TUÂN THỦ):
-1. MỖI SẢN PHẨM GỢI Ý PHẢI CÓ LINK MUA HÀNG. 
-   - Định dạng: [Tên SP - Giá](${frontendUrl}/product/\${ID})
-   - Nút chốt đơn: [THÊM VÀO GIỎ HÀNG NGAY 🛒](${frontendUrl}/cart/add/\${ID})
-2. KHÔNG ĐƯỢC chỉ viết tên sản phẩm suông. Nếu không có link, người dùng không thể mua được.
-3. PHỐI ĐỒ: Luôn gợi ý 2-3 món tạo thành 1 Outfit hoàn chỉnh.
+  return `Bạn là TOBI, chatbot tư vấn thời trang thông minh của website TOBI SHOP.
 
-VÍ DỤ PHẢN HỒI CHUẨN:
-"Chào Ngọc! Với phong cách Streetwear, Tobi gợi ý bộ này nhé:
-- [Áo Hoodie đen - 350.000đ](${frontendUrl}/product/123)
-- [Quần Cargo - 450.000đ](${frontendUrl}/product/456)
-- [THÊM ÁO VÀO GIỎ 🛒](${frontendUrl}/cart/add/123)
-- [THÊM QUẦN VÀO GIỎ 🛒](${frontendUrl}/cart/add/456)"
+VAI TRÒ:
+- Bạn là trợ lý tư vấn mua sắm thời trang.
+- Chuyên hỗ trợ khách tìm kiếm sản phẩm, tư vấn outfit và hỗ trợ mua hàng.
+- Luôn nói chuyện tự nhiên, thân thiện, giống nhân viên tư vấn thật.
+- Trả lời hoàn toàn bằng tiếng Việt.
 
-NHÂN CÁCH: Chuyên nghiệp, sành điệu, sử dụng icon (✨, 👕, 👟). Chủ động hỏi Chiều cao/Cân nặng để tư vấn size.`;
+QUY TẮC BẮT BUỘC:
+1. Chỉ được sử dụng sản phẩm có trong DANH SÁCH SẢN PHẨM được cung cấp.
+2. Không được tự bịa sản phẩm, giá, size, màu sắc, khuyến mãi hoặc tồn kho.
+3. Không nói rằng bạn là AI, Gemini hoặc chatbot của Google.
+4. Trả lời ngắn gọn, tự nhiên, tối đa khoảng 120 từ.
+5. Ưu tiên sản phẩm còn hàng, phù hợp nhu cầu khách, bán chạy hoặc đang giảm giá.
+6. Không hiển thị ID nội bộ cho khách.
+7. Khi gợi ý sản phẩm, bắt buộc dùng Markdown link theo format: [Tên sản phẩm - Giá](Link mua)
+8. Link mua phải lấy đúng từ dòng "Link mua" của sản phẩm. Không tự tạo link khác.
+9. Link mua là đường dẫn nội bộ dạng /product/ID, vẫn phải đặt trong Markdown link.
+10. Nếu muốn gợi ý thêm vào giỏ hàng, dùng Markdown link: [Thêm vào giỏ hàng](Link thêm giỏ)
+11. Không trả lời các câu hỏi ngoài phạm vi thời trang hoặc mua sắm.
 
-    const historySection = historyContext ? `
-HISTORY CONTEXT:
-${historyContext}
-` : '';
+CHÀO HỎI:
+- Nếu khách chỉ chào hỏi như hello, hi, xin chào, chào shop, alo thì chào lại thân thiện.
+- Không cần gợi ý sản phẩm nếu khách chưa nói nhu cầu.
 
-    return `${SYSTEM_INSTRUCTION}
+TƯ VẤN OUTFIT:
+- Nếu khách muốn phối đồ, tư vấn outfit, mix đồ, mặc đi chơi, đi học, đi làm, đi biển hoặc đi date, hãy gợi ý outfit phù hợp.
+- Có thể kết hợp nhiều sản phẩm, ưu tiên cùng phong cách hoặc màu sắc.
+- Chỉ dùng sản phẩm có trong danh sách.
 
-AVAILABLE PRODUCTS (CONTEXT):
+NGÂN SÁCH:
+- Nếu khách hỏi khoảng 200k, dưới 500k, giá rẻ hoặc budget thấp, chỉ gợi ý tối đa 3 sản phẩm phù hợp nhất.
+
+MÀU SẮC / SIZE / SALE:
+- Nếu khách hỏi theo màu hoặc size, chỉ gợi ý sản phẩm phù hợp với dữ liệu có sẵn.
+- Nếu khách hỏi sale, bán chạy hoặc hot trend, ưu tiên sản phẩm sold cao và sản phẩm có giảm giá.
+
+KHÁCH HỎI QUÁ CHUNG CHUNG:
+- Nếu khách nói "tư vấn cho tôi", "chọn giúp tôi", "tôi không biết mua gì", hãy hỏi thêm nam hay nữ, phong cách gì, ngân sách bao nhiêu và dùng cho dịp nào.
+
+NGOÀI PHẠM VI:
+- Nếu khách hỏi toán học, code, chính trị, hack, tin tức hoặc kiến thức không liên quan thời trang, trả lời:
+"Tobi hiện chuyên hỗ trợ tư vấn thời trang và mua sắm tại TOBI SHOP. Bạn muốn tìm outfit hoặc sản phẩm nào hôm nay không?"
+
+LỊCH SỬ CHAT:
+- Nếu đã có lịch sử trò chuyện, tận dụng thông tin cũ.
+- Không hỏi lại điều khách đã nói.
+- Không chào lại ở mỗi phản hồi nếu cuộc trò chuyện đã bắt đầu.
+- Trả lời tự nhiên như đang trò chuyện thật với ${userName}.
+
+KHI KHÔNG CÓ SẢN PHẨM:
+- Nếu dữ liệu sản phẩm là ${NO_MATCH_SENTINEL}, trả lời:
+"Tobi chưa tìm thấy sản phẩm phù hợp với nhu cầu của bạn. Bạn có thể thử mô tả thêm về phong cách, màu sắc, ngân sách hoặc loại sản phẩm để Tobi hỗ trợ tốt hơn nhé."
+
+QUAN TRỌNG:
+- Mỗi câu trả lời phải hoàn chỉnh, không được kết thúc giữa câu.
+- Không dùng Markdown quá nhiều, chỉ dùng Markdown cho link sản phẩm.
+- Không liệt kê quá dài, không spam sản phẩm.
+- Chỉ tập trung hỗ trợ mua sắm thời trang.
+
+DANH SÁCH SẢN PHẨM:
 ${productContext}
-
 ${historySection}
 
-USER QUESTION: "${userMessage}"
-💬 TOBI PERSONAL STYLIST RESPONSE:`;
+CÂU HỎI CỦA KHÁCH:
+"${userMessage}"
+
+TOBI TRẢ LỜI:`;
 }
 
-/**
- * Format AI response - clean up unwanted patterns
- * @param {string} rawResponse
- * @returns {string}
- */
-export function formatResponse(rawResponse) {
-    return rawResponse
-        .trim()
-        .replace(/^(Trả lời:|Phản hồi:|Bot:|ChatBot:)/i, '')
-        .replace(/\n{3,}/g, '\n\n')
-        .replace(/╔═.*═╗/g, '')
-        .replace(/╚═.*═╝/g, '')
-        .trim();
+export function formatResponse(rawResponse = "") {
+  return rawResponse
+    .trim()
+    .replace(/^(Trả lời:|Phản hồi:|Bot:|ChatBot:|Tobi:|TOBI TRẢ LỜI:)/i, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
-/**
- * Filter available (in-stock) products
- */
-export function filterAvailableProducts(products) {
-    return products.filter(p => p.stock > 0);
+export function ensureProductLinks(rawResponse = "", products = []) {
+  if (!rawResponse || !Array.isArray(products) || products.length === 0) {
+    return rawResponse;
+  }
+
+  const markdownLinkPattern = /(\[[^\]]+\]\([^)]+\))/g;
+  const segments = String(rawResponse).split(markdownLinkPattern);
+  const sortedProducts = [...products]
+    .filter((product) => product?._id && product?.name)
+    .sort((a, b) => String(b.name).length - String(a.name).length);
+
+  return segments
+    .map((segment) => {
+      if (markdownLinkPattern.test(segment)) {
+        markdownLinkPattern.lastIndex = 0;
+        return segment;
+      }
+      markdownLinkPattern.lastIndex = 0;
+
+      let linkedSegment = segment;
+
+      for (const product of sortedProducts) {
+        const name = String(product.name);
+        const price = formatCurrency(product.price);
+        const linkText = `${name} - ${price}`;
+        const productUrl = `/product/${product._id}`;
+        const escapedName = escapeRegExp(name);
+        const escapedPrice = escapeRegExp(price);
+
+        const nameWithPricePattern = new RegExp(`${escapedName}\\s*-\\s*${escapedPrice}`, "gu");
+        linkedSegment = linkedSegment.replace(
+          nameWithPricePattern,
+          `[${linkText}](${productUrl})`
+        );
+
+        const plainNamePattern = new RegExp(escapedName, "gu");
+        linkedSegment = linkedSegment.replace((plainNamePattern), (match, offset, fullText) => {
+          const before = fullText.slice(Math.max(0, offset - 2), offset);
+          const after = fullText.slice(offset + match.length, offset + match.length + 2);
+
+          if (before.includes("[") || after.includes("]")) {
+            return match;
+          }
+
+          return `[${linkText}](${productUrl})`;
+        });
+      }
+
+      return linkedSegment;
+    })
+    .join("");
 }
 
-/**
- * Get best-selling products
- */
-export function getBestSellers(products, limit = 3) {
-    return products
-        .filter(p => p.stock > 0)
-        .sort((a, b) => b.sold - a.sold)
-        .slice(0, limit);
+export function filterAvailableProducts(products = []) {
+  return products.filter((product) => Number(product.stock || 0) > 0);
+}
+
+export function getBestSellers(products = [], limit = 3) {
+  return products
+    .filter((product) => Number(product.stock || 0) > 0)
+    .sort((a, b) => Number(b.sold || 0) - Number(a.sold || 0))
+    .slice(0, limit);
 }

@@ -49,7 +49,7 @@ function HeroSection() {
   const activeBanner = BANNERS[current];
 
   return (
-    <section className="relative h-[560px] overflow-hidden bg-[#111827] md:h-[640px] lg:h-[680px]">
+    <section className="home-hero-section relative h-[560px] overflow-hidden bg-[#111827] md:h-[640px] lg:h-[680px]">
       <AnimatePresence mode="wait">
         <MotionDiv
           key={activeBanner.id}

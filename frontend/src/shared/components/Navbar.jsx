@@ -3,7 +3,13 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { logout } from '@/features/user/userSlice';
-import { fetchNotifications } from '@/features/notifications/notificationSlice';
+import {
+  fetchNotifications,
+  markAllRead,
+  markAsRead,
+  readAllLocal,
+  readLocal,
+} from '@/features/notifications/notificationSlice';
 import { normalizeNotificationLink } from '@/features/notifications/notificationLinks';
 import { toast } from 'react-toastify';
 import BrandLogo from '@/shared/components/BrandLogo';
@@ -119,6 +125,20 @@ function Navbar() {
       });
   };
 
+  const handleNotificationClick = (item) => {
+    if (!item?._id || item.isRead) return;
+
+    dispatch(readLocal(item._id));
+    dispatch(markAsRead(item._id));
+  };
+
+  const handleViewNotifications = () => {
+    if (!isAuthenticated || unreadCount <= 0) return;
+
+    dispatch(readAllLocal());
+    dispatch(markAllRead());
+  };
+
   const navLinks = [
     { name: 'SẢN PHẨM', path: '/products' },
     { name: 'NAM', path: '/products?category=nam' },
@@ -189,6 +209,7 @@ function Navbar() {
                 <div className="navbar-hover-popup">
                   <Link
                     to="/notifications"
+                    onClick={handleViewNotifications}
                     className="relative p-2.5 bg-slate-100 hover:bg-accent/10 rounded-full transition-all group text-primary"
                     aria-label="Thông báo"
                   >
@@ -214,6 +235,7 @@ function Navbar() {
                           <Link
                             key={item._id || index}
                             to={normalizeNotificationLink(item.link, "/notifications")}
+                            onClick={() => handleNotificationClick(item)}
                             className={`navbar-hover-popup__item navbar-hover-popup__item--notification ${!item.isRead ? "is-unread" : ""}`}
                           >
                             <img
