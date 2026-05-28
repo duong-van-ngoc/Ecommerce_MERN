@@ -9,9 +9,10 @@ import ConfirmationNumberOutlinedIcon from "@mui/icons-material/ConfirmationNumb
  */
 const VoucherCard = ({ voucher, viewMode, onClaim, claimLoading }) => {
     const isUsed = voucher.status === "used";
+    const isSaved = voucher.isOwned || voucher.status === "saved";
     const usedPercent = Math.max(0, Math.min(Number(voucher.usedPercent) || 0, 100));
     const voucherCode = voucher.code || voucher.title || voucher.originalId;
-    const isClaimDisabled = claimLoading || usedPercent >= 100;
+    const isClaimDisabled = claimLoading || usedPercent >= 100 || isSaved || isUsed;
 
     return (
         <div className={`voucher-card type-${voucher.type} ${isUsed ? "is-used" : ""}`}>
@@ -38,7 +39,13 @@ const VoucherCard = ({ voucher, viewMode, onClaim, claimLoading }) => {
                     <div className="voucher-status-info">
                         <span className="voucher-status-text">
                             <CardGiftcardOutlinedIcon />
-                            {viewMode === "my_vouchers" ? "Mã giảm giá đã lưu" : `Đã dùng ${usedPercent}%`}
+                            {viewMode === "my_vouchers"
+                                ? "Mã giảm giá đã lưu"
+                                : isUsed
+                                    ? "Đã sử dụng"
+                                    : isSaved
+                                        ? "Đã lưu"
+                                        : `Đã dùng ${usedPercent}%`}
                         </span>
                         <span className="voucher-expiry">
                             <AccessTimeOutlinedIcon />
@@ -71,11 +78,24 @@ const VoucherCard = ({ voucher, viewMode, onClaim, claimLoading }) => {
                     ) : (
                         <button
                             type="button"
-                            className={`use-btn claim-btn ${claimLoading ? "loading" : ""}`}
+                            className={`use-btn claim-btn ${isSaved ? "saved" : ""} ${isUsed ? "used" : ""} ${claimLoading && !isSaved && !isUsed ? "loading" : ""}`}
                             disabled={isClaimDisabled}
                             onClick={() => onClaim(voucher.originalId)}
                         >
-                            {claimLoading ? "Đang lưu..." : usedPercent >= 100 ? "Hết lượt" : "Lưu mã giảm giá"}
+                            {isUsed ? (
+                                "Đã sử dụng"
+                            ) : isSaved ? (
+                                <>
+                                    <CheckCircleOutlineIcon fontSize="small" />
+                                    Đã lưu
+                                </>
+                            ) : claimLoading ? (
+                                "Đang lưu..."
+                            ) : usedPercent >= 100 ? (
+                                "Hết lượt"
+                            ) : (
+                                "Lưu mã giảm giá"
+                            )}
                         </button>
                     )}
                 </div>

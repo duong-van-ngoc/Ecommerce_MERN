@@ -31,7 +31,7 @@ function useProductFilters({
   const [appliedPrice, setAppliedPrice] = useState(null);
   const [priceError, setPriceError] = useState("");
   const [selectedRating, setSelectedRating] = useState(null);
-  const [inStockOnly, setInStockOnly] = useState(false);
+  const [inStockOnly, setInStockOnly] = useState(true);
   const [sortBy, setSortBy] = useState(sortFromURL || "newest");
 
   useEffect(() => {
@@ -111,7 +111,7 @@ function useProductFilters({
     setPriceRange({ min: PRICE_MIN, max: PRICE_MAX });
     setAppliedPrice(null);
     setSelectedRating(null);
-    setInStockOnly(false);
+    setInStockOnly(true);
     setSortBy("newest");
     setCurrentPage(1);
     clearProductQuery();
@@ -120,8 +120,7 @@ function useProductFilters({
   const activeFilterCount =
     selectedCategories.length +
     (appliedPrice ? 1 : 0) +
-    (selectedRating ? 1 : 0) +
-    (inStockOnly ? 1 : 0);
+    (selectedRating ? 1 : 0);
 
   return {
     activeFilterCount,

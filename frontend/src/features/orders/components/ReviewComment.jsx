@@ -53,7 +53,7 @@
  *    - `URL.revokeObjectURL(preview)`: Đừng quên giải phóng bộ nhớ khi người dùng xóa ảnh xem trước hoặc đóng modal để tránh rò rỉ bộ nhớ (Memory Leak).
  *    - `maskedName`: Logic che giấu tên (VD: N*****c) giúp bảo vệ quyền riêng tư nếu người dùng không muốn hiện tên đầy đủ.
  */
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useSelector } from "react-redux";
 import axios from "@/shared/api/http.js";
 import { FiArrowLeft, FiCamera, FiVideo, FiInfo, FiAlertCircle, FiCheck, FiChevronRight } from "react-icons/fi";
@@ -87,7 +87,7 @@ const SUGGESTION_TAGS = [
  * @param {string}   orderId   — ID đơn hàng (tuỳ chọn)
  * @param {function} onSuccess — Callback khi gửi đánh giá thành công
  */
-function ReviewComment({ isOpen, onClose, product, orderId, onSuccess }) {
+function ReviewComment({ isOpen, onClose, product, orderId, onSuccess, existingReview = null }) {
     // ====== State ======
     const [rating, setRating] = useState(5);
     const [hoverRating, setHoverRating] = useState(0);
@@ -120,6 +120,25 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess }) {
         if (name.length <= 2) return name[0] + "*";
         return name[0] + "*".repeat(name.length - 2) + name[name.length - 1];
     }, [user]);
+
+    const isEditing = Boolean(existingReview?._id);
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        setRating(Number(existingReview?.rating) || 5);
+        setHoverRating(0);
+        setComment(existingReview?.comment || "");
+        setSelectedTags([]);
+        setShowUsername(true);
+        setSellerRating(5);
+        setShippingRating(5);
+        setImages([]);
+        setImagePreviews([]);
+        setLoading(false);
+        setError("");
+        setSuccess(false);
+    }, [isOpen, existingReview, product?._id]);
 
     // ====== Handlers ======
     const handleTagToggle = useCallback((tag) => {
@@ -186,17 +205,26 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess }) {
 
             const config = { headers: { "Content-Type": "multipart/form-data" } };
 
-            await axios.put("/api/v1/review", formData, config);
+            const { data } = await axios.put("/api/v1/review", formData, config);
 
             setSuccess(true);
-            onSuccess?.();
+            onSuccess?.({
+                productId: product._id,
+                review: {
+                    _id: existingReview?._id || data?.review?._id || `local-${product._id}`,
+                    product_id: product._id,
+                    rating: Number(rating),
+                    comment: finalComment,
+                    images: existingReview?.images || [],
+                },
+            });
         } catch (err) {
             const msg = err.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại!";
             setError(msg);
         } finally {
             setLoading(false);
         }
-    }, [product, rating, comment, selectedTags, images, onSuccess, orderId]);
+    }, [product, rating, comment, selectedTags, images, onSuccess, orderId, existingReview]);
 
     const handleClose = useCallback(() => {
         setRating(5);
@@ -225,7 +253,9 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess }) {
                         <FiCheck size={32} />
                     </div>
                     <h3 className="rc-success-title">Cảm ơn bạn!</h3>
-                    <p className="rc-success-desc">Đánh giá của bạn đã được gửi thành công.</p>
+                    <p className="rc-success-desc">
+                        {isEditing ? "Đánh giá của bạn đã được cập nhật." : "Đánh giá của bạn đã được gửi thành công."}
+                    </p>
                     <button className="rc-success-btn" onClick={handleClose}>
                         Đóng
                     </button>
@@ -270,7 +300,7 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess }) {
                         <button className="rc-back-btn" onClick={handleClose} type="button" aria-label="Quay lại">
                             <FiArrowLeft size={20} />
                         </button>
-                        <h2 className="rc-title">Đánh giá sản phẩm</h2>
+                        <h2 className="rc-title">{isEditing ? "Cập nhật đánh giá" : "Đánh giá sản phẩm"}</h2>
                     </div>
                     <button className="rc-help-btn" type="button">Trợ giúp</button>
                 </header>
@@ -458,7 +488,7 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess }) {
                                 Đang gửi...
                             </span>
                         ) : (
-                            "Hoàn Thành"
+                            isEditing ? "Cập nhật đánh giá" : "Hoàn Thành"
                         )}
                     </button>
                 </footer>

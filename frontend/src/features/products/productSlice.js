@@ -55,7 +55,7 @@ import axios from '@/shared/api/http.js';
 
 // Lấy danh sách sản phẩm (có filter + sort + pagination)
 export const getProduct = createAsyncThunk('product/getProduct',
-  async ({ keyword, page = 1, category, price, sort, ratings, inStock }, { rejectWithValue }) => {
+  async ({ keyword, page = 1, category, price, sort, ratings, inStock = true }, { rejectWithValue }) => {
     try {
       // Bắt đầu với page
       let link = `/api/v1/products?page=${page}`;
@@ -168,7 +168,7 @@ const productSlice = createSlice({
 
     })
       .addCase(getProduct.fulfilled, (state, action) => {
-        console.log('action.payload', action.payload);
+        // console.log('action.payload', action.payload);
         state.loading = false
         state.error = null;
         state.products = action.payload.products;

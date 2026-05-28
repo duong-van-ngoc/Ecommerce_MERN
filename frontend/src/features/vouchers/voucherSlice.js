@@ -1,6 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { voucherApi } from "./api/voucherApi";
 
+const getVoucherId = (voucherRef) => {
+  if (!voucherRef) return null;
+  if (typeof voucherRef === "string") return voucherRef;
+  return voucherRef._id || voucherRef.id || null;
+};
+
 /**
  * Thunk: Kiểm tra và áp dụng Voucher vào đơn hàng
  */
@@ -56,7 +62,8 @@ export const claimVoucher = createAsyncThunk(
   "voucher/claimVoucher",
   async (voucherId, { rejectWithValue }) => {
     try {
-      return await voucherApi.claimVoucher(voucherId);
+      const response = await voucherApi.claimVoucher(voucherId);
+      return { ...response, claimedVoucherId: voucherId };
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Không thể lưu mã giảm giá"
@@ -139,9 +146,42 @@ const voucherSlice = createSlice({
         state.claimLoading = true;
         state.error = null;
       })
-      .addCase(claimVoucher.fulfilled, (state) => {
+      .addCase(claimVoucher.fulfilled, (state, action) => {
         state.claimLoading = false;
         state.claimSuccess = true;
+        state.error = null;
+
+        const userVoucher = action.payload?.data;
+        const claimedVoucherId =
+          action.payload?.claimedVoucherId || getVoucherId(userVoucher?.voucher);
+
+        if (!claimedVoucherId) return;
+
+        const activeVoucher = state.activeVouchers.find(
+          (voucher) => getVoucherId(voucher) === claimedVoucherId
+        );
+        const activeVoucherForUser = activeVoucher ? { ...activeVoucher } : null;
+
+        if (activeVoucher) {
+          activeVoucher.isOwned = true;
+        }
+
+        const alreadyExists = state.myVouchers.some((savedVoucher) => {
+          return (
+            savedVoucher?._id === userVoucher?._id ||
+            getVoucherId(savedVoucher?.voucher) === claimedVoucherId
+          );
+        });
+
+        if (userVoucher && !alreadyExists) {
+          state.myVouchers.push({
+            ...userVoucher,
+            voucher:
+              typeof userVoucher.voucher === "object"
+                ? userVoucher.voucher
+                : activeVoucherForUser || userVoucher.voucher,
+          });
+        }
       })
       .addCase(claimVoucher.rejected, (state, action) => {
         state.claimLoading = false;

@@ -127,32 +127,56 @@ class APIFunctionality {
         }
 
         // Bước 3: Xử lý stock=true → chỉ lấy sản phẩm còn hàng
-        if (queryCopy.stock === "true") {
-            queryCopy.stock = { $gt: 0 };
-        } else {
-            delete queryCopy.stock;
-        }
-
-        // Bước 4: Convert operators cho price, ratings
-        // Express parse: price[gte]=100 → { price: { gte: "100" } }
-        // MongoDB cần:                  → { price: { $gte: 100 } }
-        let queryStr = JSON.stringify(queryCopy);
-        queryStr = queryStr.replace(/\b(gt|gte|lt|lte)\b/g, key => `$${key}`);
-
-        const queryObj = JSON.parse(queryStr);
-
-        // Bước 4: Convert string numbers thành Number cho MongoDB
-        // Vì query params đến dưới dạng string: "100000" → cần convert thành 100000
-        const convertToNumber = (obj) => {
-            for (const key in obj) {
-                if (typeof obj[key] === 'object' && obj[key] !== null) {
-                    convertToNumber(obj[key]);
-                } else if (!isNaN(obj[key]) && typeof obj[key] === 'string' && obj[key].trim() !== '') {
-                    obj[key] = Number(obj[key]);
-                }
-            }
+        const toNumberIfPossible = (value) => {
+            if (typeof value !== "string") return value;
+            const trimmed = value.trim();
+            if (!trimmed || Number.isNaN(Number(trimmed))) return value;
+            return Number(trimmed);
         };
-        convertToNumber(queryObj);
+
+        const buildRangeFilter = (value) => {
+            if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+
+            const allowedOperators = ["gt", "gte", "lt", "lte"];
+            return Object.entries(value).reduce((filter, [operator, rawValue]) => {
+                const normalizedOperator = operator.startsWith("$") ? operator.slice(1) : operator;
+                if (!allowedOperators.includes(normalizedOperator)) return filter;
+                if (rawValue === undefined || rawValue === null || rawValue === "") return filter;
+
+                filter[`$${normalizedOperator}`] = toNumberIfPossible(rawValue);
+                return filter;
+            }, {});
+        };
+
+        const queryObj = {};
+        const exactStringFields = ["status", "brand", "material", "vibe", "style"];
+
+        for (const [field, value] of Object.entries(queryCopy)) {
+            if (["price", "ratings"].includes(field)) {
+                const rangeFilter = buildRangeFilter(value);
+                if (rangeFilter && Object.keys(rangeFilter).length > 0) {
+                    queryObj[field] = rangeFilter;
+                }
+                continue;
+            }
+
+            if (field === "stock") {
+                if (value === true || value === "true") {
+                    queryObj.stock = { $gt: 0 };
+                    continue;
+                }
+
+                const rangeFilter = buildRangeFilter(value);
+                if (rangeFilter && Object.keys(rangeFilter).length > 0) {
+                    queryObj.stock = rangeFilter;
+                }
+                continue;
+            }
+
+            if (exactStringFields.includes(field) && value !== undefined && value !== null && value !== "") {
+                queryObj[field] = String(value).trim();
+            }
+        }
 
         // Merge category query (đã map) với các filter khác
         this.query = this.query.find({ ...queryObj, ...categoryQuery });
