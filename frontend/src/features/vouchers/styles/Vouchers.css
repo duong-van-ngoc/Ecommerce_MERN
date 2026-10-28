@@ -455,6 +455,10 @@
     border-color: rgba(22, 163, 74, 0.28);
 }
 
+.use-btn.saved:disabled:not(.used) {
+    opacity: 1;
+}
+
 .use-btn.used,
 .use-btn:disabled {
     cursor: not-allowed;

@@ -53,7 +53,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getMyOrders, cancelOrder, removeSuccess, removeErrors } from "@/features/orders/orderSlice";
-import { Link } from "react-router-dom";
+import { addItemsToCart } from "@/features/cart/cartSlice";
+import { Link, useNavigate } from "react-router-dom";
 import { formatVND } from "@/shared/utils/formatCurrency";
 import { toast } from "react-toastify";
 
@@ -105,10 +106,12 @@ const getOrderItemProductId = (item) => {
 
 function MyOrders() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [currentTab, setCurrentTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [reviewProduct, setReviewProduct] = useState(null);
   const [reviewOrderId, setReviewOrderId] = useState(null);
+  const [reviewOverrides, setReviewOverrides] = useState({});
 
   // Cancellation Modal State
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
@@ -194,6 +197,62 @@ function MyOrders() {
 
   const getItemImage = (item) =>
     item?.image || item?.images?.[0]?.url || item?.images?.[0] || "";
+
+  const getPrimaryReviewState = (order) => {
+    const firstItem = order?.orderItems?.[0];
+    const productId = getOrderItemProductId(firstItem);
+    const overrideReview = productId ? reviewOverrides[productId] || null : null;
+    const existingReview = overrideReview || firstItem?.existingReview || null;
+
+    return {
+      isReviewed: Boolean(existingReview || firstItem?.isReviewed),
+      existingReview,
+    };
+  };
+
+  const handleReviewSuccess = async ({ productId, review }) => {
+    if (productId && review) {
+      setReviewOverrides((prev) => ({
+        ...prev,
+        [productId]: review,
+      }));
+    }
+
+    try {
+      await dispatch(getMyOrders()).unwrap();
+    } catch (err) {
+      console.error("Failed to refresh orders after review:", err);
+    }
+  };
+
+  const handleRebuy = async (order) => {
+    const orderItems = order?.orderItems || [];
+
+    if (orderItems.length === 0) {
+      toast.error("Đơn hàng này không có sản phẩm để mua lại.");
+      return;
+    }
+
+    try {
+      await Promise.all(
+        orderItems.map((item) =>
+          dispatch(
+            addItemsToCart({
+              id: getOrderItemProductId(item),
+              quantity: item.quantity || 1,
+              size: item.size || "",
+              color: item.color || "",
+            })
+          ).unwrap()
+        )
+      );
+
+      toast.success("Đã thêm lại sản phẩm vào giỏ hàng.");
+      navigate("/cart");
+    } catch (err) {
+      toast.error(err?.message || "Không thể mua lại sản phẩm.");
+    }
+  };
 
   return (
     <>
@@ -303,6 +362,7 @@ function MyOrders() {
                   {filteredOrders.map((order) => {
                     const statusConfig = getStatusConfig(order.orderStatus);
                     const normalized = normalizeStatus(order.orderStatus);
+                    const { isReviewed, existingReview } = getPrimaryReviewState(order);
 
                     return (
                       <div className="order-card" key={order._id}>
@@ -375,14 +435,15 @@ function MyOrders() {
                                           name: firstItem.name,
                                           images: firstItem.images || (firstItem.image ? [{ url: firstItem.image }] : []),
                                           category: firstItem.category || "",
+                                          existingReview,
                                         });
                                         setReviewOrderId(order._id);
                                       }
                                     }}
                                   >
-                                    Đánh giá
+                                    {isReviewed ? "Đánh giá lại" : "Đánh giá"}
                                   </button>
-                                  <button className="btn-rebuy">Mua lại</button>
+                                  <button className="btn-rebuy" onClick={() => handleRebuy(order)}>Mua lại</button>
                                 </>
                               )}
                             </div>
@@ -406,13 +467,12 @@ function MyOrders() {
         isOpen={!!reviewProduct}
         product={reviewProduct}
         orderId={reviewOrderId}
+        existingReview={reviewProduct?.existingReview || null}
         onClose={() => {
           setReviewProduct(null);
           setReviewOrderId(null);
         }}
-        onSuccess={() => {
-          dispatch(getMyOrders());
-        }}
+        onSuccess={handleReviewSuccess}
       />
 
       {/* Cancellation Modal */}

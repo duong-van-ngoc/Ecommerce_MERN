@@ -48,18 +48,18 @@ const NOTIFICATION_TABS = [
         path: "/notifications/promotion",
         icon: <LocalOfferOutlinedIcon />,
     },
-    {
-        type: "wallet",
-        label: "Ví & Thanh toán",
-        path: "/notifications/wallet",
-        icon: <AccountBalanceWalletOutlinedIcon />,
-    },
-    {
-        type: "shopee",
-        label: "Hệ thống",
-        path: "/notifications/shopee",
-        icon: <SettingsOutlinedIcon />,
-    },
+    // {
+    //     type: "wallet",
+    //     label: "Ví & Thanh toán",
+    //     path: "/notifications/wallet",
+    //     icon: <AccountBalanceWalletOutlinedIcon />,
+    // // },
+    // {
+    //     type: "shopee",
+    //     label: "Hệ thống",
+    //     path: "/notifications/shopee",
+    //     icon: <SettingsOutlinedIcon />,
+    // },
 ];
 
 const getNotificationIcon = (type) => {

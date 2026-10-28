@@ -10,6 +10,12 @@ import {
 import formatVND from "@/shared/utils/formatCurrency";
 import { TicketPercent, Gift, Truck, Store } from "lucide-react";
 
+const getVoucherId = (voucherRef) => {
+    if (!voucherRef) return null;
+    if (typeof voucherRef === "string") return voucherRef;
+    return voucherRef._id || voucherRef.id || null;
+};
+
 /**
  * Hook quản lý nghiệp vụ Voucher: Lọc, Chuyển đổi dữ liệu và Hành động (Claim)
  */
@@ -32,6 +38,7 @@ export const useVouchers = (viewMode) => {
             dispatch(fetchMyVouchers());
         } else {
             dispatch(fetchActiveVouchers());
+            dispatch(fetchMyVouchers());
         }
     }, [dispatch, viewMode]);
 
@@ -48,15 +55,21 @@ export const useVouchers = (viewMode) => {
     }, [claimSuccess, error, dispatch, viewMode]);
 
     const handleClaim = (voucherId) => {
+        if (!voucherId) return;
         dispatch(claimVoucher(voucherId));
     };
 
     /**
      * Chuyển đổi dữ liệu từ API sang Schema hiển thị của UI
      */
-    const transformVoucher = (data, isOwned = true) => {
+    const transformVoucher = (data, isOwned = true, ownedRecord = null) => {
         const v = isOwned ? data.voucher : data;
-        if (!v) return null;
+        if (!v || typeof v !== "object") return null;
+        const isSaved = isOwned || Boolean(ownedRecord) || Boolean(v.isOwned);
+        const savedStatus =
+            typeof ownedRecord === "object" && ownedRecord !== null
+                ? ownedRecord.status
+                : null;
 
         // Xác định icon và badge dựa trên type
         const typeConfigs = {
@@ -68,12 +81,15 @@ export const useVouchers = (viewMode) => {
 
         const config = typeConfigs[v.type] || typeConfigs.default;
 
-        const discountText = v.discount.type === "percentage" 
-            ? `Giảm ${v.discount.value}%` 
-            : `Giảm ${formatVND(v.discount.value)}`;
+        const discount = v.discount || {};
+        const conditions = v.conditions || {};
 
-        const systemUsedPercent = v.conditions.usageLimit > 0 
-            ? Math.round((v.usedCount / v.conditions.usageLimit) * 100) 
+        const discountText = discount.type === "percentage" 
+            ? `Giảm ${discount.value}%` 
+            : `Giảm ${formatVND(discount.value || 0)}`;
+
+        const systemUsedPercent = conditions.usageLimit > 0 
+            ? Math.round(((v.usedCount || 0) / conditions.usageLimit) * 100) 
             : 0;
 
         return {
@@ -84,13 +100,15 @@ export const useVouchers = (viewMode) => {
             badgeLabel: config.label,
             discount: discountText,
             title: v.title || v.code,
-            condition: v.conditions.minOrderAmount > 0 
-                ? `Đơn tối thiểu ${formatVND(v.conditions.minOrderAmount)}` 
+            condition: conditions.minOrderAmount > 0 
+                ? `Đơn tối thiểu ${formatVND(conditions.minOrderAmount)}` 
                 : "Không yêu cầu tối thiểu",
-            expiry: `HSD: ${new Date(v.conditions.endDate).toLocaleDateString("vi-VN")}`,
+            expiry: conditions.endDate
+                ? `HSD: ${new Date(conditions.endDate).toLocaleDateString("vi-VN")}`
+                : "HSD: --",
             usedPercent: Math.min(systemUsedPercent, 100),
-            status: isOwned ? data.status : "available",
-            isOwned
+            status: isOwned ? data.status : isSaved ? savedStatus || "saved" : "available",
+            isOwned: isSaved
         };
     };
 
@@ -99,8 +117,8 @@ export const useVouchers = (viewMode) => {
         const currentVouchers = viewMode === "my_vouchers" 
             ? myVouchers.map(uv => transformVoucher(uv, true))
             : activeVouchers.map(v => {
-                const alreadyOwned = myVouchers.some(uv => uv.voucher?._id === v._id || uv.voucher === v._id);
-                return transformVoucher(v, false, alreadyOwned);
+                const ownedRecord = myVouchers.find(uv => getVoucherId(uv.voucher) === getVoucherId(v));
+                return transformVoucher(v, false, ownedRecord);
             });
 
         const validVouchers = currentVouchers.filter(v => v !== null);

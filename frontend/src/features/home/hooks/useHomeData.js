@@ -92,7 +92,6 @@ export function useHomeData() {
           page: 1,
           sort: "-sold,-ratings,-createdAt",
           stock: true,
-          status: "available",
         },
       })
       .then(({ data }) => {
@@ -132,7 +131,7 @@ export function useHomeData() {
   }, [flashSale]);
 
   const newArrivalProducts = useMemo(() => {
-    return productList.slice(0, 8);
+    return productList;
   }, [productList]);
 
   const fallbackBestSellers = useMemo(() => {

@@ -1,5 +1,6 @@
 import Order from "../models/orderModel.js";
 import Product from "../models/productModel.js";
+import Review from "../models/reviewModel.js";
 import Address from "../models/addressModel.js";
 import Cart from "../models/cartModel.js";
 import CartItem from "../models/cartItemModel.js";
@@ -238,7 +239,41 @@ export const getSingleOrder = handleAsyncError(async (req, res, next) => {
 
 export const allMyOrder = handleAsyncError(async (req, res) => {
   const orders = await Order.find({ user_id: req.user.id }).populate("user_id", "name email");
-  res.status(200).json({ success: true, orders });
+  const productIds = [
+    ...new Set(
+      orders.flatMap((order) =>
+        (order.orderItems || [])
+          .map((item) => item?.product_id?.toString?.())
+          .filter(Boolean)
+      )
+    ),
+  ];
+
+  const reviews = productIds.length
+    ? await Review.find({
+        user_id: req.user.id,
+        product_id: { $in: productIds },
+      }).select("_id product_id rating comment images status updatedAt createdAt")
+    : [];
+
+  const reviewMap = new Map(reviews.map((review) => [review.product_id.toString(), review]));
+
+  const ordersWithReviewState = orders.map((order) => {
+    const normalizedOrder = order.toObject();
+    normalizedOrder.orderItems = (normalizedOrder.orderItems || []).map((item) => {
+      const productId = item?.product_id?.toString?.();
+      const existingReview = productId ? reviewMap.get(productId) || null : null;
+
+      return {
+        ...item,
+        isReviewed: Boolean(existingReview),
+        existingReview,
+      };
+    });
+    return normalizedOrder;
+  });
+
+  res.status(200).json({ success: true, orders: ordersWithReviewState });
 });
 
 export const getAllOrder = handleAsyncError(async (req, res) => {

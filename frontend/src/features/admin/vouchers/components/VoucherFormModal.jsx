@@ -198,7 +198,7 @@ const VoucherFormModal = ({ voucher, onClose }) => {
                                             onClick={() => setFormData(p => ({ ...p, discountType: 'percentage' }))}
                                             className={`flex h-10 items-center justify-center gap-2 rounded-lg text-sm font-bold transition ${formData.discountType === 'percentage' ? 'bg-[#004ac6] text-white shadow-sm' : 'text-[#6B7280] hover:bg-white hover:text-[#111827]'}`}
                                         >
-                                            <PercentOutlinedIcon fontSize="small" />
+                                            {/* <PercentOutlinedIcon fontSize="small" /> */}
                                             %
                                         </button>
                                     </div>

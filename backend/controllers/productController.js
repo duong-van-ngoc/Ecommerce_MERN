@@ -98,6 +98,25 @@ const uploadReviewMedia = async (files = []) => {
     return uploadedMedia;
 };
 
+const parseReviewMedia = (value) => {
+    if (!value) return null;
+
+    try {
+        const parsed = typeof value === "string" ? JSON.parse(value) : value;
+        if (!Array.isArray(parsed)) return null;
+
+        return parsed
+            .filter((item) => item?.url)
+            .map((item) => ({
+                public_id: item.public_id || item.url,
+                url: item.url,
+                resource_type: item.resource_type || "image"
+            }));
+    } catch {
+        return null;
+    }
+};
+
 // tao san pham 
 export const createProducts = handleAsyncError(async (req, res, next) => {
 
@@ -335,7 +354,7 @@ export const getSingleProduct = handleAsyncError(async (req, res, next) => {
 
 // Tạo hoặc cập nhật đánh giá sản phẩm (lưu vào Collection Review riêng biệt)
 export const createReviewProduct = handleAsyncError(async (req, res, next) => {
-    const { rating, comment, productId } = req.body;
+    const { rating, comment, productId, existingImages } = req.body;
 
     // Only allow users who purchased AND received the product to review
     const orders = await Order.find({
@@ -363,19 +382,21 @@ export const createReviewProduct = handleAsyncError(async (req, res, next) => {
         product_id: productId
     });
 
+    const retainedMedia = parseReviewMedia(existingImages);
     let isUpdate = false;
+    let savedReview = null;
     if (existingReview) {
         // Update existing review
         existingReview.rating = Number(rating);
         existingReview.comment = comment;
-        if (uploadedMedia.length > 0) {
-            existingReview.images = uploadedMedia;
+        if (retainedMedia !== null || uploadedMedia.length > 0) {
+            existingReview.images = [...(retainedMedia || []), ...uploadedMedia].slice(0, 5);
         }
-        await existingReview.save();
+        savedReview = await existingReview.save();
         isUpdate = true;
     } else {
         // Create new review document
-        await Review.create({
+        savedReview = await Review.create({
             user_id: req.user._id,
             product_id: productId,
             rating: Number(rating),
@@ -394,6 +415,7 @@ export const createReviewProduct = handleAsyncError(async (req, res, next) => {
 
     res.status(200).json({
         success: true,
+        review: savedReview,
         message: isUpdate ? "Cập nhật đánh giá thành công!" : "Thêm đánh giá thành công"
     });
 })
