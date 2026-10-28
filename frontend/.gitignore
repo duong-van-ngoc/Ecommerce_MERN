@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Generated reports and one-off migration helpers
+lint.txt
+lint.json
+refactor.cjs
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
