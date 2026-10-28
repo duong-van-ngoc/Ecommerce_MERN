@@ -77,6 +77,18 @@ const SUGGESTION_TAGS = [
     "Giá cả hợp lý",
 ];
 
+const normalizeReviewMedia = (media = []) => {
+    if (!Array.isArray(media)) return [];
+
+    return media
+        .filter((item) => item?.url)
+        .map((item) => ({
+            public_id: item.public_id || item.url,
+            url: item.url,
+            resource_type: item.resource_type || "image",
+        }));
+};
+
 /**
  * ReviewComment — Modal đánh giá sản phẩm
  *
@@ -98,6 +110,7 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess, existingR
     const [shippingRating, setShippingRating] = useState(5);
     const [images, setImages] = useState([]);
     const [imagePreviews, setImagePreviews] = useState([]);
+    const [existingMedia, setExistingMedia] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
@@ -135,6 +148,7 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess, existingR
         setShippingRating(5);
         setImages([]);
         setImagePreviews([]);
+        setExistingMedia(normalizeReviewMedia(existingReview?.images));
         setLoading(false);
         setError("");
         setSuccess(false);
@@ -151,7 +165,7 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess, existingR
         const files = Array.from(e.target.files);
         
         // Giới hạn số lượng ảnh (ví dụ: tối đa 5 ảnh)
-        if (images.length + files.length > 5) {
+        if (existingMedia.length + images.length + files.length > 5) {
             setError("Chỉ được tải lên tối đa 5 ảnh/video");
             return;
         }
@@ -162,7 +176,11 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess, existingR
         // Tạo URL xem trước
         const previews = files.map(file => URL.createObjectURL(file));
         setImagePreviews((prev) => [...prev, ...previews]);
-    }, [images]);
+    }, [existingMedia.length, images]);
+
+    const handleRemoveExistingMedia = useCallback((index) => {
+        setExistingMedia((prev) => prev.filter((_, i) => i !== index));
+    }, []);
 
     const handleRemoveImage = useCallback((index) => {
         setImages((prev) => prev.filter((_, i) => i !== index));
@@ -195,6 +213,7 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess, existingR
             formData.append("rating", Number(rating));
             formData.append("comment", finalComment);
             formData.append("productId", product._id);
+            formData.append("existingImages", JSON.stringify(existingMedia));
             if (orderId) {
                 formData.append("orderId", orderId);
             }
@@ -203,19 +222,18 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess, existingR
                 formData.append("images", img);
             });
 
-            const config = { headers: { "Content-Type": "multipart/form-data" } };
-
-            const { data } = await axios.put("/api/v1/review", formData, config);
+            const { data } = await axios.put("/api/v1/review", formData);
+            const savedReview = data?.review || {};
 
             setSuccess(true);
             onSuccess?.({
                 productId: product._id,
                 review: {
-                    _id: existingReview?._id || data?.review?._id || `local-${product._id}`,
-                    product_id: product._id,
-                    rating: Number(rating),
-                    comment: finalComment,
-                    images: existingReview?.images || [],
+                    _id: savedReview._id || existingReview?._id || `local-${product._id}`,
+                    product_id: savedReview.product_id || product._id,
+                    rating: Number(savedReview.rating || rating),
+                    comment: savedReview.comment || finalComment,
+                    images: normalizeReviewMedia(savedReview.images || existingMedia),
                 },
             });
         } catch (err) {
@@ -224,7 +242,7 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess, existingR
         } finally {
             setLoading(false);
         }
-    }, [product, rating, comment, selectedTags, images, onSuccess, orderId, existingReview]);
+    }, [product, rating, comment, selectedTags, images, existingMedia, onSuccess, orderId, existingReview]);
 
     const handleClose = useCallback(() => {
         setRating(5);
@@ -234,12 +252,14 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess, existingR
         setShowUsername(true);
         setSellerRating(5);
         setShippingRating(5);
+        imagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
         setImages([]);
         setImagePreviews([]);
+        setExistingMedia([]);
         setError("");
         setSuccess(false);
         onClose?.();
-    }, [onClose]);
+    }, [imagePreviews, onClose]);
 
     // ====== Early return ======
     if (!isOpen) return null;
@@ -382,8 +402,26 @@ function ReviewComment({ isOpen, onClose, product, orderId, onSuccess, existingR
                         </div>
 
                         {/* Media Preview */}
-                        {imagePreviews.length > 0 && (
+                        {(existingMedia.length > 0 || imagePreviews.length > 0) && (
                             <div className="rc-media-previews" style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "12px" }}>
+                                {existingMedia.map((media, index) => {
+                                    const isVideo = media.resource_type === "video";
+                                    return (
+                                        <div key={`saved-${media.public_id || media.url}`} className="rc-media-preview-item" style={{ position: "relative", width: "80px", height: "80px" }}>
+                                            {isVideo ? (
+                                                <video src={media.url} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px", border: "1px solid #e2e8f0" }} />
+                                            ) : (
+                                                <img src={media.url} alt="saved review media" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px", border: "1px solid #e2e8f0" }} />
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveExistingMedia(index)}
+                                                style={{ position: "absolute", top: "-8px", right: "-8px", background: "rgba(0,0,0,0.6)", color: "white", border: "none", borderRadius: "50%", width: "22px", height: "22px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: "bold" }}>
+                                                Ã—
+                                            </button>
+                                        </div>
+                                    );
+                                })}
                                 {imagePreviews.map((preview, index) => {
                                     const file = images[index];
                                     const isVideo = file && file.type.startsWith('video/');
